@@ -106,5 +106,25 @@
     ],
     "status": "live",
     "vs": "cloudconvert"
+  },
+  {
+    "slug": "worth-it-calculators",
+    "name": "Is It Worth It? Calculators",
+    "tagline": "Check Vinted bumps, Etsy ads, eBay labels, Uber One and airport fast track with your own figures.",
+    "replaces": [
+      "Guesswork on paid extras"
+    ],
+    "status": "live",
+    "vs": "uber-one"
+  },
+  {
+    "slug": "transcription",
+    "name": "Browser Transcription",
+    "tagline": "Turn English audio into editable text and SRT subtitles on your device. No audio uploads or account.",
+    "replaces": [
+      "Otter.ai"
+    ],
+    "status": "live",
+    "vs": "otter"
   }
 ]

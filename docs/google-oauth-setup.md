@@ -9,14 +9,14 @@ OAuth client id is in `site.json`. It only needs read only Drive metadata.
 3. **OAuth consent screen** — APIs & Services → OAuth consent screen (Google Auth Platform).
    User type **External**. App name = the brand. Support email = yours.
    App home page = the site URL. **Privacy policy = `<site>/privacy/`** (already built).
-   Authorised domain = `pages.dev` for now; add the brand domain when bought.
+   Authorised domain = `plentyoftools.io`.
    Scopes: add `https://www.googleapis.com/auth/drive.metadata.readonly`. Google's Drive
    scope table classes it **restricted** (every Drive scope except `drive.file`, `drive.appdata`
    and `drive.install` is). Restricted means the full app review; the annual security
    assessment only applies to apps that store or transmit the data through their own servers,
    which this tool does not.
 4. **Credentials** — Create credentials → OAuth client ID → *Web application*.
-   Authorised JavaScript origins: `https://plenty-of-tools.pages.dev` (and later the
+   Authorised JavaScript origins: `https://plentyoftools.io` (and later the
    brand domain). No redirect URIs needed (token flow is popup based).
 5. Paste the client id into `site.json` → `"google_client_id"`, flip the tool's status in
    `tools.json` from `hidden` to `live`, run `scripts/deploy.sh`.
