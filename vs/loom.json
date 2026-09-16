@@ -1,0 +1,11 @@
+{
+  "slug": "loom",
+  "incumbent": "Loom",
+  "tool_slug": "screen-recorder",
+  "tool_name": "Screen Recorder",
+  "reviewed": "September 2026",
+  "short_answer": "If you record more than a handful of short clips, Loom's free plan runs out fast: each recording is capped at five minutes and the library at a small number of videos. If what you need is the recording itself, with your voice and face, the free tool here does that with no cap and no account. If what you need is Loom's hosted link, transcript and viewer analytics, that is what the subscription is actually for.",
+  "paywall": "<p>Loom's free plan lets you record, but each video stops at five minutes and you can only keep a limited number of them. The moment a walkthrough runs long, or you have made enough of them, the paywall arrives. Loom is owned by Atlassian, so the pricing structure is not going anywhere.</p><p>The five minute cap is the tell. Recording a screen costs Loom nothing per minute; hosting and processing the video does. The cap sits on the recording, not the hosting, because that is where it is felt.</p>",
+  "free_does": "<ul><li>Records your screen, a window or a tab, with your microphone and, in Chrome, tab or system audio.</li><li>Puts your camera in a circle in the corner, Loom style, mixed in on your own machine.</li><li>Saves straight to a file on your computer while you record (Chrome and Edge), so there is no memory or time limit.</li><li>Pause and resume, a countdown, choice of format and quality. You get a normal video file to share however you like.</li></ul>",
+  "when_pay": "<ul><li>You send recordings to other people constantly and the instant shareable link, with comments and view counts, is the product for you.</li><li>You want automatic transcripts, titles and summaries.</li><li>Your team already lives in Loom and the library is the point.</li></ul>"
+}

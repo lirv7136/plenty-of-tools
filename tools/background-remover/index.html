@@ -1,0 +1,39 @@
+<main class="wrap br">
+  <section class="hero">
+    <span class="badge">Free · On your device · No watermark</span>
+    <h1>Keep the subject.<br>Lose the background.</h1>
+    <p>Turn a photo into a cutout, without sending it anywhere. Download a transparent PNG at your image’s original dimensions.</p>
+  </section>
+  <section class="br-panel" aria-labelledby="br-open-title">
+    <h2 id="br-open-title">Start with a photo</h2>
+    <div id="br-drop" class="br-drop">
+      <span class="br-symbol" aria-hidden="true">↥</span>
+      <strong>Drop an image here</strong>
+      <input id="br-file" type="file" accept="image/jpeg,image/png,image/webp" aria-label="Choose a JPEG, PNG or WebP image">
+      <span class="muted">JPEG, PNG or WebP · up to 20 MB and 16 megapixels</span>
+    </div>
+    <div class="br-actions"><button class="btn" type="button" id="br-example">Try an example photo</button><button class="btn" type="button" id="br-clear" hidden>Clear image</button></div>
+    <p class="br-note">Your photo stays in this tab. On first use, about 16 MB of processing files load from this site. Your browser may cache those files; your photos are never saved by the tool.</p>
+    <p id="br-error" role="alert" hidden></p>
+  </section>
+  <section id="br-editor" class="br-panel" aria-labelledby="br-editor-title" hidden>
+    <div class="br-heading"><div><h2 id="br-editor-title" tabindex="-1">Your cutout, ready to use</h2><p id="br-info" class="muted"></p></div><span id="br-state" class="badge">Ready</span></div>
+    <div class="br-previews">
+      <figure><figcaption>Original</figcaption><div class="br-stage"><canvas id="br-original" aria-label="Original photo"></canvas></div></figure>
+      <figure><figcaption>Result <span id="br-dimensions"></span></figcaption><div id="br-result-stage" class="br-stage br-checker"><p id="br-placeholder">Your cutout will appear here.</p><canvas id="br-result" aria-label="Background removal result" hidden></canvas></div></figure>
+    </div>
+    <div class="br-actions"><button class="btn primary" type="button" id="br-remove">Remove background</button><button class="btn" type="button" id="br-cancel" hidden>Cancel processing</button><button class="btn primary" type="button" id="br-download" hidden>Download PNG</button></div>
+    <div id="br-progress-wrap" hidden><progress id="br-progress" aria-label="Background removal progress"></progress></div>
+    <p id="br-status" role="status" aria-live="polite">Ready when you are.</p>
+    <fieldset id="br-options" hidden><legend>Download background</legend><label><input type="radio" name="br-background" value="transparent" checked> Transparent</label><label><input type="radio" name="br-background" value="#ffffff"> White</label><label><input type="radio" name="br-background" value="#15191f"> Dark</label><label><input type="radio" name="br-background" value="custom"> Custom colour</label><input id="br-colour" type="color" value="#d9eade" aria-label="Custom background colour"></fieldset>
+    <p id="br-quality" class="br-note" hidden>Check the edges before using the result. The PNG retains your original dimensions, but the cutout mask is estimated at 320 × 320. Fine hair, glass, shadows and busy backgrounds may not cut out cleanly.</p>
+    <p id="br-credit" class="br-note" hidden>Example: NASA’s portrait of Eileen Collins, public domain, via <a href="https://scikit-image.org/docs/0.24.x/api/skimage.data.html#skimage.data.astronaut" rel="noopener">scikit-image</a>.</p>
+  </section>
+  <section class="br-help">
+    <h2>A cutout without the upload</h2>
+    <div class="grid"><div><h3>Pick a clear subject</h3><p>People, pets and objects that stand out from their background work best. Use one still image at a time.</p></div><div><h3>Process on your device</h3><p>The first run loads the processing files. Removal can take a few seconds or longer on older phones. You can cancel at any time.</p></div><div><h3>Take the whole PNG</h3><p>No watermark or download paywall. Keep transparency or add a solid colour, then save the result at its original dimensions.</p></div></div>
+    <p><a href="/vs/remove-bg/">How this compares with remove.bg</a> · <a href="/assets/background-remover/NOTICES.txt">Model and software credits</a></p>
+  </section>
+  <noscript><p class="callout">Enable JavaScript to remove backgrounds locally in your browser.</p></noscript>
+</main>
+<script src="/assets/background-remover/core.js" defer></script>

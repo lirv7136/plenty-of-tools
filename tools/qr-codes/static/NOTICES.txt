@@ -1,0 +1,21 @@
+QR Codes — software credits
+
+Application: MIT, as described in the repository LICENSE.
+
+QR Code Generator for JavaScript 1.4.4
+Copyright (c) 2009 Kazuhiko Arase.
+UTF-8 extension: Copyright (c) 2011 Kazuhiko Arase.
+Licence: MIT, reproduced in QR-LICENSE.txt.
+Source: https://github.com/kazuhikoarase/qrcode-generator
+Bundled unchanged: qrcode.js and qrcode_UTF8.js.
+The application explicitly uses UTF-8 byte encoding.
+See vendor-manifest.json for upstream URLs and SHA-256 hashes.
+
+Wi-Fi and email payload formats follow ZXing's Barcode Contents documentation:
+https://github.com/zxing/zxing/wiki/Barcode-Contents
+
+QR Code is a registered trademark of DENSO WAVE INCORPORATED.
+
+Tests independently decode generated codes with jsQR 1.4.0 (Apache-2.0).
+The test-only decoder and its licence are in tests/vendor; they are not shipped
+with this tool or loaded by visitors.

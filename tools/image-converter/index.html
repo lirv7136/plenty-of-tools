@@ -1,0 +1,75 @@
+<main class="wrap imc">
+  <div class="imc-top">
+    <h1>Image Converter</h1>
+    <p class="muted">Turn iPhone HEIC photos into JPG, PNG or WebP, shrink a whole batch to a size that fits an email or a listing, and strip the location and camera data on the way. Everything happens on this page and nothing is uploaded. <a href="/vs/cloudconvert/">Is it worth paying for CloudConvert?</a></p>
+  </div>
+
+  <section class="drop" id="drop">
+    <strong>Drop photos here</strong>
+    <label class="btn primary" for="file">Choose photos</label>
+    <input type="file" id="file" multiple accept="image/*,.heic,.heif,.HEIC,.HEIF" hidden>
+    <span class="hint">HEIC and HEIF from iPhone, plus JPG, PNG, WebP, GIF, BMP and AVIF. Any number of files.</span>
+    <button class="btn" id="btn-sample" type="button">Try it on a sample photo</button>
+  </section>
+  <p class="hint error" id="open-error" role="alert" hidden></p>
+
+  <section class="imc-options" id="options" aria-label="Output options">
+    <div class="opt">
+      <span class="label">Save as</span>
+      <div class="seg" role="radiogroup" aria-label="Output format">
+        <label><input type="radio" name="fmt" value="image/jpeg" checked> JPG</label>
+        <label><input type="radio" name="fmt" value="image/png"> PNG</label>
+        <label><input type="radio" name="fmt" value="image/webp"> WebP</label>
+      </div>
+    </div>
+    <div class="opt" id="opt-quality">
+      <label class="label" for="quality">Quality <output id="quality-out" for="quality">85</output></label>
+      <input type="range" id="quality" min="40" max="100" value="85">
+    </div>
+    <div class="opt">
+      <label class="label" for="resize">Size</label>
+      <select id="resize">
+        <option value="0">Original size</option>
+        <option value="2048">Fit within 2048 px (sharing)</option>
+        <option value="1600">Fit within 1600 px (listings)</option>
+        <option value="1280">Fit within 1280 px (email)</option>
+        <option value="800">Fit within 800 px (thumbnails)</option>
+        <option value="custom">Longest edge in pixels…</option>
+      </select>
+      <input type="number" id="resize-custom" min="16" max="20000" step="1" placeholder="e.g. 1000" aria-label="Longest edge in pixels" hidden>
+    </div>
+    <div class="opt" id="opt-target">
+      <label class="label" for="target">Keep each file under</label>
+      <select id="target">
+        <option value="0">No limit</option>
+        <option value="200">200 KB</option>
+        <option value="500">500 KB</option>
+        <option value="1000">1 MB</option>
+        <option value="2000">2 MB</option>
+        <option value="5000">5 MB</option>
+      </select>
+    </div>
+    <p class="hint opt-note">Location, camera and editing data are always removed from the output. The picture itself is untouched apart from the size and format you choose.</p>
+  </section>
+
+  <section class="imc-work" id="work" hidden>
+    <div class="imc-actions">
+      <button class="btn primary" id="btn-convert" type="button">Convert</button>
+      <button class="btn" id="btn-zip" type="button" disabled>Download all as ZIP</button>
+      <button class="btn" id="btn-clear" type="button">Clear</button>
+      <span class="hint" id="summary" role="status"></span>
+    </div>
+    <div class="list" id="list"></div>
+  </section>
+
+  <section class="prose imc-faq">
+    <h2>What this does, and what it does not</h2>
+    <ul>
+      <li><strong>Nothing is uploaded.</strong> Your browser decodes and re-encodes the pictures itself. HEIC files are decoded with libheif compiled to WebAssembly, loaded only when you drop one.</li>
+      <li><strong>Metadata is removed.</strong> Phones write EXIF data into every photo: GPS position, device and lens, timestamps, sometimes a thumbnail of the uncropped original. Converted files carry none of it. Rows marked <em>Location</em> had GPS coordinates in the original file.</li>
+      <li><strong>Quality.</strong> JPG and WebP are lossy. 85 is a good default; below 70 you start to see it. PNG is lossless and several times larger, so use it for screenshots and graphics, not photos.</li>
+      <li><strong>Live Photos</strong> arrive as a HEIC plus a small MOV video. Only the HEIC is a picture; anything that is not an image is skipped with a note.</li>
+      <li>Large batches are processed one file at a time. Keep the tab open until the summary says it is done, then download files one by one or all together as a ZIP.</li>
+    </ul>
+  </section>
+</main>

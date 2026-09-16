@@ -1,0 +1,51 @@
+<main class="wrap sf">
+  <section class="hero">
+    <span class="badge">Free · Private · No bank connection</span>
+    <h1>Small charges. Big picture.</h1>
+    <p>Find the subscriptions hiding in your bank statement. Open a CSV to see likely recurring payments and what they add up to.</p>
+  </section>
+  <section class="sf-panel" aria-labelledby="import-title">
+    <h2 id="import-title">1. Open your bank CSV</h2>
+    <p class="muted">Export 3–12 months of transactions from your bank. Use one account and one currency per file. Annual payments need more than a year of history.</p>
+    <div id="sf-drop" class="sf-drop">
+      <strong>Drop your CSV here</strong>
+      <label class="btn primary" for="sf-file">Choose CSV file</label>
+      <input id="sf-file" type="file" accept=".csv,.tsv,text/csv,text/tab-separated-values" aria-label="Choose bank CSV file">
+      <span class="muted">CSV or TSV · up to 10 MB</span>
+    </div>
+    <div class="sf-actions"><button class="btn" id="sf-demo" type="button">Try an example</button><button class="btn" id="sf-clear" type="button" hidden>Clear data</button></div>
+    <p class="sf-privacy">Your transactions stay in this tab’s memory. They are never uploaded or saved by this tool. Closing or refreshing the tab clears them.</p>
+    <p id="sf-message" role="status" aria-live="polite"></p>
+    <p id="sf-error" role="alert" hidden></p>
+  </section>
+  <section id="sf-mapping" class="sf-panel" aria-labelledby="mapping-title" hidden>
+    <h2 id="mapping-title">2. Check the columns</h2>
+    <p id="sf-file-info" class="muted"></p>
+    <label class="sf-check"><input type="checkbox" id="sf-header" checked> First row contains column names</label>
+    <div class="sf-fields">
+      <label>Date<select id="sf-date"></select></label>
+      <label>Merchant / description<select id="sf-description"></select></label>
+      <label>Amount / debit<select id="sf-amount"></select></label>
+      <label>Spending convention<select id="sf-sign"><option value="negative">Negative amounts are spending</option><option value="positive">Positive amounts are spending</option><option value="debit">Separate debit / money out column</option></select></label>
+      <label>Date order<select id="sf-date-order"><option value="dmy">Day / month / year (AU, UK)</option><option value="mdy">Month / day / year (US)</option></select></label>
+      <label>Currency (display only)<select id="sf-currency"><option>AUD</option><option>USD</option><option>GBP</option><option>EUR</option><option>CAD</option><option>NZD</option><option>INR</option></select></label>
+    </div>
+    <p class="muted">ISO dates (YYYY-MM-DD) also work. Amounts use a decimal point. Check the preview before analysing; the currency selector does not convert values.</p>
+    <div class="sf-scroll" tabindex="0" role="region" aria-label="CSV preview"><table id="sf-preview"></table></div>
+    <button id="sf-analyse" class="btn primary" type="button">Find recurring payments</button>
+  </section>
+  <section id="sf-results" class="sf-panel" aria-labelledby="sf-results-title" hidden>
+    <div class="sf-results-heading"><h2 id="sf-results-title" tabindex="-1">3. Review recurring payments</h2><button class="btn" id="sf-export" type="button">Download report CSV</button></div>
+    <p id="sf-summary" class="muted"></p>
+    <div class="sf-stats"><div><span>Included payments</span><strong id="sf-count">0</strong></div><div><span>Estimated monthly</span><strong id="sf-monthly">—</strong></div><div><span>Estimated yearly</span><strong id="sf-yearly">—</strong></div></div>
+    <p class="muted">Estimates use the latest charge and detected frequency. Uncheck bills or regular purchases you don’t want to include. These are candidates, not confirmed subscriptions.</p>
+    <div id="sf-candidates"></div>
+    <p id="sf-empty" hidden>No recurring pattern found. Try a longer date range, or check your date columns and spending convention.</p>
+  </section>
+  <section class="sf-help">
+    <h2>A statement check, without a sign-up</h2>
+    <div class="grid"><div><h3>Export, then open</h3><p>Download transactions as CSV from your bank’s website. Column matching supports signed amounts or a separate debit column, with or without headers.</p></div><div><h3>Review the evidence</h3><p>We look for similar charges to the same merchant at weekly, fortnightly, monthly, quarterly or yearly intervals. Expand a result to see the original transactions.</p></div><div><h3>Decide what to keep</h3><p>Download your shortlist, then contact providers yourself. This tool cannot cancel subscriptions. Irregular bills, changing descriptions and single annual charges can be missed.</p></div></div>
+    <p><a href="/vs/rocket-money/">How does this compare with Rocket Money?</a></p>
+  </section>
+  <noscript><p class="callout">Enable JavaScript to analyse a CSV locally in your browser.</p></noscript>
+</main>

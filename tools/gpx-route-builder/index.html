@@ -1,0 +1,27 @@
+<main class="wrap gpx">
+  <section class="hero"><span class="badge">Free · Local GPX files · No account</span><h1>Your routes.<br>Your corner of the map.</h1><p>See where you’ve been, build your next route, and keep the GPX. Import your own activities to make a personal heatmap.</p></section>
+  <div class="gpx-toolbar"><button class="btn primary" id="gp-import">Open GPX files</button><input type="file" id="gp-files" accept=".gpx,application/gpx+xml,application/xml,text/xml" multiple hidden><button class="btn" id="gp-demo">Try example tracks</button><button class="btn" id="gp-fit">Fit everything</button><button class="btn" id="gp-clear">Clear everything</button></div>
+  <p class="gpx-hint">Up to 20 files, 10 MB each and 50,000 points in total. Files stay in this tab; refreshing clears your work. Download your route before leaving.</p>
+  <p id="gp-status" role="status" aria-live="polite">Open a GPX file or start drawing a route.</p><p id="gp-error" class="gpx-error" role="alert" hidden></p>
+  <div class="gpx-workspace">
+    <section class="gpx-map-panel" aria-label="Route map and layers">
+      <div class="gpx-layers"><label><input id="gp-streets" type="checkbox"> Show OpenStreetMap streets (online)</label><label><input id="gp-tracks" type="checkbox" checked> Activity lines</label><label><input id="gp-heat" type="checkbox" checked> Heatmap</label></div>
+      <div id="gp-map" aria-label="Interactive route map. Enable drawing, then click to add points. You can also enter coordinates in the route editor."></div>
+      <div class="gpx-map-footer"><span id="gp-map-mode">Offline coordinate grid</span><span><i class="gp-key"></i> Your route <i class="gp-key gp-activity"></i> Imported activity</span></div>
+      <p class="gpx-hint">Street maps contact OpenStreetMap and reveal the area you view, plus your IP address. GPX files stay on your device. <a href="https://osmfoundation.org/wiki/Privacy_Policy" target="_blank" rel="noopener">Map privacy</a>.</p>
+    </section>
+    <aside class="gpx-editor" aria-label="Route editor"><h2>Build a route</h2><label class="gpx-field">Route name<input id="gp-name" value="My route" maxlength="160"></label>
+      <div class="gpx-route-stats"><strong id="gp-distance">0 m</strong><span id="gp-points">0 points</span></div>
+      <button id="gp-draw" class="btn" aria-pressed="false">Start drawing</button><p class="gpx-hint" id="gp-draw-help">Click the map to add points when drawing is on. Drag green handles to adjust them. Lines are straight between points, with no road snapping.</p>
+      <div class="gpx-buttons"><button class="btn" id="gp-undo" disabled>Undo</button><button class="btn" id="gp-redo" disabled>Redo</button><button class="btn" id="gp-reverse" disabled>Reverse</button><button class="btn" id="gp-loop" disabled>Close loop</button><button class="btn" id="gp-new-segment" disabled>New segment</button><button class="btn" id="gp-route-clear" disabled>Clear route</button></div>
+      <details><summary>Add a point by coordinates</summary><form id="gp-coordinates"><div class="gpx-coords"><label class="gpx-field">Latitude<input id="gp-lat" type="number" step="any" min="-85.05112878" max="85.05112878" placeholder="-33.86" required></label><label class="gpx-field">Longitude<input id="gp-lon" type="number" step="any" min="-180" max="180" placeholder="151.21" required></label></div><button class="btn" type="submit">Add point</button></form></details>
+      <button id="gp-export" class="btn primary" disabled>Download GPX</button><p class="gpx-hint">Edit up to 500 points. GPX downloads preserve separate segments and any imported elevation. They don’t include timestamps or turn-by-turn instructions.</p>
+    </aside>
+  </div>
+  <section class="gpx-activities"><div class="gpx-activities-heading"><h2>Your activities</h2><span id="gp-activity-stats">No activities loaded</span></div><p class="gpx-hint">Heat shows the density of recorded points, not time spent. Recording frequency and pauses affect intensity. Tick activities to include them; edit a copy to create a new route.</p><ul id="gp-list"></ul><p id="gp-empty" class="gpx-empty">Your tracks will appear here. Start with the example to explore the map.</p></section>
+  <section class="gpx-help"><h2>A map without a membership.</h2><div class="grid"><div><h3>Bring your GPX</h3><p>Tracks and routes from GPX 1.0 and 1.1 work here. Gaps between track segments stay separate. Waypoint-only files and polar coordinates outside ±85.05112878° aren’t supported.</p></div><div><h3>Plan point by point</h3><p>Use the map or coordinates to sketch a route. Distances measure the lines between points, without elevation adjustment. Check access and actual paths when planning a journey.</p></div><div><h3>Keep it personal</h3><p>Your activity library stays in memory. The offline coordinate grid needs no map service; turn on street tiles when you want more context.</p></div></div><p><a href="/vs/strava/">How this compares with Strava</a></p></section>
+  <noscript><p class="callout">Enable JavaScript to work with GPX files locally.</p></noscript>
+</main>
+<script src="/assets/gpx-route-builder/leaflet.js" defer></script>
+<script src="/assets/gpx-route-builder/leaflet-heat.js" defer></script>
+<script src="/assets/gpx-route-builder/core.js" defer></script>

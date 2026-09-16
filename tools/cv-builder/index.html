@@ -1,0 +1,40 @@
+<main class="cvb">
+  <div class="wrap cvb-top">
+    <div>
+      <h1>CV Builder</h1>
+      <p class="muted">Build it, preview it, download the PDF. No account, no trial, and nothing you type leaves this page. <a href="/vs/zety/">Is it worth paying for Zety?</a></p>
+    </div>
+    <div class="toolbar" role="toolbar" aria-label="Document actions">
+      <button class="btn primary" id="btn-pdf" type="button">Download PDF</button>
+      <button class="btn" id="btn-export" type="button">Export JSON</button>
+      <label class="btn" for="file-import">Import JSON</label>
+      <input type="file" id="file-import" accept="application/json,.json" hidden>
+      <button class="btn" id="btn-example" type="button">Load example</button>
+      <button class="btn danger" id="btn-clear" type="button">Clear</button>
+    </div>
+  </div>
+  <div class="mobile-tabs wrap" role="tablist">
+    <button class="tab active" data-tab="edit" type="button" role="tab" aria-selected="true">Edit</button>
+    <button class="tab" data-tab="preview" type="button" role="tab" aria-selected="false">Preview</button>
+  </div>
+  <div class="wrap workspace">
+    <section class="editor" id="editor" aria-label="CV editor"></section>
+    <section class="preview" aria-label="CV preview">
+      <div class="preview-controls">
+        <label>Style
+          <select id="opt-template"><option value="plain">Plain</option><option value="modern">Modern</option></select>
+        </label>
+        <label>Paper
+          <select id="opt-paper"><option value="a4">A4</option><option value="letter">US Letter</option></select>
+        </label>
+        <label>Text
+          <select id="opt-size"><option value="9.5">Compact</option><option value="10.5" selected>Normal</option><option value="11.5">Large</option></select>
+        </label>
+        <label>Accent <input type="color" id="opt-accent" value="#0b7a5a"></label>
+        <span class="muted saved" id="saved-indicator" aria-live="polite"></span>
+      </div>
+      <div class="preview-wrap" id="preview-wrap"><article class="page" id="page"></article></div>
+      <p class="muted pdf-hint">Download PDF opens your browser's print dialog. Choose <strong>Save as PDF</strong> as the destination and set margins to <strong>None</strong> if it asks. The text stays selectable.</p>
+    </section>
+  </div>
+</main>

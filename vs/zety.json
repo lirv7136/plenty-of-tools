@@ -1,0 +1,11 @@
+{
+  "slug": "zety",
+  "incumbent": "Zety",
+  "tool_slug": "cv-builder",
+  "tool_name": "CV Builder",
+  "reviewed": "September 2026",
+  "short_answer": "Probably not, if all you need is a clean CV as a PDF. Zety lets you build the whole document for free and puts the paywall on the download button. The free tool on this site does the same job with no account and no paywall.",
+  "paywall": "<p>Zety's builder is free to use right up to the point where you want the file. Downloading as PDF or Word requires a paid plan. The entry offer is a low priced short trial that renews automatically as a monthly subscription unless you cancel it, which is the part people complain about most: they paid a few dollars for one download and later found a recurring charge.</p><p>That structure is the tell. The value you get from a CV builder is the finished document, and that is exactly what is held back.</p>",
+  "free_does": "<ul><li>Builds a single column, ATS friendly CV with the usual sections and any custom sections you need.</li><li>Live preview on A4 or Letter, two typographic styles, your own accent colour.</li><li>Downloads a real PDF with selectable text through your browser's print dialog. No watermark, no account, no trial.</li><li>Autosaves in your browser and exports to JSON so you can keep the source and come back later.</li></ul>",
+  "when_pay": "<ul><li>You want a library of pre written bullet points and guided suggestions for what to say. That is genuinely part of what Zety sells, and this tool does not do it.</li><li>You want matching cover letters and a set of designed multi column templates.</li><li>You are confident you will cancel inside the trial window. If you do pay, set a reminder the same day.</li></ul>"
+}

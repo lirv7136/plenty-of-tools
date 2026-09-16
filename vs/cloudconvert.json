@@ -1,0 +1,11 @@
+{
+  "slug": "cloudconvert",
+  "incumbent": "CloudConvert",
+  "tool_slug": "image-converter",
+  "tool_name": "Image Converter",
+  "reviewed": "September 2026",
+  "short_answer": "Not for photos. CloudConvert is a general purpose conversion service that charges by the job, and for the everyday case, a folder of iPhone HEIC photos that need to become JPGs small enough to email or upload, a modern browser can do the whole thing itself. The free tool here converts, resizes and strips location data without sending a single byte anywhere.",
+  "paywall": "<p>CloudConvert's free plan is a daily allowance of credits, ten a day at the time of writing, with a file size cap, and each conversion uses at least one credit and more for anything slow. Beyond that you buy credit packages or a monthly subscription priced by volume. Convertio, Zamzar and the rest of the category work the same way: a small free quota, a size limit, then a subscription.</p><p>The part the pricing pages do not dwell on is that every one of these services works by uploading your files to their servers. For a spreadsheet that is fine. For a few hundred personal photos, each carrying the GPS position of where it was taken, it is a strange trade for a job your own computer finishes in seconds.</p>",
+  "free_does": "<ul><li>Decodes HEIC and HEIF in the browser, so iPhone photos open on Windows, Android and Linux where nothing else will read them.</li><li>Saves as JPG, PNG or WebP at a quality you choose, resizes a whole batch to fit within a chosen size, and can keep every file under a size limit for email or marketplace uploads.</li><li>Removes EXIF metadata on the way out: GPS position, device, timestamps, embedded thumbnails. Marks which originals carried location data.</li><li>Downloads one at a time or as a single ZIP. No account, no daily quota, no file size cap beyond your browser's memory.</li></ul>",
+  "when_pay": "<ul><li>You need formats a browser cannot produce: PDF to Word, video transcodes, vector or archive formats. That breadth is CloudConvert's actual product.</li><li>You want an API that converts files automatically inside your own software.</li><li>You are on a phone or a locked down work machine and a server doing the heavy lifting is the point.</li></ul>"
+}

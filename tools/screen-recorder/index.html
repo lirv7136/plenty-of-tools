@@ -1,0 +1,82 @@
+<main class="wrap rec">
+  <div class="rec-top">
+    <h1>Screen Recorder</h1>
+    <p class="muted">Record your screen, with your voice and a camera bubble if you want, for as long as you like. It saves to your own computer as you go. No account, no upload, no five minute cap. <a href="/vs/loom/">Is it worth paying for Loom?</a></p>
+  </div>
+
+  <div class="rec-unsupported callout" id="unsupported" hidden></div>
+
+  <section class="rec-panel" id="setup">
+    <div class="rec-grid">
+      <fieldset class="rec-group">
+        <legend>Sound</legend>
+        <label class="rec-check"><input type="checkbox" id="opt-mic" checked> Microphone</label>
+        <select id="sel-mic" aria-label="Microphone device"></select>
+        <label class="rec-check"><input type="checkbox" id="opt-sys"> Tab or system audio <span class="hint">(you pick the tab or screen in the browser's dialog; Chrome shares tab audio, Windows shares system audio)</span></label>
+      </fieldset>
+      <fieldset class="rec-group">
+        <legend>Camera bubble</legend>
+        <label class="rec-check"><input type="checkbox" id="opt-cam"> Show my camera in a circle</label>
+        <select id="sel-cam" aria-label="Camera device"></select>
+        <div class="rec-inline">
+          <label>Size <select id="sel-bubble"><option value="0.16">Small</option><option value="0.22" selected>Medium</option><option value="0.3">Large</option></select></label>
+          <label>Corner <select id="sel-corner"><option value="bl" selected>Bottom left</option><option value="br">Bottom right</option><option value="tl">Top left</option><option value="tr">Top right</option></select></label>
+        </div>
+      </fieldset>
+      <fieldset class="rec-group">
+        <legend>Output</legend>
+        <div class="rec-inline">
+          <label>Format <select id="sel-format"></select></label>
+          <label>Quality <select id="sel-quality"><option value="native">Native</option><option value="1080" selected>Up to 1080p</option><option value="720">Up to 720p</option></select></label>
+        </div>
+        <label class="rec-check"><input type="checkbox" id="opt-stream" checked> Save to a file while recording <span class="hint" id="stream-hint">(no memory limit, so no length limit)</span></label>
+        <label class="rec-check"><input type="checkbox" id="opt-countdown" checked> 3 second countdown</label>
+      </fieldset>
+    </div>
+    <div class="rec-actions">
+      <button class="btn primary big" id="btn-start" type="button">● Choose what to record</button>
+      <span class="hint">Your browser will ask which screen, window or tab to share. Nothing starts until you pick.</span>
+    </div>
+  </section>
+
+  <section class="rec-panel rec-live" id="live" hidden>
+    <div class="rec-status">
+      <span class="rec-dot" id="rec-dot" aria-hidden="true"></span>
+      <span class="rec-time" id="rec-time" aria-live="off">00:00</span>
+      <span class="muted" id="rec-size"></span>
+      <span class="muted" id="rec-mode"></span>
+    </div>
+    <video id="live-preview" class="rec-preview" muted playsinline autoplay></video>
+    <canvas id="composite" hidden></canvas>
+    <video id="cam-el" muted playsinline autoplay hidden></video>
+    <div class="rec-actions">
+      <button class="btn" id="btn-pause" type="button">Pause</button>
+      <button class="btn primary" id="btn-stop" type="button">■ Stop and save</button>
+    </div>
+    <p class="hint">Stopping the share from your browser's own bar also ends the recording safely.</p>
+  </section>
+
+  <div class="rec-countdown" id="countdown" hidden aria-live="assertive"><span id="countdown-n">3</span></div>
+
+  <section class="rec-panel" id="result" hidden>
+    <h2>Done</h2>
+    <p class="muted" id="result-meta"></p>
+    <video id="result-video" class="rec-preview" controls playsinline></video>
+    <div class="rec-actions">
+      <a class="btn primary" id="btn-download" href="#" download>Download</a>
+      <button class="btn" id="btn-again" type="button">Record another</button>
+    </div>
+    <p class="hint" id="result-note"></p>
+  </section>
+
+  <section class="prose rec-faq">
+    <h2>How this stays free and unlimited</h2>
+    <ul>
+      <li><strong>Nothing is uploaded.</strong> The recording is written straight to a file on your computer as you record (in Chrome and Edge), or kept in the tab until you download it (Firefox and Safari).</li>
+      <li><strong>No time cap</strong>, because there is no server storing your video. The only limit is your own disk.</li>
+      <li><strong>Camera bubble and microphone</strong> are mixed in on your machine. You choose which devices, and the browser asks permission each time.</li>
+      <li>Sharing the result is up to you: Google Drive, YouTube unlisted, Slack, email. The paid tools' hosted link is convenient; it is also the reason they can put a timer on you.</li>
+      <li>Phones and tablets cannot record their screen from a browser, so this needs a laptop or desktop.</li>
+    </ul>
+  </section>
+</main>

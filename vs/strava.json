@@ -1,0 +1,11 @@
+{
+  "slug": "strava",
+  "incumbent": "Strava",
+  "tool_slug": "gpx-route-builder",
+  "tool_name": "GPX Route Builder & Heatmap",
+  "reviewed": "September 2026",
+  "short_answer": "If you want to view your GPX files, see your own activity heatmap or sketch a route to download, this free local tool may be enough. Strava offers a broader activity platform, including community features and route recommendations.",
+  "paywall": "<p>Strava lists personal heatmaps and route creation among its subscription features. See its <a href=\"https://support.strava.com/en-us/articles/15402028-personal-heatmaps\">personal heatmap guide</a> and <a href=\"https://support.strava.com/en-us/articles/15402044-what-features-are-included-in-a-strava-subscription\">subscription feature list</a> for current details.</p>",
+  "free_does": "<ul><li>Opens local GPX tracks and routes, with separate recording segments preserved.</li><li>Shows selected activities as lines and a heatmap of recorded point density.</li><li>Draws routes point by point, with draggable handles, undo, reverse and GPX download.</li><li>Works with an offline coordinate grid, plus optional OpenStreetMap street tiles.</li><li>Keeps files in tab memory, without accounts or uploads.</li></ul>",
+  "when_pay": "<p>Consider Strava if you want device syncing, a persistent activity library, social features, training analysis or suggested routes based on community activity. This tool joins manually chosen points with straight lines; it does not snap to roads or provide turn-by-turn navigation. Imports are limited to 20 files and 50,000 points in total, with 500 editable route points.</p>"
+}

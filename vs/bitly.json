@@ -1,0 +1,11 @@
+{
+  "slug": "bitly",
+  "incumbent": "Bitly",
+  "tool_slug": "qr-codes",
+  "tool_name": "QR Codes",
+  "reviewed": "September 2026",
+  "short_answer": "For a fixed link, message or Wi-Fi code, a static QR code may be all you need. This generator puts your content directly into the code and downloads PNG or SVG without an account. Bitly may suit campaigns that need managed destinations or scan analytics.",
+  "paywall": "<p>Bitly offers QR codes on both free and paid plans. Features and allowances vary; see <a href=\"https://bitly.com/pages/pricing\">Bitly’s current plans</a> and <a href=\"https://bitly.com/pages/products/qr-codes\">QR code features</a>. Paying can make sense for campaign management and analytics. We do not claim that every Bitly code expires or requires a subscription.</p>",
+  "free_does": "<ul><li>Creates static codes for HTTP/HTTPS links, plain text, Wi-Fi credentials and email drafts.</li><li>Downloads PNG at 512, 1024 or 2048 pixels, or scalable SVG, with a white scanning border.</li><li>Offers a dark code colour and four error correction levels.</li><li>Runs locally with no account, tracking redirect, upload or saved content.</li></ul><p>The code itself has no expiry date or scan allowance. A website destination must still stay available, and a static code’s contents cannot be changed after printing.</p>",
+  "when_pay": "<p>Consider a managed service if you need to change destinations after printing, measure scans, collaborate on campaigns or manage many branded links. Bitly documents <a href=\"https://bitly.com/pages/features/dynamic-routing\">dynamic routing</a> for these kinds of workflows. This local generator provides fixed codes and has no scan analytics.</p>"
+}

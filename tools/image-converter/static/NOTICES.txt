@@ -1,0 +1,10 @@
+Third party code shipped with the Image Converter tool
+======================================================
+
+libheif-bundle.js — libheif-js 1.23.2 (https://github.com/catdad-experiments/libheif-js)
+  A WebAssembly build of libheif (https://github.com/strukturag/libheif) and libde265
+  (https://github.com/strukturag/libde265), both licensed under the GNU Lesser General
+  Public License v3.0. The full licence text is in LIBHEIF-JS-LICENSE.txt alongside this
+  file. The library is distributed here unmodified as a separate file and is loaded at
+  runtime inside a Web Worker. Source for the wrapper and the upstream libraries is at
+  the links above; the rest of this site is MIT licensed and does not link against it.

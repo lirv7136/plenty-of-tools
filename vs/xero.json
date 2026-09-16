@@ -1,0 +1,11 @@
+{
+  "slug": "xero",
+  "incumbent": "Xero",
+  "tool_slug": "invoice-generator",
+  "tool_name": "Invoice Generator",
+  "reviewed": "September 2026",
+  "short_answer": "For an occasional invoice or quote as a PDF, this local generator may cover what you need. Xero is a broader accounting service: it may be worth paying for if you need bank reconciliation, payment tracking, reports or collaboration with an accountant.",
+  "paywall": "<p>Xero offers invoicing as part of its accounting plans. See <a href=\"https://www.xero.com/au/pricing-plans/\">current Australian plans</a> and <a href=\"https://www.xero.com/au/accounting-software/send-invoices/\">invoicing features</a> for current allowances and features. This tool makes the document and PDF export free; it does not replace a bookkeeping system.</p>",
+  "free_does": "<ul><li>Creates invoices and quotes in AUD, with business, customer, ABN and date fields.</li><li>Supports no-GST, GST-exclusive and GST-inclusive pricing, and taxable or no-GST lines.</li><li>Calculates quantities, line totals, GST and outstanding amounts using integer arithmetic.</li><li>Prints a clean document or saves a PDF through your browser’s print dialog.</li><li>Downloads and opens editable draft files locally, with no account or uploads.</li></ul><p>ABN checks validate format and checksum only. You choose the correct GST registration and line-item treatment for your business.</p>",
+  "when_pay": "<p>Consider accounting software if you need automatic bank feeds, reconciliation, recurring invoices, customer payment links, reminders, business reports or shared records. This generator does not send invoices, collect payments, lodge tax returns, maintain a ledger or back up your documents. Save your PDF and draft files yourself.</p>"
+}

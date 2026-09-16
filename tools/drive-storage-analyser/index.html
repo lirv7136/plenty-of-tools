@@ -1,0 +1,64 @@
+<main class="wrap gsa">
+  <div class="gsa-top">
+    <h1>Google Storage Analyser</h1>
+    <p class="muted">See what is actually using your storage before you pay for more. Read only, runs in this tab, and the access token never leaves your browser. <a href="/vs/google-one/">Is it worth paying for Google One?</a></p>
+  </div>
+
+  <section class="gsa-auth" id="auth-panel">
+    <div class="gsa-actions">
+      <button class="btn primary" id="btn-signin" type="button">Sign in with Google</button>
+      <button class="btn" id="btn-sample" type="button">Try it with sample data</button>
+      <button class="btn" id="btn-signout" type="button" hidden>Sign out and revoke access</button>
+    </div>
+    <p class="hint" id="auth-msg">Asks only for read access to file names, sizes and types (<code>drive.metadata.readonly</code>). It cannot read what is inside your files and cannot delete anything. You delete in Google Drive itself, using the links in each row.</p>
+  </section>
+
+  <section class="gsa-progress" id="progress" hidden>
+    <div class="spinner" aria-hidden="true"></div>
+    <span id="progress-msg">Connecting…</span>
+  </section>
+
+  <section class="gsa-results" id="results" hidden>
+    <div class="gsa-headline">
+      <h2 id="headline">Your storage</h2>
+      <span class="badge" id="sample-badge" hidden>Sample data</span>
+      <span class="muted" id="account"></span>
+    </div>
+
+    <div class="quota">
+      <div class="quota-bar" id="quota-bar" role="img" aria-label="Storage usage breakdown"></div>
+      <div class="quota-legend" id="quota-legend"></div>
+    </div>
+
+    <div class="tiles" id="tiles"></div>
+
+    <div class="tabs" role="tablist" id="tabs">
+      <button class="tab active" role="tab" data-view="largest" type="button">Largest files</button>
+      <button class="tab" role="tab" data-view="dupes" type="button">Duplicates</button>
+      <button class="tab" role="tab" data-view="trash" type="button">Trash</button>
+      <button class="tab" role="tab" data-view="stale" type="button">Untouched for 2+ years</button>
+      <button class="tab" role="tab" data-view="types" type="button">By type</button>
+    </div>
+    <p class="muted view-note" id="view-note"></p>
+    <div class="tablewrap"><table id="table"><thead id="thead"></thead><tbody id="tbody"></tbody></table></div>
+    <p class="muted" id="more-note"></p>
+
+    <div class="callout gsa-links">
+      <strong>Where to actually free space:</strong>
+      <a href="https://drive.google.com/drive/trash" rel="noopener" target="_blank">Empty Drive trash</a> ·
+      <a href="https://photos.google.com/quotamanagement" rel="noopener" target="_blank">Photos storage manager</a> ·
+      <a href="https://mail.google.com/mail/u/0/#search/larger%3A10M" rel="noopener" target="_blank">Gmail: mail larger than 10 MB</a> ·
+      <a href="https://one.google.com/storage" rel="noopener" target="_blank">Google's own storage view</a>
+    </div>
+  </section>
+
+  <section class="prose gsa-faq">
+    <h2>What this can and cannot see</h2>
+    <ul>
+      <li><strong>Drive files</strong>: every file you own, with size, type, last modified date and whether it is in the trash. Duplicates are found by content checksum, so two copies of the same video are caught even when the names differ.</li>
+      <li><strong>Gmail and Photos</strong>: Google only exposes these as one combined number through the Drive API, so they are shown together. Use the Photos storage manager link to see which photos are large or blurry, and the Gmail search link for heavy attachments.</li>
+      <li><strong>Files shared with you</strong> do not count against your storage and are left out of the totals.</li>
+      <li>Nothing is deleted from here. Every row links to the file in Drive so you can decide.</li>
+    </ul>
+  </section>
+</main>

@@ -1,0 +1,28 @@
+<main class="wrap qr">
+  <section class="hero"><span class="badge">Static codes · No account · No expiry</span><h1>A QR code.<br>Yours to keep.</h1><p>Make a code that contains your link or details directly. Download it, print it, share it. No subscription to keep it working.</p></section>
+  <div class="qr-workspace">
+    <section class="qr-panel" aria-labelledby="qr-create-title">
+      <h2 id="qr-create-title">What would you like to share?</h2>
+      <form id="qr-form" novalidate autocomplete="off">
+        <label class="qr-field">Code type<select id="qr-type"><option value="url">Website link</option><option value="text">Plain text</option><option value="wifi">Wi-Fi network</option><option value="email">Email draft</option></select></label>
+        <div id="qr-fields-url"><label class="qr-field">Website address<input id="qr-url" type="url" placeholder="https://example.com" spellcheck="false" maxlength="2200" aria-describedby="qr-url-help"></label><p id="qr-url-help" class="qr-hint">Use the final website address. We add https:// if you omit it; we do not shorten or visit your link.</p></div>
+        <div id="qr-fields-text" hidden><label class="qr-field">Your text<textarea id="qr-text" rows="6" maxlength="2200" placeholder="A message, instructions, or something worth sharing"></textarea></label><p class="qr-hint">Line breaks and Unicode are preserved. Shorter content makes a simpler code.</p></div>
+        <div id="qr-fields-wifi" hidden>
+          <label class="qr-field">Network name (SSID)<input id="qr-ssid" type="text" spellcheck="false" maxlength="64" autocomplete="off"></label>
+          <label class="qr-field">Security<select id="qr-security"><option value="WPA">WPA / WPA2 Personal</option><option value="WEP">WEP</option><option value="nopass">Open network (no password)</option></select></label>
+          <label class="qr-field">Password<input id="qr-password" type="password" autocomplete="new-password" maxlength="128"></label>
+          <label class="qr-check"><input id="qr-show-password" type="checkbox"> Show password</label><label class="qr-check"><input id="qr-hidden" type="checkbox"> Hidden network</label>
+          <p class="qr-hint">Anyone who scans this code can read the included Wi-Fi credentials. Enterprise and WPA3-only networks are not supported.</p>
+        </div>
+        <div id="qr-fields-email" hidden><label class="qr-field">Email address<input id="qr-email" type="email" placeholder="hello@example.com" maxlength="254"></label><label class="qr-field">Subject (optional)<input id="qr-subject" type="text" maxlength="200"></label><label class="qr-field">Message (optional)<textarea id="qr-body" rows="4" maxlength="1600"></textarea></label><p class="qr-hint">Scanning opens a draft in a compatible mail app. It does not send an email.</p></div>
+        <div class="qr-settings"><label class="qr-field">PNG dimensions<select id="qr-size"><option value="512">512 × 512 px</option><option value="1024" selected>1024 × 1024 px</option><option value="2048">2048 × 2048 px</option></select></label><label class="qr-field">Error correction<select id="qr-level"><option value="M">Standard (M)</option><option value="Q">Higher (Q)</option><option value="H">Highest (H)</option><option value="L">Lower (L)</option></select></label><label class="qr-field qr-colour-label">Code colour<input id="qr-colour" type="color" value="#15191f"></label></div>
+        <p class="qr-hint">A white border is included for scanning. Choose a dark colour and test a scan before printing. SVG scales to any size.</p>
+        <div class="qr-actions"><button class="btn primary" type="submit">Generate QR code</button><button class="btn" id="qr-clear" type="button">Clear</button><button class="btn" id="qr-example" type="button">Try an example</button></div>
+        <p id="qr-error" role="alert" hidden></p>
+      </form>
+    </section>
+    <section class="qr-panel qr-preview" aria-labelledby="qr-preview-title"><div class="qr-heading"><h2 id="qr-preview-title" tabindex="-1">Your QR code</h2><span class="badge">No scan limit</span></div><div class="qr-stage"><p id="qr-placeholder">Add your details,<br>then generate your code.</p><canvas id="qr-canvas" width="1" height="1" aria-label="Generated QR code" hidden></canvas></div><p id="qr-status" role="status" aria-live="polite">Everything is generated in this browser.</p><div class="qr-actions"><button id="qr-png" class="btn primary" type="button" disabled>Download PNG</button><button id="qr-svg" class="btn" type="button" disabled>Download SVG</button></div><details id="qr-details" hidden><summary>View the encoded content</summary><pre id="qr-payload"></pre></details><p class="qr-hint">Your content stays in this tab and is never uploaded or saved by this tool.</p></section>
+  </div>
+  <section class="qr-help"><h2>No expiry date. No dependency on us.</h2><div class="grid"><div><h3>The content is in the code</h3><p>These are static QR codes. Scanning reads your content directly, even if this generator goes away.</p></div><div><h3>Keep your destination working</h3><p>A website code still needs a working website. If its address changes, create and print a new code. Text and Wi-Fi details are fixed too.</p></div><div><h3>Print with room to breathe</h3><p>Keep the white border, use strong contrast, and test the final printed size with your phone. Longer content needs more space.</p></div></div><p><a href="/vs/bitly/">How this compares with Bitly</a> · <a href="/assets/qr-codes/NOTICES.txt">Software credits</a></p></section>
+  <noscript><p class="callout">Enable JavaScript to generate QR codes locally.</p></noscript>
+</main>

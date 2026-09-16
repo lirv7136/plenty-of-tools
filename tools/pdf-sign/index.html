@@ -1,0 +1,78 @@
+<main class="wrap pds">
+  <div class="pds-top">
+    <h1>Sign a PDF</h1>
+    <p class="muted">Draw or type your signature, fill in text and dates, tick the boxes, download the signed PDF. The file never leaves your browser. No account, no daily limit, no watermark. <a href="/vs/docusign/">Is it worth paying for DocuSign?</a></p>
+  </div>
+
+  <section class="pds-open" id="open">
+    <div class="drop" id="drop">
+      <strong>Drop a PDF here</strong>
+      <label class="btn primary" for="file">Choose a PDF</label>
+      <input type="file" id="file" accept="application/pdf,.pdf" hidden>
+      <span class="hint">Up to about 50 MB. Password protected files need the password removed first.</span>
+    </div>
+    <div class="pds-open-actions">
+      <button class="btn" id="btn-sample" type="button">Try it on a sample agreement</button>
+    </div>
+    <p class="hint">Everything happens on this page. Refreshing or closing the tab discards the document and anything you placed on it.</p>
+    <p class="hint" id="open-error" role="alert" hidden></p>
+  </section>
+
+  <section class="pds-work" id="work" hidden>
+    <div class="toolbar" role="toolbar" aria-label="Signing tools">
+      <button class="btn primary" id="tool-sign" type="button">✎ Signature</button>
+      <button class="btn small" id="tool-sign-change" type="button" hidden title="Draw, type or upload a different signature">Change</button>
+      <button class="btn" id="tool-text" type="button" data-tool="text">Text</button>
+      <button class="btn" id="tool-date" type="button" data-tool="date">Date</button>
+      <button class="btn" id="tool-tick" type="button" data-tool="tick">✓ Tick</button>
+      <button class="btn" id="tool-cross" type="button" data-tool="cross">✕ Cross</button>
+      <span class="hint" id="arm-hint"></span>
+      <span class="spacer"></span>
+      <button class="btn" id="btn-restart" type="button">Start over</button>
+      <button class="btn primary" id="btn-save" type="button">Download signed PDF</button>
+    </div>
+    <p class="hint pds-doc" id="doc-info"></p>
+    <div class="pages" id="pages"></div>
+  </section>
+
+  <div class="modal" id="sig-modal" hidden role="dialog" aria-modal="true" aria-labelledby="sig-title">
+    <div class="modal-card">
+      <div class="modal-head"><h2 id="sig-title">Your signature</h2><button class="icon" id="sig-close" type="button" aria-label="Close">×</button></div>
+      <div class="tabs" role="tablist">
+        <button class="tab active" data-tab="draw" role="tab" type="button">Draw</button>
+        <button class="tab" data-tab="type" role="tab" type="button">Type</button>
+        <button class="tab" data-tab="upload" role="tab" type="button">Upload</button>
+      </div>
+      <div class="tabpane" id="pane-draw">
+        <canvas id="pad" width="900" height="300" aria-label="Signature drawing area"></canvas>
+        <div class="row-actions"><button class="btn small" id="pad-clear" type="button">Clear</button><span class="hint">Draw with your mouse, finger or pen.</span></div>
+      </div>
+      <div class="tabpane" id="pane-type" hidden>
+        <input type="text" id="type-input" placeholder="Type your name" autocomplete="name">
+        <canvas id="type-preview" width="900" height="240" aria-hidden="true"></canvas>
+      </div>
+      <div class="tabpane" id="pane-upload" hidden>
+        <label class="btn" for="sig-file">Choose an image of your signature</label>
+        <input type="file" id="sig-file" accept="image/png,image/jpeg,image/webp" hidden>
+        <p class="hint">A photo of your signature on white paper works; the white is removed automatically.</p>
+        <img id="upload-preview" alt="" hidden>
+      </div>
+      <label class="check"><input type="checkbox" id="sig-remember"> Remember this signature on this device (stored in your browser only)</label>
+      <p class="hint error" id="sig-error" role="alert" hidden></p>
+      <div class="modal-actions">
+        <button class="btn" id="sig-forget" type="button" hidden>Forget saved signature</button>
+        <button class="btn primary" id="sig-use" type="button">Use signature</button>
+      </div>
+    </div>
+  </div>
+
+  <section class="prose pds-faq">
+    <h2>How this works, and what it is not</h2>
+    <ul>
+      <li><strong>Nothing is uploaded.</strong> The PDF is opened, drawn on and saved entirely inside your browser. Two open source libraries do the work: pdf.js to display pages and pdf-lib to write the result.</li>
+      <li><strong>Your signature is placed as an image</strong>, text as real text, ticks and crosses as vector lines, on top of the original pages. The result is a normal PDF anyone can open.</li>
+      <li><strong>It is the same kind of signature</strong> Adobe's Fill &amp; Sign or a printed and scanned page gives you, which is what most forms, leases and permission slips ask for. It is not a certified digital signature with an audit trail. If a counterparty needs identity verification and a signing record, that is what services like DocuSign are actually for.</li>
+      <li>Scanned PDFs work; the text you add sits on top. Password protected PDFs need the password removed first.</li>
+    </ul>
+  </section>
+</main>

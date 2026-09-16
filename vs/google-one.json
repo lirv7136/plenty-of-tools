@@ -1,0 +1,11 @@
+{
+  "slug": "google-one",
+  "incumbent": "Google One",
+  "tool_slug": "drive-storage-analyser",
+  "tool_name": "Google Storage Analyser",
+  "reviewed": "September 2026",
+  "short_answer": "Sometimes, and it is one of the cheaper subscriptions around. But most people who hit the 15 GB wall are paying for trash, duplicate videos and a phone backing up in original quality. Look at what is using the space first; the free analyser here shows you in about a minute.",
+  "paywall": "<p>Google gives every account 15 GB shared across Gmail, Drive and Photos. When it fills, Gmail stops receiving mail and Photos stops backing up, and the fix Google offers at that moment is a Google One plan. The nudge arrives precisely when you are least able to think about it.</p><p>Google's own storage manager does show large items, but it is spread across three products and does not find duplicates. The paywall here is not on a feature; it is on the information you would need to avoid paying.</p>",
+  "free_does": "<ul><li>Shows how your quota splits between Drive files, Drive trash, and Gmail plus Photos.</li><li>Lists your largest files, files untouched for two years, and everything sitting in the trash.</li><li>Finds exact duplicates by content checksum, even when the names differ, and tells you how much keeping one copy would free.</li><li>Read only. It cannot delete anything; every row links to the file in Drive so you decide.</li></ul>",
+  "when_pay": "<ul><li>You genuinely have more than 15 GB of things you want to keep, after emptying the trash and removing duplicates. Then paying is the right call and the smallest plan is inexpensive.</li><li>You back up a phone's photos in original quality and want that to keep working without curation.</li><li>You share storage with family members on one plan.</li></ul>"
+}

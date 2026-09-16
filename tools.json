@@ -1,0 +1,110 @@
+[
+  {
+    "slug": "cv-builder",
+    "name": "CV Builder",
+    "tagline": "Build a clean, ATS friendly CV and download the PDF. No account, no paywall on the download button.",
+    "replaces": [
+      "Zety",
+      "Resume.io",
+      "Novoresume"
+    ],
+    "vs": "zety",
+    "status": "live"
+  },
+  {
+    "slug": "subscription-finder",
+    "name": "Subscription Finder",
+    "tagline": "Find likely recurring charges in a bank CSV. No account, no bank connection, no uploads.",
+    "replaces": [
+      "Rocket Money"
+    ],
+    "vs": "rocket-money",
+    "status": "live"
+  },
+  {
+    "slug": "drive-storage-analyser",
+    "name": "Google Storage Analyser",
+    "tagline": "See what is actually eating your Google storage before you pay for more. Read only, nothing uploaded.",
+    "replaces": [
+      "Google One"
+    ],
+    "status": "hidden",
+    "vs": "google-one"
+  },
+  {
+    "slug": "screen-recorder",
+    "name": "Screen Recorder",
+    "tagline": "Record your screen, voice and a camera bubble with no time cap. Saves straight to your computer.",
+    "replaces": [
+      "Loom"
+    ],
+    "status": "live",
+    "vs": "loom"
+  },
+  {
+    "slug": "background-remover",
+    "name": "Background Remover",
+    "tagline": "Remove a photo background on your device. Download an original-size PNG, free and without a watermark.",
+    "replaces": [
+      "remove.bg",
+      "Canva Pro"
+    ],
+    "status": "live",
+    "vs": "remove-bg"
+  },
+  {
+    "slug": "pdf-sign",
+    "name": "Sign a PDF",
+    "tagline": "Sign and fill a PDF without creating an account.",
+    "replaces": [
+      "DocuSign",
+      "Smallpdf"
+    ],
+    "status": "live",
+    "vs": "docusign"
+  },
+  {
+    "slug": "qr-codes",
+    "name": "QR Codes",
+    "tagline": "Static QR codes for links, text, Wi-Fi and email. Free PNG and SVG downloads, with no expiry or scan limit.",
+    "replaces": [
+      "Bitly",
+      "QR generators with expiring codes"
+    ],
+    "status": "live",
+    "vs": "bitly"
+  },
+  {
+    "slug": "invoice-generator",
+    "name": "Invoice Generator",
+    "tagline": "Australian invoices and quotes with GST and ABN, as a PDF.",
+    "replaces": [
+      "Xero",
+      "QuickBooks"
+    ],
+    "status": "live",
+    "vs": "xero"
+  },
+  {
+    "slug": "gpx-route-builder",
+    "name": "GPX Route Builder & Heatmap",
+    "tagline": "Explore your GPX activities, build a personal heatmap and draw routes to download. Files stay on your device.",
+    "replaces": [
+      "Strava route planning"
+    ],
+    "status": "live",
+    "vs": "strava"
+  },
+  {
+    "slug": "image-converter",
+    "name": "Image Converter",
+    "tagline": "HEIC to JPG, batch resize and location data removed, all in your browser. Nothing is uploaded.",
+    "replaces": [
+      "CloudConvert",
+      "Convertio",
+      "Canva Pro"
+    ],
+    "status": "live",
+    "vs": "cloudconvert"
+  }
+]

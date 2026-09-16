@@ -1,0 +1,11 @@
+{
+  "slug": "remove-bg",
+  "incumbent": "remove.bg",
+  "tool_slug": "background-remover",
+  "tool_name": "Background Remover",
+  "reviewed": "September 2026",
+  "short_answer": "For an occasional cutout with a clear subject, try this free local tool. It exports an original-size PNG without uploading your photo. A specialist service may give cleaner edges on difficult images and a more convenient batch workflow.",
+  "paywall": "<p>remove.bg offers free previews and paid options for high-resolution output and larger workflows. Check <a href=\"https://www.remove.bg/pricing\">its current pricing and allowances</a> before choosing a plan. This tool makes the PNG download free, with no account or watermark.</p>",
+  "free_does": "<ul><li>Opens JPEG, PNG and WebP images on your device, up to 20 MB and 16 megapixels (8,192 pixels per side).</li><li>Runs a compact background-removal model in a browser worker. Images are never uploaded.</li><li>Shows original and result previews, with transparent, white, dark or custom-colour backgrounds.</li><li>Exports a PNG at the original image dimensions, without a watermark or payment.</li></ul><p>The model estimates a mask at 320 × 320 and scales that mask to your image. Original-size export does not mean every fine edge is recovered. Review hair, glass, shadows and busy backgrounds carefully.</p>",
+  "when_pay": "<p>A specialist service may be worth comparing if edge quality is critical, you need to process many photos, or you want an API or editing integrations. Try the same difficult photo in both tools before paying. This local tool handles one image at a time and does not include manual brush corrections.</p>"
+}

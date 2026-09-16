@@ -1,0 +1,11 @@
+{
+  "slug": "docusign",
+  "incumbent": "DocuSign",
+  "tool_slug": "pdf-sign",
+  "tool_name": "Sign a PDF",
+  "reviewed": "September 2026",
+  "short_answer": "Not for signing something you already have. DocuSign is a service for sending documents to other people and collecting their signatures with an identity trail, and that is what its subscription buys. If a lease, a form or a permission slip has landed in your inbox as a PDF and you just need your signature and a date on it, the free tool here does that in your browser with nothing uploaded.",
+  "paywall": "<p>Signing a document someone sends you through DocuSign is free. The paid plans are about <em>sending</em>: after a few free envelopes you pay per month for the right to request signatures from others, with tiers by volume and features.</p><p>The confusion is that people search for DocuSign when what they actually need is to put their own signature on a PDF. The free web tools that fill that gap usually cap you at a couple of tasks a day, add a watermark, or require an account, and every one of them uploads your document to do it. Your lease, your ID, your contract, on someone else's server.</p>",
+  "free_does": "<ul><li>Opens the PDF in your browser and renders every page.</li><li>Draw, type or upload your signature, then place it, move it and resize it. Optionally remember it on your device.</li><li>Add text boxes, today's date, ticks and crosses anywhere on any page.</li><li>Downloads a normal signed PDF. No account, no daily limit, no watermark, and the file never leaves your computer.</li></ul>",
+  "when_pay": "<ul><li>You need other people to sign and you need proof of who signed, when, and that the document was not changed afterwards. That audit trail is the product.</li><li>You send documents for signature regularly and want reminders, templates and tracking.</li><li>A counterparty or regulator specifically requires a certified electronic signature.</li></ul>"
+}

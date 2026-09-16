@@ -1,0 +1,11 @@
+{
+  "slug": "rocket-money",
+  "incumbent": "Rocket Money",
+  "tool_slug": "subscription-finder",
+  "tool_name": "Subscription Finder",
+  "reviewed": "September 2026",
+  "short_answer": "For a one-off check of a bank CSV, try this local tool. Rocket Money also offers free subscription tracking; the difference here is that you do not need an account or a bank connection. Premium may suit people who want help cancelling subscriptions.",
+  "paywall": "<p>Subscription tracking itself is available on Rocket Money’s free plan. Its paid plan adds features including a subscription cancellation assistant and more advanced financial tools. See <a href=\"https://help.rocketmoney.com/en/articles/2217739-how-much-does-rocket-money-cost\">Rocket Money’s plan details</a> and <a href=\"https://help.rocketmoney.com/en/articles/934402-how-do-i-cancel-a-subscription-on-rocket-money\">its cancellation assistant documentation</a>. This tool is an alternative way to check a statement, not a claim that Rocket Money charges everyone to find subscriptions.</p>",
+  "free_does": "<ul><li>Opens comma, semicolon or tab-separated bank exports locally, with column matching and a choice of date and spending conventions.</li><li>Looks for similar payments to the same merchant at weekly, fortnightly, monthly, quarterly and yearly intervals.</li><li>Shows the matching transactions, estimated monthly and yearly costs, and older patterns to review.</li><li>Downloads the selected results as a CSV. No account, linked bank, upload or saved transaction history.</li></ul><p>Use one account and one currency per file. Results are candidates: regular purchases can look like subscriptions, and irregular charges or changing descriptions can be missed.</p>",
+  "when_pay": "<p>Rocket Money may suit you if you want ongoing tracking through connected accounts, a wider budgeting app, or its Premium cancellation assistant. This tool only analyses the CSV you open. It cannot monitor future charges, connect to your bank or cancel anything for you.</p>"
+}
