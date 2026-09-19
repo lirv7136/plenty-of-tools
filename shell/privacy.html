@@ -14,8 +14,8 @@
   <ul>
     <li><strong>An offline copy.</strong> For the lighter tools, your browser is asked to keep a copy of the page and its code so it still works without a connection. It is the same kind of storage as an ordinary browser cache, it holds only files this site published, and clearing your site data removes it. Nothing about what you do in a tool is stored there or sent anywhere.</li>
     <li><strong>Hosting</strong> is on Cloudflare Pages, which sees the same request data any web host sees (IP address, browser, page requested) in order to serve the page.</li>
-    <li><strong>Analytics</strong>, when enabled, is Cloudflare Web Analytics: page views only, no cookies, no fingerprinting, no cross site tracking.</li>
-    <li>There are no advertising trackers, no third party scripts other than Google's sign in library on the one tool that uses it, and no accounts.</li>
+    <li><strong>Analytics.</strong> Since 19 September 2026 every page loads Cloudflare Web Analytics, which is one small script from <code>static.cloudflareinsights.com</code>. It counts page views and where they came from. It sets no cookies, does not fingerprint your browser, does not follow you to other sites, and never sees anything you type into a tool. It is here so we can tell which tools are worth keeping. See <a href="https://www.cloudflare.com/web-analytics/" rel="noopener">what Cloudflare Web Analytics collects</a>. Blocking it changes nothing about how the tools work.</li>
+    <li>There are no advertising trackers and no accounts. Exactly two scripts on this site come from somewhere else: the Cloudflare Web Analytics counter described above, on every page, and Google's sign in library on the one tool that asks you to sign in. Everything else, including every library a tool uses, is served from this site.</li>
   </ul>
   <h2>Contact</h2>
   <p>Questions or concerns: open an issue on <a href="{{github}}" rel="noopener">GitHub</a>.</p>

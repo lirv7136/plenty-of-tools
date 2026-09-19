@@ -28,11 +28,17 @@ def fill(template, **kw):
         out = out.replace("{{" + k + "}}", str(v))
     return out
 
+def analytics_tag():
+    """Cloudflare's own snippet, verbatim apart from the token: a module script, which is deferred
+    by definition. Cookieless, page views only, and it runs in real browsers rather than in the
+    scanners that dominate the edge request counts. Declared on /privacy/."""
+    if not SITE.get("cf_analytics_token"):
+        return ""
+    return ('<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" '
+            f'data-cf-beacon=\'{{"token": "{SITE["cf_analytics_token"]}"}}\'></script>')
+
 def page(path, title, description, main, robots="index,follow", head_extra="", body_class=""):
-    analytics = ""
-    if SITE.get("cf_analytics_token"):
-        analytics = ('<script defer src="https://static.cloudflareinsights.com/beacon.min.js" '
-                     f'data-cf-beacon=\'{{"token": "{SITE["cf_analytics_token"]}"}}\'></script>')
+    analytics = analytics_tag()
     canonical = SITE["domain"].rstrip("/") + path
     out = fill(tpl("page.html"), title=html.escape(title), description=html.escape(description),
                canonical=canonical, robots=robots, head_extra=head_extra, body_class=body_class,
@@ -146,7 +152,8 @@ def main():
                'The tools are all listed on the <a href="/">home page</a>.</p><div class="grid">' + live + '</div></main>')
     nf = fill(tpl("page.html"), title=f'Page not found · {SITE["brand"]}', description="This page does not exist.",
               canonical=SITE["domain"].rstrip("/") + "/404.html", robots="noindex,nofollow", head_extra="",
-              body_class="notfound", brand=SITE["brand"], github=SITE["github"], main=nf_main, analytics="",
+              body_class="notfound", brand=SITE["brand"], github=SITE["github"], main=nf_main,
+              analytics=analytics_tag(),
               shellv=SHELL_V, domain=SITE["domain"].rstrip("/"))
     (DIST / "404.html").write_text(nf)
     # IndexNow key file so Bing and friends accept URL submissions without an account.

@@ -27,7 +27,9 @@ MIT.
 
 - `tools/screen-recorder/vendor/fix-webm-duration.js` — MIT, Yuri Sitnikov
   (github.com/yusitnikov/fix-webm-duration). Patches the missing duration header in
-  WebM files produced by MediaRecorder. Vendored so the site loads no third party scripts.
+  WebM files produced by MediaRecorder. Vendored, like every library here, so a tool never fetches
+  code from anyone else at run time. The only outside scripts on the site are the Cloudflare Web
+  Analytics counter and Google's sign in library on the storage analyser.
 - `tools/pdf-sign/vendor/pdf.min.js` + `static/pdf.worker.min.js` — pdf.js 3.11.174, Apache 2.0,
   Mozilla. Renders PDF pages. `vendor/pdf-lib.min.js` — pdf-lib 1.17.1, MIT. Writes the signed PDF.
   `static/Caveat.ttf` — Caveat, SIL Open Font License 1.1, used for typed signatures.
