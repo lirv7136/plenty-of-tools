@@ -82,6 +82,9 @@ npx wrangler pages deploy dist --project-name plenty-of-tools --branch main --co
 token on the personal account (`~/.config/.wrangler/config/default.toml`, scope includes
 `pages:write`; it can add Pages custom domains through the API but has no DNS scope).
 
+Commits so far: `47f8a82` first commit, `092dfab` domain switch plus #11 and #12,
+`928ce90` the 19 September batch. Push over SSH as lirv7136.
+
 Registry: `tools.json` (`status`: live | hidden | queued). `hidden` builds the page with
 noindex and leaves it off the home page and sitemap. Per tool: `tools/<slug>/{meta.json,
 index.html fragment, tool.css, app.js, vendor/*.js (auto tagged as page scripts), static/
@@ -125,6 +128,11 @@ have kept it safe so far:
 - Nothing here uses CIM Enviro infrastructure or accounts, and nothing should.
 
 ## Open items
+
+**Committed and pushed 2026-09-19 night as `928ce90`** (65 files): both new tools, the
+installable site, cache busting, the 404 page, IndexNow, terms, the logo, the distribution kit,
+Codex's transcription finish and measurement notebook M1, and the review fixes. The working tree
+is clean and GitHub matches the live site.
 
 **Review pass deployed 2026-09-19 night.** Tuner octave error above 1.3 kHz, Settle Up share
 link id validation, the privacy microphone bullet, the corrected offline wording and the
