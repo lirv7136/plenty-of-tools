@@ -109,12 +109,20 @@ def main():
                 assets = sorted(set(re.findall(r'/assets/[^"]+', head + main_html)))
                 offline_pages[page_url] = [page_url, shell_css] + assets
 
-    # vs pages
+    # vs pages. A comparison page follows its tool's status: publishing one for a tool that is
+    # hidden puts an "open it, free, no account" button in front of search traffic for something
+    # nobody can use yet. It still builds, so the URL works for anyone we send it to, but it is
+    # noindex and stays out of the sitemap until the tool goes live.
+    live_slugs = {t["slug"] for t in TOOLS if t["status"] == "live"}
     for f in sorted((ROOT / "vs").glob("*.json")):
         v = json.loads(f.read_text())
         main_html = fill(tpl("vs.html"), github=SITE["github"], **v)
-        urls.append(page(f'/vs/{v["slug"]}/', f'Is it worth paying for {v["incumbent"]}?',
-                         v["short_answer"][:155], main_html))
+        listed = v.get("tool_slug") in live_slugs
+        vs_url = page(f'/vs/{v["slug"]}/', f'Is it worth paying for {v["incumbent"]}?',
+                      v["short_answer"][:155], main_html,
+                      robots="index,follow" if listed else "noindex,nofollow")
+        if listed:
+            urls.append(vs_url)
 
     # privacy (required by Google's OAuth consent screen) + about + home
     urls.append(page("/privacy/", f'Privacy · {SITE["brand"]}',

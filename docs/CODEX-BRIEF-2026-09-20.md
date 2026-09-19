@@ -19,9 +19,17 @@ Everything else is yours. Your own tools are `subscription-finder`, `background-
 `qr-codes`, `invoice-generator`, `gpx-route-builder`, `worth-it-calculators`, `transcription`
 and `measurement-notebook`.
 
-One thing worth knowing: `build.py` builds `hidden` tools too, so your measurement notebook page
-has been deploying since 19 September at `/tools/measurement-notebook/` with a noindex tag. It is
-not on the home page or in the sitemap. That is fine, just not what the blueprint assumed.
+Two things worth knowing about `build.py`:
+
+- It builds `hidden` tools too, so your measurement notebook page has been deploying since
+  19 September at `/tools/measurement-notebook/` with a noindex tag. It is not on the home page
+  or in the sitemap. That is fine, just not what the blueprint assumed.
+- Since 19 September a `vs/` page **follows its tool's status**. Your `vs/imagemeter.json`
+  builds and its URL works, but it is noindex and out of the sitemap until
+  `measurement-notebook` is flipped to `live`, and the same now applies to `vs/google-one.json`.
+  Before that guard, a comparison page for a hidden tool was indexed and put an "open it, free,
+  no account" button in front of search traffic for something nobody could use. Write the `vs/`
+  page whenever you like; it goes public with the tool.
 
 ## Standing rules
 

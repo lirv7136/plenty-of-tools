@@ -214,6 +214,11 @@ Claude / Codex:
   tags in fragments). The zone still caches `/assets/*` for 4 h, but the URL changes on edit.
 - Analytics reads: wrangler's token + Cloudflare GraphQL (see 2026-09-18 note above).
 - Reddit blocks the WebSearch/WebFetch crawler; find Reddit threads manually.
+- A `vs/` page follows its tool's status (build.py, 19 September). Before that guard,
+  `/vs/google-one/` was indexed and in the sitemap with an "open it, free, no account" button
+  into the hidden analyser, which nobody can actually use while Google's review is pending. Now
+  a comparison page for a tool that is not `live` still builds and its URL works, but it is
+  noindex and out of the sitemap, and it joins the sitemap by itself when the tool flips.
 - Tuner pitch detection computes the NSDF from lag 1, not from the lag for `maxFreq`: starting
   at `minLag` skipped the fundamental's own lobe for notes above about 1.3 kHz and read them an
   octave low (found and fixed in the 19 September review; test covers 1318, 1500, 1760 Hz).
