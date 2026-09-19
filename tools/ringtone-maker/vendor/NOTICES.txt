@@ -1,0 +1,14 @@
+Third party code shipped with the Ringtone Maker
+================================================
+
+lame.min.js
+  lamejs 1.2.1, an MP3 encoder compiled to JavaScript from the LAME project.
+  Licence: LGPL-3.0. Source: https://github.com/zhuker/lamejs
+  Retrieved 19 September 2026 from https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js
+  SHA-256: 15d285e2587b3bdbfd18a68de6ce07cc074f7480a82c3815da2dc1c348ec6df4
+  Unmodified. The licence text is in LAMEJS-LICENSE.txt beside this file. Under the LGPL you
+  may replace this library with your own build; the whole site's source is at
+  https://github.com/lirv7136/plenty-of-tools
+
+Everything else in this tool was written for Plenty of Tools and is MIT licensed. The WAV
+writer, the trimming, the fades and the waveform are in static/core.js with no dependencies.

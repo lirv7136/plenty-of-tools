@@ -188,5 +188,16 @@
     "status": "live",
     "vs": "habitify",
     "offline": true
+  },
+  {
+    "slug": "ringtone-maker",
+    "name": "Ringtone Maker",
+    "tagline": "Trim any song or video into a ringtone or alert tone, fade the ends, download a WAV or MP3. No subscription.",
+    "replaces": [
+      "Ringtone Maker apps",
+      "RingTune"
+    ],
+    "status": "live",
+    "vs": "ringtone-apps"
   }
 ]

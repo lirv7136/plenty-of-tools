@@ -91,14 +91,16 @@ posts, not ads. Kill rule at 30 days: under 100 uniques mothball, over 1000 doub
 | 19 | Travel fee calculators | (folded into worth-it-calculators) | live (2026-09-19) | Codex | uber-one |
 | 15 | Read Aloud | read-aloud | live (2026-09-19) | Codex | speechify |
 | 18 | Habit Tracker | habit-tracker | live (2026-09-19) | Claude | habitify |
+| 22 | Ringtone Maker | ringtone-maker | live (2026-09-19) | Claude | ringtone-apps |
 
-**Fifteen tools live.** Ten of them plus the home page are precached for offline use:
+**Sixteen tools live.** Ten of them plus the home page are precached for offline use:
 cv-builder, subscription-finder, qr-codes, invoice-generator, worth-it-calculators, settle-up,
 tuner-metronome, screen-recorder, gpx-route-builder and habit-tracker. Opt a tool in with
 `"offline": true` in `tools.json`. Left out on size: pdf-sign 2.3 MB, image-converter 2.0 MB,
 background-remover 16.6 MB, transcription 21.9 MB, measurement-notebook 0.5 MB and hidden, plus
 drive-storage-analyser, which needs the network by definition. read-aloud has not been opted in
-yet; that is Codex's call.
+yet, which is Codex's call, and ringtone-maker is out because its vendored MP3 encoder is 156 KB
+on its own.
 
 ## Transcription validation (Codex, 16 September 2026)
 
@@ -248,6 +250,15 @@ Claude / Codex:
   tags in fragments). The zone still caches `/assets/*` for 4 h, but the URL changes on edit.
 - Analytics reads: wrangler's token + Cloudflare GraphQL (see 2026-09-18 note above).
 - Reddit blocks the WebSearch/WebFetch crawler; find Reddit threads manually.
+- **AAC encoding is not available in this Chrome**, so no tool here can write an iPhone `.m4r`:
+  `AudioEncoder.isConfigSupported({codec:'mp4a.40.2'})` reports false while Opus reports true.
+  The ringtone maker therefore ships WAV and MP3 only, and its page explains the free GarageBand
+  route instead of offering a button that would silently fail. Re-check before adding `.m4r`.
+- The MP3 encoder is `lamejs` 1.2.1 (LGPL, vendored with its licence and a SHA-256 in
+  `tools/ringtone-maker/vendor/NOTICES.txt`). Its global is used as a namespace, not called:
+  `new lamejs.Mp3Encoder(...)`, never `lamejs()`. Calling it throws. MPEG only allows certain
+  sample rates, so a clip at anything else is rendered through an `OfflineAudioContext` at
+  44.1 kHz before encoding.
 - **Checking a phone layout: do not trust `documentElement.scrollWidth`, and do not trust the
   Chrome MCP.** Setting a viewport through the MCP left the layout at desktop width while media
   queries reported the phone width, which makes an overflow check pass when it should fail. And

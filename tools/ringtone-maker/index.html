@@ -1,0 +1,106 @@
+<main class="wrap rm">
+  <div class="rm-top">
+    <h1>Ringtone Maker</h1>
+    <p class="muted">Open a song or a video, drag out the bit you want, fade the ends and download it. Nothing is uploaded and there is nothing to subscribe to. <a href="/vs/ringtone-apps/">Is it worth paying for a ringtone app?</a></p>
+  </div>
+
+  <section class="rm-bar no-print">
+    <label class="btn primary" for="rm-file">Open an audio or video file</label>
+    <input type="file" id="rm-file" accept="audio/*,video/*" hidden>
+    <button class="btn" id="rm-sample" type="button">Try the built in tone</button>
+    <label class="rm-field"><span>Making a</span>
+      <select id="rm-kind">
+        <option value="ringtone">Ringtone, up to 40 s</option>
+        <option value="alert">Alert or text tone, up to 30 s</option>
+        <option value="clip">Any length</option>
+      </select>
+    </label>
+    <button class="btn danger" id="rm-reset" type="button" hidden>Start again</button>
+  </section>
+  <p class="rm-status" id="rm-status" role="status" aria-live="polite">Nothing open yet. Most formats work: MP3, M4A, WAV, FLAC, OGG, and the audio inside an MP4 or MOV.</p>
+  <p class="rm-error" id="rm-error" role="alert" hidden></p>
+
+  <div id="rm-editor" hidden>
+    <section class="card rm-wave-card">
+      <div class="rm-wave" id="rm-wave">
+        <canvas id="rm-canvas" width="1000" height="150" aria-hidden="true"></canvas>
+        <div class="rm-shade rm-shade-left" id="rm-shade-left"></div>
+        <div class="rm-shade rm-shade-right" id="rm-shade-right"></div>
+        <div class="rm-selection" id="rm-selection"></div>
+        <div class="rm-playhead" id="rm-playhead" hidden></div>
+        <button class="rm-handle" id="rm-handle-start" type="button" aria-label="Start of the selection. Use the arrow keys to move it."></button>
+        <button class="rm-handle" id="rm-handle-end" type="button" aria-label="End of the selection. Use the arrow keys to move it."></button>
+      </div>
+      <p class="rm-hint">Drag across the wave to pick a section, drag the handles to adjust it, or drag the middle to slide the whole window. The arrow keys nudge a handle by a tenth of a second, and hold shift for a whole second.</p>
+
+      <div class="rm-controls">
+        <label class="rm-field"><span>Start</span><input id="rm-start" type="number" min="0" step="0.1" inputmode="decimal"> s</label>
+        <label class="rm-field"><span>End</span><input id="rm-end" type="number" min="0" step="0.1" inputmode="decimal"> s</label>
+        <p class="rm-length" id="rm-length"></p>
+        <button class="btn" id="rm-snap" type="button">Take the full length from the start</button>
+      </div>
+    </section>
+
+    <div class="rm-grid">
+      <section class="card rm-shape">
+        <h2>Shape it</h2>
+        <label class="rm-slider"><span>Fade in <b id="rm-fade-in-out">0.0 s</b></span>
+          <input id="rm-fade-in" type="range" min="0" max="5" step="0.1" value="0">
+        </label>
+        <label class="rm-slider"><span>Fade out <b id="rm-fade-out-out">0.5 s</b></span>
+          <input id="rm-fade-out" type="range" min="0" max="5" step="0.1" value="0.5">
+        </label>
+        <label class="rm-check"><input type="checkbox" id="rm-normalise" checked> Even out the volume</label>
+        <label class="rm-check"><input type="checkbox" id="rm-mono"> Mix down to mono, for a smaller file</label>
+        <p class="rm-hint">A fade out matters more than you would think: a ringtone that stops mid note sounds broken when the call is answered.</p>
+      </section>
+
+      <section class="card rm-preview">
+        <h2>Listen</h2>
+        <div class="rm-actions">
+          <button class="btn primary" id="rm-play" type="button">Play the selection</button>
+          <label class="rm-check"><input type="checkbox" id="rm-loop" checked> Loop it</label>
+        </div>
+        <p class="rm-hint">This plays exactly what the file will contain, fades and all.</p>
+      </section>
+
+      <section class="card rm-export">
+        <h2>Download</h2>
+        <div class="rm-actions">
+          <button class="btn primary" id="rm-wav" type="button">WAV</button>
+          <button class="btn" id="rm-mp3" type="button">MP3</button>
+          <label class="rm-field"><span>MP3 quality</span>
+            <select id="rm-bitrate">
+              <option value="128">128 kbps</option>
+              <option value="192" selected>192 kbps</option>
+              <option value="256">256 kbps</option>
+            </select>
+          </label>
+        </div>
+        <p class="rm-hint" id="rm-size"></p>
+        <p class="rm-hint">WAV is uncompressed, so every phone accepts it and the file is large. MP3 is a tenth of the size and just as widely accepted. Both are made here in your browser.</p>
+      </section>
+    </div>
+  </div>
+
+  <section class="prose rm-faq">
+    <h2>Getting it onto your phone</h2>
+    <h3>iPhone</h3>
+    <p>Apple does not let a web page, or any app other than its own, install a ringtone directly. That restriction is the whole business model of the apps in the chart, which will happily make you a tone and then charge a weekly subscription to put it on your phone. There are two free ways round it, and both work with the file this page gives you.</p>
+    <ol>
+      <li><strong>With GarageBand, on the phone itself.</strong> Install GarageBand, which is free from Apple. Save or AirDrop the file to your iPhone, open GarageBand, start any project, tap the loop icon, choose <em>Files</em>, then <em>Browse items from the Files app</em> and pick your file. Drag it onto a track. Then go back to <em>My Songs</em>, press and hold the project, choose <em>Share</em>, then <em>Ringtone</em>, name it and export. It appears under Settings, Sounds, Ringtone.</li>
+      <li><strong>With a Mac.</strong> Plug the phone in, open it in Finder, and drag the file onto the phone's <em>Tones</em> section. Finder converts it for you.</li>
+    </ol>
+    <h3>Android</h3>
+    <p>Much simpler. Download the file, then open Settings, Sound and vibration, Phone ringtone, and choose <em>Add</em> or <em>My sounds</em> and pick it. Some phones want the file in a <em>Ringtones</em> folder first; your file manager can move it. For a text tone, the same list appears under Notification sound.</p>
+
+    <h2>Notes</h2>
+    <ul>
+      <li><strong>Apple's lengths.</strong> A ringtone can run to 40 seconds and an alert tone to 30. The picker above enforces whichever you chose, so you cannot accidentally make something the phone will refuse.</li>
+      <li><strong>Video files work.</strong> Only the audio is read, so a clip from a film or a voice note recorded on a phone is fine.</li>
+      <li><strong>No iPhone .m4r here, deliberately.</strong> Making one needs an AAC encoder that most browsers do not expose, and shipping a button that quietly fails on your machine would be worse than not having it. The GarageBand route above takes the WAV or MP3 and produces the same result.</li>
+      <li><strong>Nothing leaves your device.</strong> The file is decoded, trimmed and encoded in this tab. There is no upload, no account and no watermark. Use other people's music only where you are allowed to.</li>
+    </ul>
+  </section>
+</main>
+<script src="/assets/ringtone-maker/core.js" defer></script>
