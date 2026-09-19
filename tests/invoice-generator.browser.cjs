@@ -93,7 +93,7 @@ async function pdf(name){const r=await send('Page.printToPDF',{printBackground:t
   assert.ok(multi.text.includes('End of the long invoice.'));
   const badPath=path.join(directory,'invalid.json');fs.writeFileSync(badPath,'{"hello":true}');await send('DOM.setFileInputFiles',{nodeId,files:[badPath]});await until("!document.getElementById('inv-errors').hidden");
   assert.equal(await evaluate("document.getElementById('inv-number').value"),'LONG-TEST-001');
-  assert.equal(await evaluate('localStorage.length+sessionStorage.length'),0);assert.equal(requests.length,initialRequests,'Editor made a network request');assert.deepEqual(errors,[]);
+  assert.equal(await evaluate('localStorage.length+sessionStorage.length'),0);const lateRequests=requests.slice(initialRequests).filter(u=>!/\/(sw\.js|offline-manifest\.json|manifest\.webmanifest|favicon\.ico)(\?|$)|\/icons\//.test(u));assert.deepEqual(lateRequests,[],'Editor made a network request. The site shell registers a service worker and a web manifest after load; those are excluded here, anything else is the editor reaching out.');assert.deepEqual(errors,[]);
   console.log('PASS: validation, GST modes, calculations, actual single/multipage PDFs with all rows and repeated headings, quotes, draft download/reopen, add/remove, malformed draft preservation, HTML escaping, mobile layout and offline/no-storage use.');
   console.log('PDFs, screenshots and saved drafts: '+directory);
 })().catch(e=>{console.error(e);process.exitCode=1;}).finally(()=>{chrome.kill();for(const p of pending.values())clearTimeout(p.timer);});

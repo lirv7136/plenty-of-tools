@@ -112,6 +112,37 @@ versions are pinned in `tools/transcription/README.md`; the final Otter comparis
 licence notices and expanded tests are in the working tree. Deployed with Claude's 19 September
 deploys (`/vs/otter/` is live); still uncommitted, waiting on Lachlan's "commit".
 
+## Lighthouse and accessibility, 19 September 2026
+
+Seven live pages audited with Lighthouse 13.4.1, mobile profile, against the live domain. Every
+one scored **100 for Accessibility, Best Practices, SEO and Agentic Browsing, with zero failed
+audits**: the home page, Settle Up, Sign a PDF, the Splitwise comparison, Habit Tracker, Ringtone
+Maker and Read Aloud. Lighthouse 13 has no PWA category, so installability is not scored there;
+it is covered by `tests/offline.browser.cjs` instead.
+
+**Treat that 100 with care.** On a tool page only 25 of Lighthouse's 76 accessibility audits
+apply, 48 are not applicable and 11 are handed back as manual: custom control labels and roles,
+focusable controls, logical tab order, managed focus, interactive element affordance, offscreen
+content hidden, visual order following the DOM, focus traps, landmarks and structured data. Those
+are precisely what a waveform with drag handles or a week of tick buttons rests on.
+
+So `tests/accessibility.browser.cjs` now checks them across **all 40 built pages and 638 visible
+controls**: every focusable element has an accessible name, no positive tabindex, nothing
+focusable inside `aria-hidden`, no control labelled only by a placeholder, one main landmark and
+one effective h1 per page, no skipped heading level, alt text on every image, and a toggle button
+that looks pressed must say so. It honours `aria-level`, because that is what a screen reader
+announces. Run it after a build: `node tests/accessibility.browser.cjs`.
+
+It found two real defects, both now fixed:
+
+- **CV Builder** put its editor's collapsible section headings at level three under the page's
+  h1, skipping level two. They are page structure, so they are now `h2`.
+- **Invoice Generator** injects a facsimile of the printed invoice into the page, which put a
+  second h1 in the outline and jumped from h1 to h3. Both stylesheets, screen and print, target
+  those tags by name and the PDF depends on them, so the tags stay and `relevelPreview()` sets
+  `aria-level` instead: the document title and the seller name sit at three, everything else at
+  four, under the "Live preview" heading. Nothing visual changed, verified live.
+
 ## How to build and deploy
 
 ```bash
@@ -250,6 +281,15 @@ Claude / Codex:
   tags in fragments). The zone still caches `/assets/*` for 4 h, but the URL changes on edit.
 - Analytics reads: wrangler's token + Cloudflare GraphQL (see 2026-09-18 note above).
 - Reddit blocks the WebSearch/WebFetch crawler; find Reddit threads manually.
+- **The `*.browser.cjs` tests are not run by `node --test tests/`** and had drifted. Two of them
+  asserted an exact network request count after load, which the service worker and web manifest
+  broke on 19 September; both now filter the shell's own requests (`/sw.js`,
+  `/offline-manifest.json`, `/manifest.webmanifest`, the icons) and assert on what is left, which
+  is what they were really testing. Run them after any shell change.
+- **This machine has no speech synthesis voices at all** (`speechSynthesis.getVoices()` is empty),
+  so Read Aloud cannot speak here and `tests/read-aloud.browser.cjs` hangs rather than fails. The
+  tool itself handles it correctly: the voice picker says "No local voices available", play is
+  disabled and the status explains why. Codex needs to give that test a skip when no voice exists.
 - **AAC encoding is not available in this Chrome**, so no tool here can write an iPhone `.m4r`:
   `AudioEncoder.isConfigSupported({codec:'mp4a.40.2'})` reports false while Opus reports true.
   The ringtone maker therefore ships WAV and MP3 only, and its page explains the free GarageBand

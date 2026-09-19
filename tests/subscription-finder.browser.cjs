@@ -79,7 +79,7 @@ const click = id => evaluate(`document.getElementById(${JSON.stringify(id)}).cli
   assert.equal(await evaluate("document.getElementById('sf-count').textContent"), '1');
   assert.equal(await evaluate("document.querySelectorAll('.sf img').length"), 0);
   assert.equal(await evaluate('localStorage.length + sessionStorage.length'), 0);
-  assert.equal(requests.length, requestCount, 'Import or analysis made a network request');
+  const lateRequests=requests.slice(requestCount).filter(u=>!/\/(sw\.js|offline-manifest\.json|manifest\.webmanifest|favicon\.ico)(\?|$)|\/icons\//.test(u));assert.deepEqual(lateRequests,[],'Import or analysis made a network request. The site shell registers a service worker and a web manifest after load; those are excluded here, anything else is the tool reaching out.');
   fs.writeFileSync(fixture,'Date,Description,Amount\n01/01/2026,"Unclosed,-10');
   await click('sf-clear'); await send('DOM.setFileInputFiles', {nodeId,files:[fixture]});
   await until("!document.getElementById('sf-error').hidden");

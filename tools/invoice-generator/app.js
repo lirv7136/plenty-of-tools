@@ -4,6 +4,13 @@
   let data=core.defaults(),revision=0,showErrors=false;
   const originalTitle=document.title;
   const node=(tag,text,className)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(className)n.className=className;return n;};
+  // The preview is a picture of a document sitting inside the page, so its headings would
+  // otherwise land in the page's own outline: a second h1, and a jump from h1 to h3. The tags
+  // stay exactly as they are, because both the screen and the print stylesheets target them by
+  // name and the printed invoice depends on that. aria-level re-levels them for assistive
+  // technology instead, under the "Live preview" heading, and changes nothing visual. The
+  // seller name sits above the document title in the paper, so both sit at the same level.
+  const relevelPreview=root=>{for(const h of root.querySelectorAll('h1,h2,h3,h4,h5,h6')){h.setAttribute('role','heading');h.setAttribute('aria-level',/^H[12]$/.test(h.tagName)?'3':'4');}};
   const money=cents=>new Intl.NumberFormat('en-AU',{style:'currency',currency:'AUD'}).format(cents/100);
   const date=value=>core.validDate(value)?new Intl.DateTimeFormat('en-AU',{day:'numeric',month:'short',year:'numeric',timeZone:'UTC'}).format(new Date(value+'T00:00:00Z')):'—';
   function block(parent,tag,text,className){if(text)parent.append(node(tag,text,className));}
@@ -73,6 +80,7 @@
     }paper.append(summary);
     for(const [key,title] of [['payment','Payment details / terms'],['notes','Notes']])if(data[key].trim()){const section=node('section',undefined,'inv-doc-notes');section.append(node('h3',title),node('p',data[key]));paper.append(section);}
     paper.append(node('p',tax?'All amounts in AUD. GST applies only to taxable lines and is rounded per line. Line amounts include any GST.':'All amounts in AUD. No GST charged — supplier not registered for GST.','inv-doc-footer'));
+    relevelPreview(paper);
     settings();return errors;
   }
   function populate(){for(const key of Object.keys(core.fields))$(key).value=data[key];itemInputs();render();}

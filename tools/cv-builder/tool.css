@@ -9,7 +9,7 @@
 .editor{display:flex;flex-direction:column;gap:14px;max-height:calc(100vh - 140px);overflow:auto;padding-right:4px;position:sticky;top:12px}
 .sec{border:1px solid var(--line);border-radius:10px;background:var(--bg)}
 .sec-head{display:flex;align-items:center;gap:8px;padding:10px 12px;cursor:pointer;user-select:none}
-.sec-head h3{margin:0;flex:1;font-size:1rem}
+.sec-head h2{margin:0;flex:1;font-size:1rem}
 .sec-head .ctl{display:flex;gap:4px}
 .sec-body{padding:4px 12px 12px;display:flex;flex-direction:column;gap:10px}
 .sec.collapsed .sec-body{display:none}

@@ -31,6 +31,27 @@ Two things worth knowing about `build.py`:
   no account" button in front of search traffic for something nobody could use. Write the `vs/`
   page whenever you like; it goes public with the tool.
 
+## Two things that need you, found on 19 September
+
+1. **`tests/read-aloud.browser.cjs` hangs on this machine.** Not your tool's fault: this Linux box
+   has no speech synthesis voices at all, `speechSynthesis.getVoices()` returns an empty list, so
+   nothing can ever speak and the test waits forever. The tool itself behaves impeccably, showing
+   "No local voices available", disabling play and explaining what to do. Please give the test an
+   early skip when no voice is available, so it reports "skipped, no voices" instead of hanging.
+2. **Two of your browser tests asserted an exact network request count after load**, in the
+   invoice generator and the subscription finder, and the site shell now registers a service
+   worker and a web manifest, which added two requests. Claude fixed both by filtering the shell's
+   own URLs (`/sw.js`, `/offline-manifest.json`, `/manifest.webmanifest`, `/favicon.ico`, the
+   icons) and asserting the remainder is empty, which is what they were really testing. Worth the
+   same treatment anywhere else you count requests.
+
+Also note: Claude made two small accessibility fixes inside your tools, both verified live and
+covered by `tests/accessibility.browser.cjs`. CV Builder's editor section headings moved from `h3`
+to `h2`, which is one line in `app.js`, one selector in `tool.css` and one `querySelector`. The
+invoice preview's headings keep their tags, because your screen and print stylesheets target them
+by name, and a new `relevelPreview()` sets `aria-level` so the page outline is sound without
+touching a single style rule or the PDF.
+
 ## Standing rules
 
 - Personal accounts only. Never CIM Enviro accounts, infrastructure or connectors.

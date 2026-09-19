@@ -126,7 +126,7 @@
   function section(key, title, body, idx, n, extraCtl) {
     const col = collapsed.has(key) ? " collapsed" : "";
     return `<div class="sec${col}" data-sec="${key}">
-      <div class="sec-head" data-toggle="${key}"><span class="chev">▾</span><h3>${esc(title)}</h3><div class="ctl">
+      <div class="sec-head" data-toggle="${key}"><span class="chev">▾</span><h2>${esc(title)}</h2><div class="ctl">
         ${extraCtl || ""}
         ${idx != null ? `<button class="icon" type="button" data-act="secup" data-key="${key}" ${idx === 0 ? "disabled" : ""} title="Move section up" aria-label="Move section up">↑</button>
         <button class="icon" type="button" data-act="secdown" data-key="${key}" ${idx === n - 1 ? "disabled" : ""} title="Move section down" aria-label="Move section down">↓</button>` : ""}
@@ -260,7 +260,7 @@
       const parts = p.split("."); const list = getPath(state, parts.slice(0, -1).join("."));
       head.textContent = list.position || list.company || list.institution || list.area || list.name || list.heading || "";
     }
-    if (/^custom\.\d+\.title$/.test(p)) { const h3 = e.target.closest(".sec").querySelector("h3"); if (h3) h3.textContent = e.target.value || "Custom section"; }
+    if (/^custom\.\d+\.title$/.test(p)) { const h = e.target.closest(".sec").querySelector("h2"); if (h) h.textContent = e.target.value || "Custom section"; }
     clearTimeout(previewTimer); previewTimer = setTimeout(renderPreview, 60);
     save();
   });
