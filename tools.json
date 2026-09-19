@@ -9,7 +9,8 @@
       "Novoresume"
     ],
     "vs": "zety",
-    "status": "live"
+    "status": "live",
+    "offline": true
   },
   {
     "slug": "subscription-finder",
@@ -19,7 +20,8 @@
       "Rocket Money"
     ],
     "vs": "rocket-money",
-    "status": "live"
+    "status": "live",
+    "offline": true
   },
   {
     "slug": "drive-storage-analyser",
@@ -39,7 +41,8 @@
       "Loom"
     ],
     "status": "live",
-    "vs": "loom"
+    "vs": "loom",
+    "offline": true
   },
   {
     "slug": "background-remover",
@@ -72,7 +75,8 @@
       "QR generators with expiring codes"
     ],
     "status": "live",
-    "vs": "bitly"
+    "vs": "bitly",
+    "offline": true
   },
   {
     "slug": "invoice-generator",
@@ -83,7 +87,8 @@
       "QuickBooks"
     ],
     "status": "live",
-    "vs": "xero"
+    "vs": "xero",
+    "offline": true
   },
   {
     "slug": "gpx-route-builder",
@@ -93,7 +98,8 @@
       "Strava route planning"
     ],
     "status": "live",
-    "vs": "strava"
+    "vs": "strava",
+    "offline": true
   },
   {
     "slug": "image-converter",
@@ -110,12 +116,13 @@
   {
     "slug": "worth-it-calculators",
     "name": "Is It Worth It? Calculators",
-    "tagline": "Check Vinted bumps, Etsy ads, eBay labels, Uber One and airport fast track with your own figures.",
+    "tagline": "Nine break even calculators: seat selection, checked bags, cruise wifi, theme park parking, Vinted bumps, Etsy ads, eBay labels, Uber One and airport fast track.",
     "replaces": [
       "Guesswork on paid extras"
     ],
     "status": "live",
-    "vs": "uber-one"
+    "vs": "uber-one",
+    "offline": true
   },
   {
     "slug": "transcription",
@@ -145,17 +152,19 @@
       "Tricount"
     ],
     "status": "live",
-    "vs": "splitwise"
+    "vs": "splitwise",
+    "offline": true
   },
   {
     "slug": "tuner-metronome",
     "name": "Tuner and Metronome",
-    "tagline": "Chromatic tuner with instrument presets and a metronome on the audio clock. No ads, no subscription, no account.",
+    "tagline": "Chromatic tuner with instrument presets and a metronome on the audio clock. No ads, no subscription, and it works offline.",
     "replaces": [
       "GuitarTuna",
       "Pro Metronome"
     ],
     "status": "live",
-    "vs": "guitartuna"
+    "vs": "guitartuna",
+    "offline": true
   }
 ]

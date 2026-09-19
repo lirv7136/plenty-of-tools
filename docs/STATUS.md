@@ -57,6 +57,14 @@ posts, not ads. Kill rule at 30 days: under 100 uniques mothball, over 1000 doub
 | 12 | Browser Transcription | transcription | live | Codex | otter |
 | 13 | Settle Up | settle-up | live (2026-09-19) | Claude | splitwise |
 | 17 | Tuner and Metronome | tuner-metronome | live (2026-09-19) | Claude | guitartuna |
+| 19 | Travel fee calculators | (folded into worth-it-calculators) | live (2026-09-19) | Codex | uber-one |
+
+Nine of the thirteen live tools are precached for offline use: cv-builder, subscription-finder,
+qr-codes, invoice-generator, worth-it-calculators, settle-up, tuner-metronome, screen-recorder
+and gpx-route-builder, plus the home page. Opt a tool in with `"offline": true` in `tools.json`.
+Left out on size: pdf-sign 2.3 MB, image-converter 2.0 MB, background-remover 16.6 MB,
+transcription 21.9 MB, measurement-notebook 0.5 MB and hidden, and drive-storage-analyser,
+which needs the network by definition.
 
 ## Transcription validation (Codex, 16 September 2026)
 
@@ -181,10 +189,27 @@ Claude / Codex:
 - Analytics without the Cloudflare connector: wrangler's OAuth token can query the GraphQL
   Analytics API (`httpRequests1dGroups`, `httpRequestsAdaptiveGroups` in 1 day windows,
   `rumPageloadEventsAdaptiveGroups`); `clientRefererHost` is not available on the free plan.
-- The service worker (`shell/sw.js`) handles navigations only and caches just `/offline`.
-  Never make it cache `/assets/*`: several tools ship workers and wasm that must match the deploy,
-  and the transcription tool owns its own model cache. Pages redirects `/offline.html` to
-  `/offline`, and a redirected response cannot be served for a navigation.
+- The service worker (`shell/sw.js`) is a template: `build.py` stamps a build id into it and
+  writes `dist/offline-manifest.json`, which lists each opted in page together with its own
+  versioned assets. One cache per build, `pot-app-<build>`. Why a page and its assets must be
+  cached as one unit: Pages ignores the query string when serving a file, so an old
+  `/assets/x.js?v=<old>` URL returns the CURRENT file, and a cache keyed on versioned URLs alone
+  would drift. The build id is a hash of every precached file's contents, so any change to any of
+  them changes `sw.js` itself, which is what makes the browser reinstall. Only URLs under
+  `/assets/` carrying `?v=` are served cache first; everything else, including tool workers, wasm,
+  the Whisper model and map tiles, returns without `respondWith` and goes straight to the network.
+  Pages redirects `/offline.html` to `/offline`, and a redirected response cannot serve a navigation.
+- **Testing offline properly.** Emulating offline on the page target alone is not enough: a
+  navigation is answered by the service worker, whose `fetch` runs in its own target and stays
+  online, so the page looks like it works offline when it does not. `tests/offline.browser.cjs`
+  attaches at browser level and emulates on every target, serves `dist/` itself with
+  `Cache-Control: no-store` so the HTTP cache cannot help either, and asserts
+  `performance.getEntriesByType('navigation')[0].transferSize === 0`. Run it after a build:
+  `node tests/offline.browser.cjs`.
+- The zone's Browser Cache TTL overrides `Cache-Control` from `_headers`, so `/sw.js` is served
+  with `max-age=14400` despite the `no-cache` rule in the build. It does not matter: browsers
+  bypass the HTTP cache when checking a service worker script for updates. Changing it needs a
+  dashboard visit.
 - Asset URLs carry `?v=<sha1[:8]>` from build.py (including hand written `/assets/<slug>/*.js`
   tags in fragments). The zone still caches `/assets/*` for 4 h, but the URL changes on edit.
 - Analytics reads: wrangler's token + Cloudflare GraphQL (see 2026-09-18 note above).

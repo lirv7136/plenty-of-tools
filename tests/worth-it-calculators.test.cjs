@@ -4,6 +4,58 @@ const C=require('../tools/worth-it-calculators/static/core.js');
 const example=id=>Object.fromEntries(C.calculators[id].fields.map(f=>[f.key,f.example]));
 const calc=(id,overrides={})=>C.calculate(id,{...example(id),...overrides});
 const close=(actual,expected)=>assert.ok(Math.abs(actual-expected)<1e-8,`${actual} != ${expected}`);
+test('seat fees count only paid seats; benefits apply once per party and leg',()=>{
+  const r=calc('seats');close(r.net,6);close(r.totalFee,48);close(r.breakFee,9);close(r.requiredLift,40);
+  close(calc('seats',{fee:9}).net,0);
+  assert.equal(calc('seats',{people:1,paidSeats:1}).benefit,0);
+  assert.equal(calc('seats',{paidSeats:0}).totalFee,0);
+  assert.equal(calc('seats',{legs:0}).net,0);
+  assert.equal(calc('seats',{splitValue:0}).requiredLift,null);
+  assert.throws(()=>calc('seats',{paidSeats:4}));
+  assert.ok(calc('seats',{before:0,after:100}).net<0);
+});
+test('bags separate cash, amortised purchase, expected gate fees and party time',()=>{
+  const r=calc('bags');close(r.checked,80);close(r.allocated,20);close(r.gate,25);close(r.cashSaved,35);close(r.net,49+2/3);
+  const flat={purchase:20,trips:1,checkedMinutes:0,cabinMinutes:0,risk:10,gateFee:100,fee:20};
+  close(calc('bags',flat).net,0);close(calc('bags',flat).breakFee,20);close(calc('bags',flat).breakRisk,10);
+  assert.equal(calc('bags',{legs:0}).breakFee,null);
+  assert.equal(calc('bags',{gateFee:0}).breakRisk,null);
+  assert.ok(calc('bags',{checkedMinutes:0,cabinMinutes:1440}).timeValue<0);
+});
+test('wifi bills whole cruise and exposes the shared connection case',()=>{
+  const r=calc('wifi');assert.equal(r.cost,168);assert.equal(r.net,-28);assert.equal(r.breakDays,5);
+  assert.equal(calc('wifi',{devices:2}).sharingSaving,168);
+  assert.equal(calc('wifi',{value:42}).net,0);
+  assert.equal(calc('wifi',{sea:0,port:0}).perDay,null);
+  assert.equal(calc('wifi',{value:0}).breakDays,null);
+  assert.throws(()=>calc('wifi',{sea:7,port:1}));
+  assert.ok(calc('wifi',{value:1}).notes.some(n=>n.includes('exceed')));
+});
+test('parking threshold respects coverage, included parking and alternatives',()=>{
+  assert.equal(calc('parking').net,60);assert.equal(calc('parking').breakDays,5);
+  assert.equal(calc('parking',{days:5,daily:30}).net,0);
+  assert.equal(calc('parking',{covered:4}).breakDays,null);
+  assert.equal(calc('parking',{days:10}).net,60);
+  assert.equal(calc('parking',{daily:0}).breakDays,null);
+  assert.equal(calc('parking',{pass:0,residual:0,daily:0}).breakDays,0);
+  assert.equal(calc('parking',{days:0}).net,-150);
+  assert.ok(calc('parking',{alternative:0}).notes.some(n=>n.includes('cheaper')));
+});
+test('all numeric field limits are accepted, finite and enforced at both ends',()=>{
+  for(const id of ['seats','bags','wifi','parking'])for(const f of C.calculators[id].fields.filter(f=>f.kind!=='select')){
+    for(const boundary of [f.min,f.max]){
+      const raw={...example(id),[f.key]:boundary};
+      if(id==='seats')raw.people=Math.max(raw.people,raw.paidSeats);
+      if(id==='wifi'&&raw.sea+raw.port>raw.billed)raw.billed=raw.sea+raw.port;
+      if(raw.billed>100)continue;
+      const result=C.calculate(id,raw);
+      for(const n of Object.values(result))if(typeof n==='number')assert.ok(Number.isFinite(n),id+' '+f.key);
+      assert.ok(C.scenarios(id,raw).some(s=>s.current));
+    }
+    assert.ok(C.validate(id,{...example(id),[f.key]:f.max+1}).errors[f.key]);
+    assert.ok(C.validate(id,{...example(id),[f.key]:f.min-1}).errors[f.key]);
+  }
+});
 test('Vinted compares incremental expected profit, not all promoted sales',()=>{
   const r=calc('vinted');close(r.net,.7);close(r.margin,18);close(r.baseline,3.6);close(r.promoted,4.3);close(r.requiredChance,31.1111111111);
   assert.equal(calc('vinted',{after:20}).net,-2);

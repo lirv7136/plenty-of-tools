@@ -54,7 +54,7 @@ async function screenshot(name){fs.writeFileSync(path.join(directory,name+'.png'
   await send('Browser.setDownloadBehavior',{behavior:'allow',downloadPath:directory},undefined);
   const requestCount=requests.length;
   await send('Network.emulateNetworkConditions',{offline:true,latency:0,downloadThroughput:-1,uploadThroughput:-1});
-  const examples={vinted:'0.70',etsy:'15.00',ebay:'15.00',uber:'1.00',fasttrack:'7.33'};
+  const examples={vinted:'0.70',etsy:'15.00',ebay:'15.00',uber:'1.00',fasttrack:'7.33',seats:'6.00',bags:'49.67',wifi:'28.00',parking:'60.00'};
   for(const [id,amount] of Object.entries(examples)){
     await choose(id);await click('wc-example');
     assert.ok(await evaluate("!document.getElementById('wc-results').hidden"));
@@ -117,6 +117,6 @@ async function screenshot(name){fs.writeFileSync(path.join(directory,name+'.png'
   assert.equal(await evaluate("document.getElementById('wc-orders').value"),'','Reload clears inputs');
   assert.ok(await evaluate("document.getElementById('wc-results').hidden"));
   assert.deepEqual(errors,[]);
-  console.log('PASS: all five examples, live validation, scenario rows, tab persistence, currency labels, annual billing, impossible thresholds, clear/reload, text reports, printable PDFs, mobile layouts, dark mode, offline operation and no storage/network calls.');
+  console.log('PASS: all nine examples, live validation, scenario rows, tab persistence, currency labels, annual billing, impossible thresholds, clear/reload, text reports, printable PDFs, mobile layouts, dark mode, offline operation and no storage/network calls.');
   console.log('Artifacts: '+directory);
 })().catch(async e=>{console.error(e);console.error(await evaluate("({url:location.href,ready:document.readyState,title:document.title,value:document.getElementById('wc-orders')?.value,active:document.querySelector('#wc-tabs [aria-current]')?.id,errors:document.getElementById('wc-error')?.textContent})"));console.error(errors);process.exitCode=1;}).finally(()=>{chrome.kill();for(const p of pending.values())clearTimeout(p.timer);});

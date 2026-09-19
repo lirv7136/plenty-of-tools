@@ -29,7 +29,7 @@
     $('wc-scenario-rows').replaceChildren();
     C.scenarios(active,state().values).forEach(s=>{const tr=document.createElement('tr'),th=document.createElement('th'),td=document.createElement('td');tr.dataset.current=String(s.current);th.scope='row';th.textContent=format(s.value,definition.scenarioKind)+(s.current?' (your figure)':'');td.textContent=format(s.net,'money');tr.append(th,td);$('wc-scenario-rows').append(tr);});
     summary($('wc-input-summary'),inputSummary());
-    $('wc-print-example').textContent=state().example?'Includes illustrative example inputs; edited values may differ.':'User-entered assumptions.';
+    $('wc-print-example').textContent=state().example?'Includes illustrative example inputs; edited values may differ.':'User entered assumptions.';
   }
   function buildFields() {
     $('wc-fields').replaceChildren();
@@ -65,7 +65,7 @@
   $('wc-print').addEventListener('click',()=>{if(lastResult)window.print();});
   $('wc-download').addEventListener('click',()=>{
     if(!lastResult)return;const d=C.calculators[active];
-    const report=[d.name+' calculation',`Currency: ${$('wc-currency').value}`,state().example?'Includes illustrative example inputs; edited values may differ.':'User-entered assumptions.','',...inputSummary().map(([k,v])=>`${k}: ${v}`),'',`${d.label}: ${format(lastResult.net,'money')}`,d[lastResult.direction],...d.metrics.map(([label,key,kind])=>`${label}: ${format(lastResult[key],kind)}`),...lastResult.notes,'','Alternative scenarios (all other inputs fixed):',...C.scenarios(active,state().values).map(s=>`${d.scenarioLabel}: ${format(s.value,d.scenarioKind)} — ${format(s.net,'money')}${s.current?' (your figure)':''}`),'',d.formula,d.assumption,d.sourceNote,d.source,'','Calculated locally with Plenty of Tools. Values are estimates, not guaranteed outcomes.'].join('\n');
+    const report=[d.name+' calculation',`Currency: ${$('wc-currency').value}`,state().example?'Includes illustrative example inputs; edited values may differ.':'User entered assumptions.','',...inputSummary().map(([k,v])=>`${k}: ${v}`),'',`${d.label}: ${format(lastResult.net,'money')}`,d[lastResult.direction],...d.metrics.map(([label,key,kind])=>`${label}: ${format(lastResult[key],kind)}`),...lastResult.notes,'','Alternative scenarios (all other inputs fixed):',...C.scenarios(active,state().values).map(s=>`${d.scenarioLabel}: ${format(s.value,d.scenarioKind)} — ${format(s.net,'money')}${s.current?' (your figure)':''}`),'',d.formula,d.assumption,d.sourceNote,d.source,'','Calculated locally with Plenty of Tools. Values are estimates, not guaranteed outcomes.'].join('\n');
     const url=URL.createObjectURL(new Blob([report],{type:'text/plain;charset=utf-8'})),a=document.createElement('a');a.href=url;a.download=`${active}-calculation.txt`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
   });
   window.addEventListener('hashchange',()=>activate(location.hash.slice(1),true));

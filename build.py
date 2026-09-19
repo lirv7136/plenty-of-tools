@@ -36,7 +36,8 @@ def page(path, title, description, main, robots="index,follow", head_extra="", b
     canonical = SITE["domain"].rstrip("/") + path
     out = fill(tpl("page.html"), title=html.escape(title), description=html.escape(description),
                canonical=canonical, robots=robots, head_extra=head_extra, body_class=body_class,
-               brand=SITE["brand"], github=SITE["github"], main=main, analytics=analytics, shellv=SHELL_V)
+               brand=SITE["brand"], github=SITE["github"], main=main, analytics=analytics,
+               shellv=SHELL_V, domain=SITE["domain"].rstrip("/"))
     dest = DIST / path.strip("/") / "index.html" if path != "/" else DIST / "index.html"
     dest.parent.mkdir(parents=True, exist_ok=True)
     dest.write_text(out)
@@ -58,12 +59,18 @@ def main():
     shutil.copy(ROOT / "shell" / "shell.css", DIST / "assets" / "shell.css")
     global SHELL_V
     SHELL_V = ver(ROOT / "shell" / "shell.css")
-    # installable app: manifest, minimal service worker, offline page, icons and favicon at the root
-    for f in ("manifest.webmanifest", "sw.js", "offline.html"):
+    # installable app: manifest, offline page, icons and favicon at the root. sw.js is written
+    # at the end of the build, because it carries the build id of what it precaches.
+    for f in ("manifest.webmanifest", "offline.html"):
         shutil.copy(ROOT / "shell" / f, DIST / f)
     shutil.copytree(ROOT / "shell" / "icons", DIST / "icons")
     shutil.copy(ROOT / "shell" / "icons" / "favicon.ico", DIST / "favicon.ico")
     urls = []
+    # Pages the service worker precaches, each listed with its own versioned assets so that a
+    # page and the code it loads are always cached as one consistent unit. Opt in per tool with
+    # "offline": true in tools.json, and keep the total small: the build prints its size.
+    offline_pages = {}
+    shell_css = f"/assets/shell.css?v={SHELL_V}"
 
     # tools
     pot_cfg = json.dumps({"googleClientId": SITE.get("google_client_id", "")})
@@ -97,6 +104,10 @@ def main():
                    robots="index,follow" if t["status"] == "live" else "noindex,nofollow")
         if t["status"] == "live":
             urls.append(url)
+            if t.get("offline"):
+                page_url = f'/tools/{t["slug"]}/'
+                assets = sorted(set(re.findall(r'/assets/[^"]+', head + main_html)))
+                offline_pages[page_url] = [page_url, shell_css] + assets
 
     # vs pages
     for f in sorted((ROOT / "vs").glob("*.json")):
@@ -120,13 +131,15 @@ def main():
     urls.append(page("/", f'{SITE["brand"]} — free versions of things people pay for', SITE["tagline"],
                      fill(tpl("home.html"), brand=SITE["brand"], tagline=SITE["tagline"],
                           live_cards=live, queued_cards=queued)))
+    offline_pages["/"] = ["/", shell_css]  # start_url of the installed app
 
     # 404 page: without one, Pages serves index.html with a 200 for every unknown path (soft 404s).
     nf_main = ('<main class="wrap prose"><h1>Page not found</h1><p>That address does not exist on this site. '
                'The tools are all listed on the <a href="/">home page</a>.</p><div class="grid">' + live + '</div></main>')
     nf = fill(tpl("page.html"), title=f'Page not found · {SITE["brand"]}', description="This page does not exist.",
               canonical=SITE["domain"].rstrip("/") + "/404.html", robots="noindex,nofollow", head_extra="",
-              body_class="notfound", brand=SITE["brand"], github=SITE["github"], main=nf_main, analytics="", shellv=SHELL_V)
+              body_class="notfound", brand=SITE["brand"], github=SITE["github"], main=nf_main, analytics="",
+              shellv=SHELL_V, domain=SITE["domain"].rstrip("/"))
     (DIST / "404.html").write_text(nf)
     # IndexNow key file so Bing and friends accept URL submissions without an account.
     if SITE.get("indexnow_key"):
@@ -135,8 +148,42 @@ def main():
     (DIST / "sitemap.xml").write_text('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
         + "".join(f"  <url><loc>{u}</loc></url>\n" for u in urls) + "</urlset>\n")
     # No Permissions-Policy: the screen recorder needs camera + microphone; the browser still prompts.
-    (DIST / "_headers").write_text("/*\n  X-Content-Type-Options: nosniff\n  Referrer-Policy: strict-origin-when-cross-origin\n  X-Frame-Options: DENY\n")
+    # /sw.js and the offline manifest must revalidate, or an edge cache delays every update.
+    (DIST / "_headers").write_text(
+        "/*\n  X-Content-Type-Options: nosniff\n  Referrer-Policy: strict-origin-when-cross-origin\n  X-Frame-Options: DENY\n"
+        "\n/sw.js\n  Cache-Control: no-cache\n"
+        "\n/offline-manifest.json\n  Cache-Control: no-cache\n")
+
+    # Service worker. The build id is a hash of every precached file's contents, and it is
+    # stamped into sw.js, so changing any precached file changes the worker itself. That is what
+    # makes the browser install the new cache and drop the old one; a worker whose bytes never
+    # change is never reinstalled.
+    def dist_file(u):
+        p = u.split("?")[0]
+        if p == "/offline":
+            return DIST / "offline.html"          # Pages serves offline.html at /offline
+        p = p.lstrip("/")
+        return DIST / (p + "index.html" if u.split("?")[0].endswith("/") else p)
+    precached = sorted({u for group in offline_pages.values() for u in group} | {"/offline"})
+    digest, total, missing = hashlib.sha1(), 0, []
+    for u in precached:
+        f = dist_file(u)
+        digest.update(u.encode())
+        if f.exists():
+            digest.update(f.read_bytes())
+            total += f.stat().st_size
+        else:
+            digest.update(b"missing")
+            missing.append(u)
+    build_id = digest.hexdigest()[:12]
+    (DIST / "offline-manifest.json").write_text(
+        json.dumps({"build": build_id, "pages": offline_pages}, indent=1) + "\n")
+    (DIST / "sw.js").write_text(fill(tpl("sw.js"), build=build_id))
+    if missing:
+        raise SystemExit(f"offline manifest references files that were not built: {missing}")
     print(f"built {len(urls)} pages -> {DIST}")
+    print(f"offline precache: {len(offline_pages)} pages, {len(precached)} files, "
+          f"{total / 1024:.0f} KB, build {build_id}")
 
 if __name__ == "__main__":
     main()
