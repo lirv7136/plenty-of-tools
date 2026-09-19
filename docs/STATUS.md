@@ -16,12 +16,34 @@ Eight core tests and Chrome UI/export checks pass, including a real 12.6 MP phot
 labels, mobile emulation/pinch, EXIF orientation, invalid-file recovery and disconnected
 exports. See the [tool README](../tools/measurement-notebook/README.md) for exact coverage.
 Local preview verified at `http://127.0.0.1:8765/tools/measurement-notebook/` on 19 September.
-One photo in memory only: no saved projects, backup/restore, offline reopening or native app
-yet. PDF pages are rasterised; device-font glyphs survive but text is not selectable.
-Actual iPhone/Android checks and user/competitor trials remain outstanding. Next is M2's
-saved-project and backup/restore work after trying the prototype. Not committed by Codex; note
+September brief work now adds saved projects in IndexedDB, rename/duplicate/confirmed delete,
+storage usage, autosave with visible failure recovery, and validated `.mnote` backup/restore.
+One photo per project remains the current scope; multiple photos, multipage reports, offline
+reopening and native work remain later milestones. Real Chrome restart, reload, restored
+document/image equality, corrupt import refusal, transaction failure and tab conflict checks
+pass. The README documents limits and the observed browser quota. Keep this tool hidden until
+Lachlan tries it on a phone. PDF pages remain rasterised. Not committed by Codex; note
 that `build.py` builds hidden tools too, so the noindex page has been included in Claude's
 deploys since 19 September and is reachable at /tools/measurement-notebook/.
+
+## September brief: Codex completion
+
+- A: four travel calculators extend the original five. All nine text and print reports pass
+  Chrome checks, alongside range and break even unit tests. Official example source notes
+  were reviewed in September 2026. Claude included the main extension in commit `093e005`
+  during parallel work; Codex did not commit or push. Follow up edge case and documentation
+  changes remain in the working tree.
+- B: saved projects and backup/restore are implemented as described above. The tool and
+  ImageMeter comparison remain hidden from the homepage and sitemap until the phone trial.
+- C: Read aloud is implemented and listed on the local homepage, with TXT/PDF input, local
+  system voices, controls, highlighting and saved positions. Unit and Chrome checks pass;
+  5,000 words completed through the actual local speech engine. `/vs/speechify/` returns 200
+  in the local build. Neural voices and EPUB are omitted. See its README for platform limits.
+
+No Codex commit, push or deployment was made. Browser tests used temporary local servers
+only; the tools themselves have no backend. Actual phone listening and notebook checks remain
+manual follow up work. The current notebook scope is one photo per project, not the full
+multiple photo reporting scope in the longer blueprint.
 
 ## What this is
 
@@ -58,13 +80,16 @@ posts, not ads. Kill rule at 30 days: under 100 uniques mothball, over 1000 doub
 | 13 | Settle Up | settle-up | live (2026-09-19) | Claude | splitwise |
 | 17 | Tuner and Metronome | tuner-metronome | live (2026-09-19) | Claude | guitartuna |
 | 19 | Travel fee calculators | (folded into worth-it-calculators) | live (2026-09-19) | Codex | uber-one |
+| 15 | Read Aloud | read-aloud | live (2026-09-19) | Codex | speechify |
+| 18 | Habit Tracker | habit-tracker | live (2026-09-19) | Claude | habitify |
 
-Nine of the thirteen live tools are precached for offline use: cv-builder, subscription-finder,
-qr-codes, invoice-generator, worth-it-calculators, settle-up, tuner-metronome, screen-recorder
-and gpx-route-builder, plus the home page. Opt a tool in with `"offline": true` in `tools.json`.
-Left out on size: pdf-sign 2.3 MB, image-converter 2.0 MB, background-remover 16.6 MB,
-transcription 21.9 MB, measurement-notebook 0.5 MB and hidden, and drive-storage-analyser,
-which needs the network by definition.
+**Fifteen tools live.** Ten of them plus the home page are precached for offline use:
+cv-builder, subscription-finder, qr-codes, invoice-generator, worth-it-calculators, settle-up,
+tuner-metronome, screen-recorder, gpx-route-builder and habit-tracker. Opt a tool in with
+`"offline": true` in `tools.json`. Left out on size: pdf-sign 2.3 MB, image-converter 2.0 MB,
+background-remover 16.6 MB, transcription 21.9 MB, measurement-notebook 0.5 MB and hidden, plus
+drive-storage-analyser, which needs the network by definition. read-aloud has not been opted in
+yet; that is Codex's call.
 
 ## Transcription validation (Codex, 16 September 2026)
 
@@ -214,6 +239,17 @@ Claude / Codex:
   tags in fragments). The zone still caches `/assets/*` for 4 h, but the URL changes on edit.
 - Analytics reads: wrangler's token + Cloudflare GraphQL (see 2026-09-18 note above).
 - Reddit blocks the WebSearch/WebFetch crawler; find Reddit threads manually.
+- **Checking a phone layout: do not trust `documentElement.scrollWidth`, and do not trust the
+  Chrome MCP.** Setting a viewport through the MCP left the layout at desktop width while media
+  queries reported the phone width, which makes an overflow check pass when it should fail. And
+  `scrollWidth` counts content that a clipping ancestor already contains, which makes it fail
+  when it should pass; it reported 662 px of overflow on a page that does not move. The honest
+  check is `window.scrollTo(9999, 0)` and then reading `window.scrollX`, with device metrics set
+  over CDP in a `tests/*.browser.cjs` harness. `tests/habit-tracker.browser.cjs` does it that way.
+- A grid or flex item defaults to `min-width:auto`, which is its min-content width. A wide child
+  in a scroll container therefore sets the card's minimum and pushes the whole page sideways on a
+  phone, however much `overflow-x:auto` the inner container declares. The cure is `min-width:0`
+  on the item, not more overflow rules.
 - A `vs/` page follows its tool's status (build.py, 19 September). Before that guard,
   `/vs/google-one/` was indexed and in the sitemap with an "open it, free, no account" button
   into the hidden analyser, which nobody can actually use while Google's review is pending. Now

@@ -1,0 +1,11 @@
+{
+  "slug": "speechify",
+  "incumbent": "Speechify",
+  "tool_slug": "read-aloud",
+  "tool_name": "Read aloud",
+  "reviewed": "September 2026",
+  "short_answer": "Speechify is worth paying for if natural neural voices, convenient web and PDF import, OCR or listening across devices matter to you. For plain text and simple PDFs, our reader uses local voices already available on your device.",
+  "paywall": "<p>Checked September 2026: <a href=\"https://speechify.com/pricing/\">Speechify’s official pricing page</a> shows Premium at US$29 per month in its monthly view. A yearly option is offered; check checkout for its current total. The free plan already offers text to speech with ten basic voices and speeds up to 1.5×. Premium advertises natural voices and speeds up to 5×. We have not repeated the older US$139 annual figure without verifying it in the current offer.</p>",
+  "free_does": "<ul><li>Reads pasted text, UTF 8 TXT and text extracted from PDFs.</li><li>Offers local operating system voices, rates from 0.5× to 3×, pitch, pause and resume.</li><li>Highlights the current sentence and skips by sentence or paragraph.</li><li>Remembers your position when you reopen identical text, without storing the text itself.</li></ul>",
+  "when_pay": "<p>Speechify’s neural voices generally sound more natural, and its web import, PDF workflow, scanning and device integrations offer more convenience. Browser voices differ across platforms, may be absent, and may require the tab to stay visible. Our tool has no OCR, web page fetch, EPUB import, audio download or neural voice model. Complex PDF reading order may need correction before listening.</p>"
+}

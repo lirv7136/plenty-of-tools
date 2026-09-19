@@ -1,0 +1,95 @@
+<main class="wrap ht">
+  <div class="ht-top">
+    <h1>Habit Tracker</h1>
+    <p class="muted">Track as many habits as you like, see your streaks and a year of history, and keep the lot on your own device. No account, no cap on habits, no subscription. <a href="/vs/habitify/">Is it worth paying for a habit app?</a></p>
+  </div>
+
+  <section class="ht-bar no-print">
+    <p class="ht-summary" id="ht-summary">Nothing tracked yet.</p>
+    <div class="ht-actions">
+      <button class="btn" id="ht-sample" type="button">Try a sample</button>
+      <button class="btn" id="ht-export" type="button">Export file</button>
+      <label class="btn" for="ht-import">Import file</label>
+      <input type="file" id="ht-import" accept="application/json,.json" hidden>
+      <button class="btn" id="ht-csv" type="button">CSV</button>
+      <button class="btn" id="ht-print" type="button">Print</button>
+      <button class="btn danger" id="ht-clear" type="button">Clear</button>
+    </div>
+  </section>
+  <p class="ht-toast" id="ht-toast" role="status" aria-live="polite"></p>
+
+  <div class="ht-grid">
+    <section class="card ht-form no-print">
+      <h2 id="ht-form-heading">Add a habit</h2>
+      <form id="ht-form" autocomplete="off">
+        <div class="ht-row">
+          <label class="ht-field grow"><span>Name</span><input id="ht-name" type="text" maxlength="60" placeholder="Read 20 pages"></label>
+          <label class="ht-field"><span>Colour</span><select id="ht-colour"></select></label>
+        </div>
+        <fieldset class="ht-schedule">
+          <legend>How often</legend>
+          <div class="ht-seg" role="radiogroup" aria-label="How often">
+            <label><input type="radio" name="ht-when" value="daily" checked> Every day</label>
+            <label><input type="radio" name="ht-when" value="days"> Chosen days</label>
+            <label><input type="radio" name="ht-when" value="times"> A number of times a week</label>
+          </div>
+          <div class="ht-days" id="ht-days" hidden></div>
+          <label class="ht-field ht-times" id="ht-times" hidden><span>Target</span>
+            <select id="ht-n"><option value="1">Once a week</option><option value="2">2 times a week</option><option value="3" selected>3 times a week</option><option value="4">4 times a week</option><option value="5">5 times a week</option><option value="6">6 times a week</option></select>
+          </label>
+        </fieldset>
+        <label class="ht-field"><span>Note, optional</span><input id="ht-note" type="text" maxlength="200" placeholder="What counts as done"></label>
+        <p class="ht-error" id="ht-error" role="alert" hidden></p>
+        <div class="ht-actions">
+          <button class="btn primary" id="ht-save" type="submit">Add habit</button>
+          <button class="btn" id="ht-cancel" type="button" hidden>Cancel</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="card ht-remind no-print">
+      <h2>Daily reminder</h2>
+      <div class="ht-row">
+        <label class="ht-field"><span>Time</span><input id="ht-remind-at" type="time" value="20:00"></label>
+        <button class="btn" id="ht-remind-toggle" type="button">Turn on</button>
+      </div>
+      <p class="ht-hint" id="ht-remind-state">Off.</p>
+      <p class="ht-hint">This nudges you only while this page is open, or while the installed app is running. A closed tab cannot remind you, and a web page cannot put a widget on your home screen. Those two things are what the paid apps are actually selling.</p>
+    </section>
+
+    <section class="card ht-list">
+      <h2>Habits <span class="badge" id="ht-count">0</span></h2>
+      <p class="ht-hint" id="ht-empty">Nothing yet. Add a habit above, or load the sample to see what it looks like after two months.</p>
+      <div class="ht-tablewrap" id="ht-wrap" hidden>
+        <table id="ht-table">
+          <thead><tr><th scope="col">Habit</th><th scope="col">Last 7 days</th><th scope="col" class="num">Streak</th><th scope="col" class="num">Best</th><th scope="col" class="num">30 days</th><th scope="col" class="no-print"><span class="ht-sr">Actions</span></th></tr></thead>
+          <tbody id="ht-rows"></tbody>
+        </table>
+      </div>
+      <p class="ht-hint" id="ht-archived-note" hidden></p>
+    </section>
+
+    <section class="card ht-history">
+      <h2>A year of it</h2>
+      <label class="ht-field no-print"><span>Habit</span><select id="ht-pick"></select></label>
+      <div class="ht-heat-scroll">
+        <div class="ht-months" id="ht-months" aria-hidden="true"></div>
+        <div class="ht-heat" id="ht-heat" role="img" aria-label="Calendar of the last year"></div>
+      </div>
+      <p class="ht-legend"><span>Not scheduled</span><i class="ht-key ht-key-off"></i><i class="ht-key ht-key-miss"></i><i class="ht-key ht-key-done"></i><span>Done</span></p>
+      <p class="ht-hint" id="ht-heat-note"></p>
+    </section>
+  </div>
+
+  <section class="prose ht-faq">
+    <h2>How this counts</h2>
+    <ul>
+      <li><strong>A rest day is not a miss.</strong> For a habit on chosen days, the days in between are skipped, not failed, so a Monday and Thursday run keeps its streak over the weekend.</li>
+      <li><strong>Today stays open.</strong> A habit due today that you have not done yet still shows yesterday's streak. It only breaks once the day is over.</li>
+      <li><strong>A weekly target counts in weeks.</strong> Three times a week means the streak is the number of consecutive weeks you hit three, and the week in progress counts as soon as you get there. Weeks run Monday to Sunday.</li>
+      <li><strong>Everything stays here.</strong> Habits and ticks live in this browser's storage on this device. Nothing is uploaded and there is no account, so moving to another device means exporting the file and importing it there.</li>
+      <li><strong>Works offline.</strong> After your first visit the page is stored in your browser, so it opens and ticks with no connection. Add it to your home screen and it behaves like an app.</li>
+    </ul>
+  </section>
+</main>
+<script src="/assets/habit-tracker/core.js" defer></script>

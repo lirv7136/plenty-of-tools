@@ -144,7 +144,7 @@
       if(v.period==='annual')r.notes.push('Annual billing is an upfront commitment. The monthly result spreads the full fee across 12 months.');
     } else if(id==='seats') {
       const totalFee=v.paidSeats*v.legs*v.fee,benefit=(v.before-v.after)/100*v.splitValue*v.legs;
-      r={net:benefit-totalFee,totalFee,benefit,breakFee:v.paidSeats&&v.legs?Math.max(0,benefit/(v.paidSeats*v.legs)):null,requiredLift:totalFee===0?0:v.splitValue>0?v.paidSeats*v.fee/v.splitValue*100:null,notes:[]};
+      r={net:benefit-totalFee,totalFee,benefit,breakFee:v.paidSeats&&v.legs&&benefit>=0?benefit/(v.paidSeats*v.legs):null,requiredLift:totalFee===0?0:v.splitValue>0?v.paidSeats*v.fee/v.splitValue*100:null,notes:[]};
       if(v.people===1){r.benefit=0;r.net=-totalFee;r.breakFee=v.paidSeats&&v.legs?0:null;r.requiredLift=totalFee?null:0;r.notes.push('A solo traveller cannot be split from their party. Seat preference itself is outside this calculation.');}
       if(v.child==='yes')r.notes.push('Confirm an adult will sit beside the child. Check free family seating first; a probability calculation cannot replace that arrangement.');
       if(r.requiredLift!==null&&r.requiredLift>100-v.after)r.notes.push('The reduction needed exceeds the possible probability range. These fees cannot break even under this valuation.');

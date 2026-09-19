@@ -12,7 +12,7 @@ test('seat fees count only paid seats; benefits apply once per party and leg',()
   assert.equal(calc('seats',{legs:0}).net,0);
   assert.equal(calc('seats',{splitValue:0}).requiredLift,null);
   assert.throws(()=>calc('seats',{paidSeats:4}));
-  assert.ok(calc('seats',{before:0,after:100}).net<0);
+  assert.ok(calc('seats',{before:0,after:100}).net<0);assert.equal(calc('seats',{before:0,after:100}).breakFee,null);
 });
 test('bags separate cash, amortised purchase, expected gate fees and party time',()=>{
   const r=calc('bags');close(r.checked,80);close(r.allocated,20);close(r.gate,25);close(r.cashSaved,35);close(r.net,49+2/3);
@@ -45,9 +45,8 @@ test('all numeric field limits are accepted, finite and enforced at both ends',(
   for(const id of ['seats','bags','wifi','parking'])for(const f of C.calculators[id].fields.filter(f=>f.kind!=='select')){
     for(const boundary of [f.min,f.max]){
       const raw={...example(id),[f.key]:boundary};
-      if(id==='seats')raw.people=Math.max(raw.people,raw.paidSeats);
-      if(id==='wifi'&&raw.sea+raw.port>raw.billed)raw.billed=raw.sea+raw.port;
-      if(raw.billed>100)continue;
+      if(id==='seats'){if(f.key==='people')raw.paidSeats=Math.min(raw.paidSeats,raw.people);else raw.people=Math.max(raw.people,raw.paidSeats);}
+      if(id==='wifi'){if(f.key==='billed'){raw.sea=0;raw.port=0;}else if(f.key==='sea'||f.key==='port'){raw[f.key==='sea'?'port':'sea']=0;raw.billed=Math.max(raw.billed,raw.sea+raw.port);}}
       const result=C.calculate(id,raw);
       for(const n of Object.values(result))if(typeof n==='number')assert.ok(Number.isFinite(n),id+' '+f.key);
       assert.ok(C.scenarios(id,raw).some(s=>s.current));

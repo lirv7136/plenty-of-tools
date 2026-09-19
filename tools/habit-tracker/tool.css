@@ -1,0 +1,89 @@
+.ht{padding-block:24px 8px}
+.ht-top{max-width:62ch;margin-bottom:18px}
+.ht-top p{margin:0}
+
+.ht-bar{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;justify-content:space-between;padding:12px 14px;border:1px solid var(--line);border-radius:var(--radius);background:var(--soft)}
+.ht-summary{margin:0;font-weight:600}
+.ht-actions{display:flex;flex-wrap:wrap;gap:8px}
+.ht-toast{min-height:1.4rem;margin:8px 0 0;color:var(--muted);font-size:.9rem}
+
+.ht-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;margin-top:16px}
+.ht-form{grid-column:1}
+.ht-remind{grid-column:2}
+.ht-list,.ht-history{grid-column:1 / -1}
+.ht-grid .card{gap:12px}
+/* Without this the year grid's min-content width (53 columns) sets the card's minimum, and the
+   page scrolls sideways on a phone however much overflow the inner container declares. */
+.ht-grid>.card{min-width:0}
+.ht-tablewrap,.ht-heat-scroll{min-width:0;max-width:100%}
+
+.ht-row{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end}
+.ht-field{display:flex;flex-direction:column;gap:4px;font-size:.85rem;color:var(--muted)}
+.ht-field.grow{flex:1 1 12rem}
+.ht-field input,.ht-field select{font:inherit;font-size:.95rem;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px;min-width:0}
+.ht-field input:focus-visible,.ht-field select:focus-visible,.ht-day:focus-visible,.btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.ht-form form{display:flex;flex-direction:column;gap:12px}
+
+.ht-schedule{border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin:0;display:flex;flex-direction:column;gap:8px}
+.ht-schedule legend{font-size:.85rem;color:var(--muted);padding:0 4px}
+.ht-seg{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:.92rem}
+.ht-seg label{display:flex;align-items:center;gap:6px}
+.ht-days{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:.92rem}
+.ht-days label{display:flex;align-items:center;gap:5px}
+.ht-times{flex-direction:row;align-items:center;gap:8px}
+
+.ht-hint{margin:0;color:var(--muted);font-size:.88rem}
+.ht-error{margin:0;color:var(--danger);font-size:.9rem}
+
+.ht-tablewrap{overflow-x:auto}
+#ht-table{width:100%;border-collapse:collapse;font-size:.95rem}
+#ht-table th,#ht-table td{text-align:left;padding:10px 12px 10px 0;border-bottom:1px solid var(--line);vertical-align:middle}
+#ht-table thead th{font-size:.78rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);font-weight:600;white-space:nowrap}
+#ht-table .num{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+#ht-table tr.archived{opacity:.55}
+.ht-name-cell{display:grid;grid-template-columns:auto 1fr;gap:0 8px;align-items:center;min-width:12rem}
+.ht-dot{width:10px;height:10px;border-radius:50%;display:block;grid-row:1 / span 2}
+.ht-habit-name{font-weight:600}
+.ht-name-cell small{grid-column:2;color:var(--muted);font-size:.8rem}
+.ht-actions-cell{white-space:nowrap}
+.ht-actions-cell .btn{margin-left:4px}
+.ht-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+.ht-strip{display:flex;gap:4px}
+.ht-day{width:30px;height:30px;border-radius:7px;border:1px solid var(--line);background:var(--bg);color:var(--muted);font:inherit;font-size:.75rem;font-weight:600;cursor:pointer;padding:0;line-height:1}
+.ht-day.due{border-style:dashed;border-color:var(--muted)}
+.ht-day.off{opacity:.4}
+.ht-day.done{color:#fff}
+.ht-day.today{box-shadow:0 0 0 2px var(--bg),0 0 0 3px var(--muted)}
+.ht-day:hover{border-color:var(--accent)}
+
+.ht-heat-scroll{overflow-x:auto;padding-bottom:8px}
+.ht-months{display:grid;grid-auto-flow:column;grid-auto-columns:11px;gap:3px;height:15px;font-size:.68rem;color:var(--muted)}
+.ht-months span{white-space:nowrap;overflow:visible}
+.ht-heat{display:grid;grid-template-rows:repeat(7,11px);grid-auto-flow:column;grid-auto-columns:11px;gap:3px}
+.ht-cell{width:11px;height:11px;border-radius:2px;display:block;background:var(--soft);border:1px solid transparent}
+.ht-cell.miss{border-color:var(--line)}
+.ht-cell.off{background:transparent;border-color:var(--line);opacity:.35}
+.ht-cell.future{background:transparent;border-color:transparent}
+.ht-legend{display:flex;align-items:center;gap:6px;margin:0;color:var(--muted);font-size:.8rem}
+.ht-key{width:11px;height:11px;border-radius:2px;display:inline-block;border:1px solid var(--line)}
+.ht-key-off{background:transparent;opacity:.35}
+.ht-key-miss{background:var(--soft)}
+.ht-key-done{background:var(--accent);border-color:var(--accent)}
+
+.ht-faq{margin-top:28px;max-width:70ch}
+.ht-faq li{margin-bottom:.5rem}
+
+@media (max-width:760px){
+  .ht-grid{grid-template-columns:1fr}
+  .ht-form,.ht-remind{grid-column:auto}
+  .ht-bar{align-items:flex-start;flex-direction:column}
+  .ht-day{width:28px;height:28px}
+}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
+@media print{
+  .no-print,.site-header,.site-footer,.ht-bar,.ht-toast,.ht-faq,.ht-actions-cell{display:none!important}
+  .ht-grid{grid-template-columns:1fr}
+  .card{border-color:#bbb;break-inside:avoid}
+  body{background:#fff;color:#000}
+}

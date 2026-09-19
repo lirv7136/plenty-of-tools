@@ -135,6 +135,16 @@
     "vs": "otter"
   },
   {
+    "slug": "read-aloud",
+    "name": "Read aloud",
+    "tagline": "Listen to text and PDFs with your device\u2019s local voices. Follow each sentence and resume where you stopped.",
+    "replaces": [
+      "Speechify"
+    ],
+    "vs": "speechify",
+    "status": "live"
+  },
+  {
     "slug": "measurement-notebook",
     "name": "Measurement Notebook",
     "tagline": "Label dimensions on a photo and download an annotated image or PDF. No account or uploads.",
@@ -165,6 +175,18 @@
     ],
     "status": "live",
     "vs": "guitartuna",
+    "offline": true
+  },
+  {
+    "slug": "habit-tracker",
+    "name": "Habit Tracker",
+    "tagline": "Track as many habits as you like, with streaks that understand rest days and a year of history. Works offline, no account.",
+    "replaces": [
+      "Habitify",
+      "Streaks"
+    ],
+    "status": "live",
+    "vs": "habitify",
     "offline": true
   }
 ]
