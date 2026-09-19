@@ -1,6 +1,6 @@
 # Plenty of Tools — status and handoff
 
-Last updated 2026-09-19 (night, after the review pass). Read this first when resuming in a new
+Last updated 2026-09-19 (night, after the review pass and the habit tracker). Read this first when resuming in a new
 session. The next plan is `docs/PLAN-2026-09-20.md`.
 The operating plan, calendar and decision rules live in `~/dev/idea-engine/PORTFOLIO.md`
 (status log at the bottom). This file is the "where are we" summary.
@@ -22,9 +22,18 @@ One photo per project remains the current scope; multiple photos, multipage repo
 reopening and native work remain later milestones. Real Chrome restart, reload, restored
 document/image equality, corrupt import refusal, transaction failure and tab conflict checks
 pass. The README documents limits and the observed browser quota. Keep this tool hidden until
-Lachlan tries it on a phone. PDF pages remain rasterised. Not committed by Codex; note
-that `build.py` builds hidden tools too, so the noindex page has been included in Claude's
-deploys since 19 September and is reachable at /tools/measurement-notebook/.
+Lachlan tries it on a phone. PDF pages remain rasterised.
+
+**Committed and deployed 19 September** (`d9fbc4b`). Claude verified the built page beyond
+Codex's own tests: saving writes an IndexedDB record, it survives a reload, and reopening
+restores the image with its annotations, console clean. Because `build.py` builds hidden tools,
+the noindex page is live at **https://plentyoftools.io/tools/measurement-notebook/**, absent from
+the home page, the sitemap and search. `/vs/imagemeter/` is built and reachable but noindex, and
+joins the sitemap by itself the day the tool flips to `live`.
+
+**The remaining gate is Lachlan's:** open that URL on his phone, import a photo, add a couple of
+dimensions, save, close the tab, reopen and confirm the project is still there. Flip to `live`
+only after that.
 
 ## September brief: Codex completion
 
