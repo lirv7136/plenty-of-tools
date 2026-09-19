@@ -5,13 +5,19 @@ Each tools/<slug>/ holds meta.json (title, description), index.html (a <main>
 fragment) and optional tool.css / app.js which are copied alongside. Each
 vs/<name>.json renders to /vs/<name>/. The home page lists tools.json.
 """
-import json, shutil, html
+import json, shutil, html, hashlib, re
 from pathlib import Path
 
 ROOT = Path(__file__).parent
 DIST = ROOT / "dist"
 SITE = json.loads((ROOT / "site.json").read_text())
 TOOLS = json.loads((ROOT / "tools.json").read_text())
+
+def ver(p):
+    """Short content hash for cache busting asset URLs (the zone caches /assets/* for 4 h)."""
+    return hashlib.sha1(Path(p).read_bytes()).hexdigest()[:8]
+
+SHELL_V = None
 
 def tpl(name):
     return (ROOT / "shell" / name).read_text()
@@ -30,7 +36,7 @@ def page(path, title, description, main, robots="index,follow", head_extra="", b
     canonical = SITE["domain"].rstrip("/") + path
     out = fill(tpl("page.html"), title=html.escape(title), description=html.escape(description),
                canonical=canonical, robots=robots, head_extra=head_extra, body_class=body_class,
-               brand=SITE["brand"], github=SITE["github"], main=main, analytics=analytics)
+               brand=SITE["brand"], github=SITE["github"], main=main, analytics=analytics, shellv=SHELL_V)
     dest = DIST / path.strip("/") / "index.html" if path != "/" else DIST / "index.html"
     dest.parent.mkdir(parents=True, exist_ok=True)
     dest.write_text(out)
@@ -50,6 +56,13 @@ def main():
         shutil.rmtree(DIST)
     (DIST / "assets").mkdir(parents=True)
     shutil.copy(ROOT / "shell" / "shell.css", DIST / "assets" / "shell.css")
+    global SHELL_V
+    SHELL_V = ver(ROOT / "shell" / "shell.css")
+    # installable app: manifest, minimal service worker, offline page, icons and favicon at the root
+    for f in ("manifest.webmanifest", "sw.js", "offline.html"):
+        shutil.copy(ROOT / "shell" / f, DIST / f)
+    shutil.copytree(ROOT / "shell" / "icons", DIST / "icons")
+    shutil.copy(ROOT / "shell" / "icons" / "favicon.ico", DIST / "favicon.ico")
     urls = []
 
     # tools
@@ -65,16 +78,20 @@ def main():
         head = f"<script>window.POT={pot_cfg};</script>"
         if (src / "tool.css").exists():
             shutil.copy(src / "tool.css", DIST / "assets" / f'{t["slug"]}.css')
-            head += f'<link rel="stylesheet" href="/assets/{t["slug"]}.css">'
+            head += f'<link rel="stylesheet" href="/assets/{t["slug"]}.css?v={ver(src / "tool.css")}">'
         main_html = (src / "index.html").read_text()
+        def _bust(m, _src=src, _slug=t["slug"]):
+            f = _src / "static" / m.group(2)
+            return f'{m.group(1)}?v={ver(f)}"' if f.exists() else m.group(0)
+        main_html = re.sub(r'(src="/assets/' + re.escape(t["slug"]) + r'/([^"?]+\.js))"', _bust, main_html)
         if (src / "vendor").is_dir():
             vdir = DIST / "assets" / f'{t["slug"]}-vendor'
             shutil.copytree(src / "vendor", vdir)
             for vf in sorted(vdir.glob("*.js")):
-                main_html += f'\n<script src="/assets/{t["slug"]}-vendor/{vf.name}" defer></script>'
+                main_html += f'\n<script src="/assets/{t["slug"]}-vendor/{vf.name}?v={ver(vf)}" defer></script>'
         if (src / "app.js").exists():
             shutil.copy(src / "app.js", DIST / "assets" / f'{t["slug"]}.js')
-            main_html += f'\n<script src="/assets/{t["slug"]}.js" defer></script>'
+            main_html += f'\n<script src="/assets/{t["slug"]}.js?v={ver(src / "app.js")}" defer></script>'
         url = page(f'/tools/{t["slug"]}/', meta["title"], meta["description"], main_html,
                    head_extra=head, body_class=f'tool tool-{t["slug"]}',
                    robots="index,follow" if t["status"] == "live" else "noindex,nofollow")
@@ -92,6 +109,9 @@ def main():
     urls.append(page("/privacy/", f'Privacy · {SITE["brand"]}',
                      "Nothing you type or load into these tools is uploaded. What the site does and does not collect.",
                      fill(tpl("privacy.html"), github=SITE["github"], brand=SITE["brand"])))
+    urls.append(page("/terms/", f'Terms of use · {SITE["brand"]}',
+                     "Plain terms for using the free tools: provided as is, MIT licensed, your data stays on your device.",
+                     fill(tpl("terms.html"), github=SITE["github"], brand=SITE["brand"])))
     urls.append(page("/about/", f'Why these are free · {SITE["brand"]}',
                      "Every tool here replaces a product that charges at the moment you need the result.",
                      fill(tpl("about.html"), github=SITE["github"])))
@@ -101,6 +121,16 @@ def main():
                      fill(tpl("home.html"), brand=SITE["brand"], tagline=SITE["tagline"],
                           live_cards=live, queued_cards=queued)))
 
+    # 404 page: without one, Pages serves index.html with a 200 for every unknown path (soft 404s).
+    nf_main = ('<main class="wrap prose"><h1>Page not found</h1><p>That address does not exist on this site. '
+               'The tools are all listed on the <a href="/">home page</a>.</p><div class="grid">' + live + '</div></main>')
+    nf = fill(tpl("page.html"), title=f'Page not found · {SITE["brand"]}', description="This page does not exist.",
+              canonical=SITE["domain"].rstrip("/") + "/404.html", robots="noindex,nofollow", head_extra="",
+              body_class="notfound", brand=SITE["brand"], github=SITE["github"], main=nf_main, analytics="", shellv=SHELL_V)
+    (DIST / "404.html").write_text(nf)
+    # IndexNow key file so Bing and friends accept URL submissions without an account.
+    if SITE.get("indexnow_key"):
+        (DIST / f'{SITE["indexnow_key"]}.txt').write_text(SITE["indexnow_key"])
     (DIST / "robots.txt").write_text(f'User-agent: *\nAllow: /\nSitemap: {SITE["domain"]}/sitemap.xml\n')
     (DIST / "sitemap.xml").write_text('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
         + "".join(f"  <url><loc>{u}</loc></url>\n" for u in urls) + "</urlset>\n")

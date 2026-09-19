@@ -1,0 +1,11 @@
+{
+  "slug": "splitwise",
+  "incumbent": "Splitwise",
+  "tool_slug": "settle-up",
+  "tool_name": "Settle Up",
+  "reviewed": "September 2026",
+  "short_answer": "Not for a trip, a dinner or a shared house where one person keeps the ledger. Splitwise's free tier now stops you after about four expenses a day, which is exactly the day you are adding a weekend's receipts, and Pro is a US$4.99 a month subscription for something a browser can do without an account. The free tool here works out the fewest transfers that settle everyone and puts the whole ledger in a link you can send around.",
+  "paywall": "<p>Splitwise added the daily cap in 2023: free accounts can add roughly four expenses a day, then a screen asks you to wait until tomorrow or upgrade. Pro removes the cap and the ads, and adds receipt scanning, currency conversion, charts and search, for about US$4.99 a month or US$30 to 40 a year depending on region.</p><p>The frustrating part is that the cap lands on the core action. Nobody adds expenses evenly across the week; you add eight in one go when you get back from a weekend away. Debt simplification, groups and the splitting itself were always free, and still are, which shows the maths is not the product. The account, the sync and the habit are.</p>",
+  "free_does": "<ul><li>People, expenses, who paid, equal or exact splits, and a running balance per person. No limit on any of it.</li><li>A settle up plan: the smallest set of transfers that clears every balance, so a five person weekend usually ends in three or four payments instead of ten.</li><li>The whole ledger is encoded in the share link. Send the link to the group, and whoever opens it sees the same numbers. Update it, resend it. No accounts, nothing stored anywhere but your browser.</li><li>CSV export of the expenses and the plan, a print layout, and autosave on this device.</li></ul>",
+  "when_pay": "<ul><li>Several people add expenses on their own phones over months, and everyone needs to see the same live ledger without passing links around. That two way sync is what the subscription actually buys.</li><li>You photograph receipts and want the amounts read for you, or you split across currencies on a long trip.</li><li>You want reminders and a record of who has settled inside the app, connected to a payment service.</li></ul>"
+}

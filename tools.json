@@ -126,5 +126,36 @@
     ],
     "status": "live",
     "vs": "otter"
+  },
+  {
+    "slug": "measurement-notebook",
+    "name": "Measurement Notebook",
+    "tagline": "Label dimensions on a photo and download an annotated image or PDF. No account or uploads.",
+    "replaces": [
+      "ImageMeter"
+    ],
+    "status": "hidden"
+  },
+  {
+    "slug": "settle-up",
+    "name": "Settle Up",
+    "tagline": "Split group expenses and get the fewest transfers that square everyone up. The ledger lives in the share link; no account.",
+    "replaces": [
+      "Splitwise",
+      "Tricount"
+    ],
+    "status": "live",
+    "vs": "splitwise"
+  },
+  {
+    "slug": "tuner-metronome",
+    "name": "Tuner and Metronome",
+    "tagline": "Chromatic tuner with instrument presets and a metronome on the audio clock. No ads, no subscription, no account.",
+    "replaces": [
+      "GuitarTuna",
+      "Pro Metronome"
+    ],
+    "status": "live",
+    "vs": "guitartuna"
   }
 ]

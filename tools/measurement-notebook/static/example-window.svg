@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="1080" viewBox="0 0 1440 1080">
+<defs><linearGradient id="wall" x2="1" y2="1"><stop stop-color="#f1e9dc"/><stop offset="1" stop-color="#d6ccba"/></linearGradient><linearGradient id="sky" x2="0" y2="1"><stop stop-color="#9fbdc3"/><stop offset="1" stop-color="#dee4cd"/></linearGradient><filter id="shadow"><feGaussianBlur stdDeviation="14"/></filter></defs>
+<rect width="1440" height="1080" fill="url(#wall)"/>
+<path d="M360 160H1120V860H360Z" fill="#9d927e" opacity=".3" filter="url(#shadow)"/>
+<rect x="340" y="140" width="760" height="700" rx="4" fill="#d0cabb"/>
+<rect x="360" y="160" width="720" height="660" fill="#faf9f1"/>
+<rect x="398" y="198" width="644" height="584" fill="url(#sky)"/>
+<path d="M398 640Q520 520 610 630T830 605T1042 550V782H398Z" fill="#9cae8b"/>
+<path d="M398 723Q530 620 670 713T920 677T1042 695V782H398Z" fill="#778e70"/>
+<path d="M420 230L630 210L820 770L650 770Z" fill="#fff" opacity=".13"/>
+<rect x="704" y="190" width="32" height="600" fill="#faf9f1"/>
+<rect x="390" y="479" width="660" height="27" fill="#faf9f1"/>
+<rect x="325" y="819" width="790" height="28" rx="3" fill="#faf9f1"/>
+<rect x="340" y="847" width="760" height="14" fill="#ada491" opacity=".4"/>
+<rect x="982" y="516" width="12" height="55" rx="6" fill="#8e958f"/>
+<path d="M0 984H1440V1080H0Z" fill="#d0c3af"/>
+<path d="M0 984H1440" stroke="#c4b8a4" stroke-width="12"/>
+<path d="M170 962L155 872H271L255 962Z" fill="#ae7455"/>
+<path d="M213 880V685" stroke="#6e8160" stroke-width="8"/>
+<path d="M213 783Q113 760 144 689Q223 711 213 783ZM213 838Q304 791 292 734Q219 747 213 838ZM213 722Q258 634 213 600Q173 656 213 722Z" fill="#70876a"/>
+<text x="60" y="80" font-family="sans-serif" font-size="23" fill="#756e61" letter-spacing="3">EXAMPLE WINDOW · ILLUSTRATION</text>
+</svg>

@@ -1,0 +1,9 @@
+Measurement Notebook third-party notice
+
+PDF-LIB 1.17.1 by Andrew Dillon and contributors
+Source: https://github.com/Hopding/pdf-lib
+Licence: MIT; full text in PDF-LIB-LICENSE.txt.
+The unmodified UMD bundle is copied from the repository's tools/pdf-sign/vendor/pdf-lib.min.js.
+
+example-window.svg is an original illustration distributed under the repository's MIT licence.
+No external example photos, fonts or runtime services are required.

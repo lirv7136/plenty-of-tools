@@ -1,0 +1,11 @@
+{
+  "slug": "otter",
+  "incumbent": "Otter",
+  "tool_slug": "transcription",
+  "tool_name": "Browser Transcription",
+  "reviewed": "September 2026",
+  "short_answer": "For a short English recording that you want to turn into editable text or subtitles without uploading the audio, this browser tool may be enough. Otter offers a broader meeting service with recording, speaker identification, collaboration and summaries.",
+  "paywall": "<p>Otter’s free plan has monthly transcription and file-import allowances, while paid plans expand those allowances and features. Check <a href=\"https://otter.ai/pricing\">Otter’s current plan comparison</a> for the limits that apply to your use. This tool has no account or monthly quota; it limits each file to 10 minutes and 50 MB to keep local processing manageable.</p>",
+  "free_does": "<ul><li>Processes an audio file locally with the small English Whisper model.</li><li>Shows editable text and segment timestamps, with audio playback for review.</li><li>Downloads TXT and SRT files, including your edits.</li><li>Reports model-loading and transcription progress, with a Stop button.</li><li>Optionally caches model files for subsequent use; audio and transcripts stay in tab memory.</li></ul>",
+  "when_pay": "<p>Consider a meeting service for longer recordings, live meeting capture, speaker identification, shared notes, summaries or synced history. This small local model is less capable than larger transcription models and can make mistakes. Review the words and timings. The initial model download needs an internet connection, and processing speed depends on your device.</p>"
+}

@@ -15,7 +15,7 @@
   function bytes(n) {
     n = Number(n) || 0;
     const u = ["B", "KB", "MB", "GB", "TB"]; let i = 0;
-    while (n >= 1000 && i < u.length - 1) { n /= 1000; i++; }
+    while (n >= 1024 && i < u.length - 1) { n /= 1024; i++; } // 1024 based, labelled GB, matching what Google shows (15 GB quota)
     return (i === 0 ? n : n.toFixed(n >= 100 ? 0 : n >= 10 ? 1 : 2)) + " " + u[i];
   }
   const pct = (a, b) => b ? Math.max(0, Math.min(100, (a / b) * 100)) : 0;
@@ -186,7 +186,7 @@
 
   // ---------- sample ----------
   function sample() {
-    const GB = 1e9, MB = 1e6, day = 86400000, now = Date.now();
+    const GB = 1024 ** 3, MB = 1024 ** 2, day = 86400000, now = Date.now();
     const iso = d => new Date(now - d * day).toISOString();
     const f = (name, mime, size, ageDays, extra) => Object.assign({ id: name, name, mimeType: mime, size, quotaBytesUsed: size, modifiedTime: iso(ageDays), ownedByMe: true, trashed: false, webViewLink: "https://drive.google.com/" }, extra || {});
     const files = [

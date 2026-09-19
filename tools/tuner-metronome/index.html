@@ -1,0 +1,59 @@
+<main class="wrap tm">
+  <div class="tm-top">
+    <h1>Tuner and Metronome</h1>
+    <p class="muted">A chromatic tuner with instrument presets, and a metronome that keeps time on the audio clock. Runs in this tab using your device's microphone; nothing is recorded or sent anywhere. <a href="/vs/guitartuna/">Is it worth paying for GuitarTuna?</a></p>
+  </div>
+
+  <div class="tm-grid">
+    <section class="card tuner" aria-labelledby="tuner-h">
+      <div class="card-head"><h2 id="tuner-h">Tuner</h2><button class="btn primary" id="btn-mic" type="button">Start tuning</button></div>
+      <div class="controls">
+        <label class="field"><span>Instrument</span><select id="preset"></select></label>
+        <label class="field"><span>A4 reference</span><span class="a4"><input id="a4" type="number" min="415" max="466" step="1" value="440" aria-label="A4 reference in hertz"> Hz</span></label>
+      </div>
+      <div class="strings" id="strings" aria-label="Strings, tap one to hear it"></div>
+      <div class="readout">
+        <div class="note"><span id="note-name">–</span><sub id="note-oct"></sub></div>
+        <div class="meter" aria-hidden="true">
+          <div class="scale"><span>-50</span><span>flat</span><span>0</span><span>sharp</span><span>+50</span></div>
+          <div class="track"><i class="zone"></i><i class="needle" id="needle"></i></div>
+        </div>
+        <div class="freq" id="freq">Press Start tuning, then play a note.</div>
+        <div class="status" id="tune-status" role="status" aria-live="polite"></div>
+      </div>
+      <p class="hint">Your browser will ask for microphone permission. The audio is analysed here and discarded. If the needle jumps around, move closer to the mic or turn off noise suppression in your system sound settings.</p>
+      <p class="hint error" id="mic-error" role="alert" hidden></p>
+    </section>
+
+    <section class="card metro" aria-labelledby="metro-h">
+      <div class="card-head"><h2 id="metro-h">Metronome</h2><button class="btn primary" id="btn-play" type="button">Start</button></div>
+      <div class="bpm">
+        <button class="btn round" id="bpm-down" type="button" aria-label="Slower">−</button>
+        <div class="bpm-num"><span id="bpm">100</span><small><span id="marking">Andante</span> · BPM</small></div>
+        <button class="btn round" id="bpm-up" type="button" aria-label="Faster">+</button>
+      </div>
+      <input id="bpm-slider" type="range" min="30" max="300" value="100" aria-label="Tempo in beats per minute">
+      <div class="controls">
+        <label class="field"><span>Time</span><select id="sig"><option value="4">4/4</option><option value="3">3/4</option><option value="2">2/4</option><option value="6">6/8</option><option value="5">5/4</option><option value="7">7/8</option></select></label>
+        <label class="field"><span>Subdivide</span><select id="sub"><option value="1">Beats only</option><option value="2">Eighths</option><option value="3">Triplets</option><option value="4">Sixteenths</option></select></label>
+        <label class="check"><input type="checkbox" id="accent" checked> Accent beat 1</label>
+        <button class="btn" id="btn-tap" type="button">Tap tempo</button>
+      </div>
+      <div class="beats" id="beats" aria-hidden="true"></div>
+      <p class="hint">Space bar starts and stops. Clicks are scheduled ahead on the audio clock, so the tempo holds even when the tab is busy.</p>
+    </section>
+  </div>
+
+  <section class="prose tm-faq">
+    <h2>Notes</h2>
+    <ul>
+      <li><strong>Chromatic</strong> shows the nearest note of any pitch. An instrument preset instead shows the nearest string and how far you are from it, and highlights that string. Tap a string name to hear its reference tone.</li>
+      <li><strong>Cents</strong> are hundredths of a semitone. Within about 3 cents counts as in tune here; most people cannot hear less than 5.</li>
+      <li><strong>Reference pitch.</strong> Orchestras and older recordings sometimes use 442 or 415 Hz instead of 440. Change it and every note shifts with it.</li>
+      <li><strong>Low strings</strong> (bass, drop tunings) take a moment longer to read because the tuner needs a few full cycles of the wave. Let the note ring.</li>
+      <li><strong>No connection needed</strong> once this page is open, so a rehearsal room with no signal is fine. Reloading the page does need one.</li>
+      <li>Settings are remembered on this device. Nothing else is stored.</li>
+    </ul>
+  </section>
+</main>
+<script src="/assets/tuner-metronome/core.js" defer></script>

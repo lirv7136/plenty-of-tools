@@ -1,0 +1,96 @@
+<main class="wrap su">
+  <div class="su-top">
+    <h1>Settle Up</h1>
+    <p class="muted">Add who paid what, and get the fewest transfers that square everyone up. The whole ledger lives in the link, so there is no account and nothing is stored anywhere but your browser. <a href="/vs/splitwise/">Is it worth paying for Splitwise?</a></p>
+  </div>
+
+  <section class="su-bar no-print">
+    <label class="field grow"><span>Group</span><input id="group-name" type="text" placeholder="e.g. Jervis Bay weekend" maxlength="60" autocomplete="off"></label>
+    <label class="field"><span>Currency</span><select id="currency"><option>A$</option><option>$</option><option>£</option><option>€</option><option>NZ$</option><option>¥</option><option>₹</option><option>CHF</option></select></label>
+    <div class="su-actions">
+      <button class="btn primary" id="btn-link" type="button">Copy share link</button>
+      <button class="btn" id="btn-csv" type="button">Expenses CSV</button>
+      <button class="btn" id="btn-csv-plan" type="button">Plan CSV</button>
+      <button class="btn" id="btn-print" type="button">Print</button>
+      <button class="btn" id="btn-sample" type="button">Try a sample</button>
+      <button class="btn danger" id="btn-clear" type="button">Clear</button>
+    </div>
+  </section>
+  <p class="hint toast" id="toast" role="status" aria-live="polite"></p>
+
+  <div class="su-grid">
+    <section class="card su-people">
+      <h2>People</h2>
+      <div class="chips" id="people"></div>
+      <form class="row no-print" id="person-form">
+        <input id="person-name" type="text" placeholder="Add a name" maxlength="40" autocomplete="off" aria-label="Name">
+        <button class="btn" type="submit">Add</button>
+      </form>
+      <p class="hint" id="people-hint">Add everyone who paid for something or shared a cost.</p>
+    </section>
+
+    <section class="card su-form no-print">
+      <h2 id="exp-heading">Add an expense</h2>
+      <form id="exp-form" autocomplete="off">
+        <div class="row2">
+          <label class="field grow"><span>What</span><input id="exp-desc" type="text" placeholder="Groceries" maxlength="80"></label>
+          <label class="field amt"><span>Amount</span><input id="exp-amount" type="text" inputmode="decimal" placeholder="0.00"></label>
+        </div>
+        <div class="row2">
+          <label class="field grow"><span>Paid by</span><select id="exp-payer"></select></label>
+          <label class="field"><span>Date</span><input id="exp-date" type="date"></label>
+        </div>
+        <fieldset class="split">
+          <legend>Split</legend>
+          <div class="seg" role="radiogroup" aria-label="Split method">
+            <label><input type="radio" name="split" value="equal" checked> Equally between</label>
+            <label><input type="radio" name="split" value="exact"> Exact amounts</label>
+          </div>
+          <div id="split-equal" class="checks"></div>
+          <div id="split-exact" class="exact" hidden></div>
+          <p class="hint" id="split-note"></p>
+        </fieldset>
+        <p class="hint error" id="exp-error" role="alert" hidden></p>
+        <div class="su-actions">
+          <button class="btn primary" id="btn-exp-save" type="submit">Add expense</button>
+          <button class="btn" id="btn-exp-cancel" type="button" hidden>Cancel</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="card su-expenses">
+      <h2>Expenses <span class="badge" id="exp-count">0</span></h2>
+      <p class="hint" id="exp-empty">Nothing yet. Add people, then the first expense.</p>
+      <div class="tablewrap" id="exp-wrap" hidden>
+        <table id="exp-table">
+          <thead><tr><th>Date</th><th>What</th><th>Paid by</th><th class="num">Amount</th><th>Split</th><th class="no-print" aria-label="Actions"></th></tr></thead>
+          <tbody id="expenses"></tbody>
+        </table>
+      </div>
+      <p class="hint su-total" id="summary"></p>
+    </section>
+
+    <section class="card su-balances">
+      <h2>Balances</h2>
+      <div id="balances" class="bal"></div>
+      <p class="hint" id="bal-hint">Positive means the group owes them; negative means they owe the group.</p>
+    </section>
+
+    <section class="card su-plan">
+      <h2>Settle up</h2>
+      <ol id="plan" class="plan"></ol>
+      <p class="hint" id="plan-note"></p>
+    </section>
+  </div>
+
+  <section class="prose su-faq">
+    <h2>How this works</h2>
+    <ul>
+      <li><strong>The link is the database.</strong> Every change rewrites the address in your browser bar. Copy it and send it; whoever opens it sees this exact ledger and can keep adding to it. If two people edit separate copies, the last link sent wins, so agree on one keeper for the trip.</li>
+      <li><strong>Odd cents</strong> go to the first people in the split, so totals always match to the cent.</li>
+      <li><strong>Fewest transfers.</strong> The plan pays the biggest creditor from the biggest debtor until every balance is zero. Five people usually settle in four payments or fewer.</li>
+      <li>This device also keeps an autosaved copy so you can come back tomorrow. <em>Clear</em> removes it. Nothing is ever sent to us.</li>
+    </ul>
+  </section>
+</main>
+<script src="/assets/settle-up/core.js" defer></script>

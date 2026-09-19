@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1980 512" width="1980" height="512"><defs>
+    <linearGradient id="bg" gradientUnits="userSpaceOnUse" x1="40" y1="40" x2="472" y2="472">
+      <stop offset="0" stop-color="#0B7A5A"/>
+      <stop offset="0.55" stop-color="#109C78"/>
+      <stop offset="1" stop-color="#17B8A6"/>
+    </linearGradient>
+    <radialGradient id="glow" gradientUnits="userSpaceOnUse" cx="150" cy="120" r="360">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.22"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="shade" gradientUnits="userSpaceOnUse" cx="420" cy="440" r="330">
+      <stop offset="0" stop-color="#03301F" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#03301F" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="soft" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="9"/>
+      <feOffset dx="0" dy="10" result="off"/>
+      <feFlood flood-color="#032A1E" flood-opacity="0.38"/>
+      <feComposite in2="off" operator="in" result="shadow"/>
+      <feMerge><feMergeNode in="shadow"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <!-- mask cuts the jaw slot and the ring hole out of the white spanner (same rotated frame) -->
+    <mask id="cut" maskUnits="userSpaceOnUse" x="0" y="0" width="512" height="512">
+      <rect x="0" y="0" width="512" height="512" fill="#FFFFFF"/>
+      <rect x="222" y="0" width="68" height="126" rx="16" fill="#000000"/>
+      <circle cx="256" cy="396" r="34" fill="#000000"/>
+    </mask>
+  </defs>
+  
+  <rect x="0" y="0" width="512" height="512" rx="112" fill="url(#bg)"/>
+  <rect x="0" y="0" width="512" height="512" rx="112" fill="url(#shade)"/>
+  <rect x="0" y="0" width="512" height="512" rx="112" fill="url(#glow)"/>
+  <g transform="rotate(45 256 256)" filter="url(#soft)">
+    <g mask="url(#cut)">
+      <rect x="214" y="116" width="84" height="280" rx="42" fill="#FFFFFF"/>
+      <circle cx="256" cy="116" r="92" fill="#FFFFFF"/>
+      <circle cx="256" cy="396" r="78" fill="#FFFFFF"/>
+    </g>
+  </g>
+  <path d="M424 66 L436 100 L470 112 L436 124 L424 158 L412 124 L378 112 L412 100 Z" fill="#FFFFFF" opacity="0.95"/>
+  <path d="M466 176 L471 190 L485 195 L471 200 L466 214 L461 200 L447 195 L461 190 Z" fill="#FFFFFF" opacity="0.8"/>
+<text x="580" y="330" font-family="Inter, Liberation Sans, Arial, Helvetica, sans-serif" font-size="188" font-weight="700" letter-spacing="-4" fill="#15191F">Plenty of <tspan fill="#0B7A5A">Tools</tspan></text></svg>
