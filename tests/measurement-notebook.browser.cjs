@@ -61,7 +61,7 @@ async function screenshot(name){const r=await send('Page.captureScreenshot',{for
   await send('Runtime.enable');await send('Page.enable');await send('Network.enable');await send('DOM.enable');
   await send('Emulation.setDeviceMetricsOverride',{width:1440,height:1100,deviceScaleFactor:1,mobile:false});
   await send('Page.navigate',{url:base+'/tools/measurement-notebook/'});
-  await until("document.readyState==='complete' && !!window.__measurement && !!window.PDFLib");
+  await until("document.readyState==='complete' && !!window.__measurement && !__measurement.busy && !!window.PDFLib");
   assert.equal(await evaluate("document.querySelector('meta[name=robots]').content"),'noindex,nofollow');
   assert.equal(await evaluate("document.getElementById('mn-workspace').hidden"),true);
   await click('mn-example');await until('__measurement.document!==null && !__measurement.busy');

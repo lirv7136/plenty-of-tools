@@ -1,0 +1,11 @@
+{
+  "slug": "imagemeter",
+  "incumbent": "ImageMeter",
+  "tool_slug": "measurement-notebook",
+  "tool_name": "Measurement Notebook preview",
+  "reviewed": "September 2026",
+  "short_answer": "ImageMeter is worth paying for if you need calibrated measurements, Bluetooth laser integration, richer drawing tools or organised reports. Our early browser preview records dimensions you enter yourself and saves one photo per project.",
+  "paywall": "<p>ImageMeter has a useful free version. Its <a href=\"https://www.imagemeter.com/manual/faq/index.html\">official FAQ</a>, checked in September 2026, lists a limit of five measures per image and watermarks on exports. Check its current store offer for the price of an upgrade.</p>",
+  "free_does": "<ul><li>Labels a JPG, PNG or WebP with dimensions and notes entered by you.</li><li>Saves one photo per project in this browser, with rename, duplicate and confirmed deletion.</li><li>Downloads editable project backups, annotated PNG images and a single PDF sheet without a watermark.</li><li>Works without accounts or photo uploads. This remains an early preview awaiting phone trials.</li></ul>",
+  "when_pay": "<p>Choose <a href=\"https://www.imagemeter.com/\">ImageMeter</a> for reference based measurement, Bluetooth distance meters, angles and areas, PDF plan import, cloud synchronisation or richer reports. Measurement Notebook does not infer dimensions, synchronise devices, import ImageMeter projects or replace those professional features. Browser storage can be cleared or evicted, so keep backups.</p>"
+}

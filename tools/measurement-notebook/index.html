@@ -3,15 +3,25 @@
     <div><span class="badge">Early preview</span><h1>Measurement Notebook</h1><p>A photo. Your measurements. A clear sheet to share.</p></div>
     <span class="mn-private">Photos stay on your device</span>
   </header>
-  <p class="mn-session">This prototype keeps one photo open at a time. <strong>Work is not saved when you close or reload the page.</strong> Download your image or PDF before leaving.</p>
+  <p class="mn-session">Each project holds one photo. Applied edits save in this browser on this device. <strong>Download a project backup to keep a separate copy.</strong> Clearing site data or using private browsing can remove saved projects.</p>
+  <section id="mn-projects" class="mn-projects" aria-label="Saved projects">
+    <h2>Your projects</h2>
+    <div class="mn-project-controls"><label>Saved in this browser<select id="mn-project-list" aria-label="Saved projects"></select></label><button class="btn" id="mn-open-project" type="button">Open selected</button><button class="btn" id="mn-duplicate-project" type="button">Duplicate selected</button><button class="btn danger" id="mn-delete-project" type="button">Delete selected</button><button class="btn" id="mn-refresh-projects" type="button">Refresh list</button></div>
+    <p id="mn-storage" class="muted"></p>
+    <div class="mn-project-controls"><label class="btn mn-file">Import project backup<input id="mn-import-project" type="file" accept=".mnote"></label><button class="btn" id="mn-backup" type="button" disabled>Download project backup</button><button class="btn" id="mn-save" type="button" disabled>Save now / retry</button></div>
+    <p id="mn-save-state" role="status" aria-live="polite">Opening project storage…</p>
+    <button class="btn" id="mn-close-project" type="button">Close current project</button>
+    <p class="mn-help">Backups contain editable annotations and the original photo, including any original location metadata. Image and PDF exports are flattened. Saved projects do not guarantee this page will reopen without internet.</p>
+  </section>
   <div id="mn-status" class="mn-status" role="status" aria-live="polite">Start with your own photo or try the example window.</div>
   <div class="mn-import">
-    <label class="btn primary mn-file">Open photo<input id="mn-file" type="file" accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp"></label>
+    <label class="btn primary mn-file">New project from photo<input id="mn-file" type="file" accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp"></label>
     <button id="mn-example" class="btn" type="button">Try example window</button>
     <span class="muted">JPG, PNG or WebP · up to 25 MB and 24 megapixels</span>
   </div>
   <section id="mn-workspace" hidden aria-label="Photo editor">
     <div class="mn-heading">
+      <label>Project name<input id="mn-project-name" maxlength="100" autocomplete="off"></label>
       <label>Sheet title<input id="mn-title" maxlength="100" value="Measurement sheet" autocomplete="off"></label>
       <span id="mn-photo-info" class="muted"></span>
     </div>
@@ -51,10 +61,12 @@
     <section class="mn-export" aria-labelledby="mn-export-heading">
       <div><h2 id="mn-export-heading">Ready to share?</h2><p>Export all applied annotations. Original photos are left untouched.</p></div>
       <div class="mn-export-controls"><label>Page<select id="mn-page"><option value="A4">A4</option><option value="Letter">US Letter</option></select></label><label>Orientation<select id="mn-orientation"><option value="portrait">Portrait</option><option value="landscape">Landscape</option></select></label><button id="mn-png" class="btn" type="button">Download image</button><button id="mn-pdf" class="btn primary" type="button">Download PDF</button></div>
-      <p class="mn-help">Images use the photo’s full decoded resolution. PDF sheets fit the photo to a page; they are not physical-scale drawings. Exports cannot be reopened as editable projects yet.</p>
+      <p class="mn-help">Images use the photo’s full decoded resolution. PDF sheets fit the photo to a page; they are not drawings at physical scale. Use Download project backup to keep editable work.</p>
     </section>
   </section>
-  <section id="mn-empty" class="mn-empty"><span aria-hidden="true">↔</span><h2>Keep the dimensions with the photo.</h2><p>Window sizes, furniture clearances, fittings and project notes.<br>Draw the arrows, type what you measured, and send a readable sheet.</p><p class="muted">No account. No watermark. No cap on the number of labels.</p></section>
+  <section id="mn-empty" class="mn-empty"><span aria-hidden="true">↔</span><h2>Keep the dimensions with the photo.</h2><p>Window sizes, furniture clearances, fittings and project notes.<br>Draw the arrows, type what you measured, and send a readable sheet.</p><p class="muted">No account. No watermark. Up to 1,000 labels per photo.</p></section>
   <script src="/assets/measurement-notebook/core.js" defer></script>
+  <script src="/assets/measurement-notebook/projects.js" defer></script>
+  <script src="/assets/measurement-notebook/storage.js" defer></script>
   <script src="/assets/measurement-notebook/render.js" defer></script>
 </main>

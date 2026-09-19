@@ -1,10 +1,14 @@
 # Measurement Photo Notebook — build blueprint
 
-Blueprint: 18 September 2026 · Status updated 19 September: M1 implemented locally as a hidden prototype. See the
+Blueprint: 18 September 2026 · September brief update: M1 deployed as hidden from 19 September;
+saved projects and validated backups are now implemented for the requested M2 scope. See the
 [implementation and validation notes](../tools/measurement-notebook/README.md).
 The blueprint below retains the planned later milestones. M1 uses a raster PDF page to
 preserve rendered labels; vector text/font embedding is still deferred. Real-device checks
-and the competitor/user trial remain outstanding.
+and the competitor/user trial remain outstanding. The current M2 scope keeps one photo per
+project and uses a documented binary `.mnote` backup rather than ZIP. Multiple photos and
+multipage reports in the broader milestone table remain future work. Save failures retain
+the previous committed version and expose unsaved work for backup and retry.
 
 ## Product and first user
 
@@ -335,5 +339,7 @@ Before editing shared site files, re-read them and check for concurrent Claude c
 the existing transcription work intact. Do not list an unfinished tool as live. Homepage
 listing follows the M3 checks, and deployment is a separate action. This blueprint itself
 originally changed documentation only. The subsequent M1 implementation is documented in
-the linked tool README; it has not been deployed. The bundled example is an original window
+the linked tool README. Correction: hidden tools are built too, so M1 has been included in
+Claude's deploys since 19 September. Hidden means no homepage or sitemap entry, not no deployment.
+The bundled example is an original window
 illustration, and regression tests also exercised a real photograph.

@@ -1,6 +1,8 @@
 (function(){
   'use strict';
   const C=window.MeasurementCore,R=window.MeasurementRender,$=id=>document.getElementById('mn-'+id),stage=$('stage');
+  const P=window.MeasurementProjects,S=window.MeasurementStorage;
+  let project=null,photoBlob=null,saveTimer=null,savePromise=null,editVersion=0;
   let doc=null,image=null,imageURL=null,originalFile=null,history=new C.History(),selected=null,draft=null,mode='select',pendingStart=null;
   let camera={zoom:1,cx:.5,cy:.5},gesture=null,pinch=null,busy=false,dirty=false,formDirty=false,loadGeneration=0;
   const pointers=new Map();
@@ -12,7 +14,8 @@
   function bounded(p){return {x:C.clamp(p.x),y:C.clamp(p.y)};}
   function current(){return draft||doc?.annotations.find(a=>a.id===selected);}
   function hasUnsavedForm(){if(formDirty){status('Apply or cancel your label changes first.',true);$('apply').focus();return true;}return false;}
-  function sync(){doc.annotations=C.clone(history.current);if(selected&&!doc.annotations.some(a=>a.id===selected))selected=null;dirty=true;render();inspector();}
+  function changed(){dirty=true;editVersion++;clearTimeout(saveTimer);$('save-state').textContent='Unsaved changes…';$('save-state').classList.remove('mn-error');saveTimer=setTimeout(saveNow,400);}
+  function sync(){doc.annotations=C.clone(history.current);if(selected&&!doc.annotations.some(a=>a.id===selected))selected=null;changed();render();inspector();}
   function commit(next){if(!next.every(C.validAnnotation))throw new Error('Invalid annotation.');history.commit(next);sync();}
   function setMode(next){if(hasUnsavedForm())return;mode=next;draft=null;pendingStart=null;gesture=null;selected=null;render();inspector();}
   function render(){
@@ -50,6 +53,7 @@
     rebuildList();render();
   }
   function begin(type,p,end){
+    if(doc.annotations.length>=P.LIMITS.annotations){status('This photo has reached the 1,000 label limit. Start another project for more labels.',true);return;}
     const style={colour:'#165DCC',size:'normal'},id=crypto.randomUUID();
     draft=type==='dimension'?{id,type,start:p,end,labelOffset:{x:0,y:-.045},valueText:'',unit:'mm',note:'',style}:{id,type,position:p,text:'',style};
     pendingStart=null;selected=null;mode='select';inspector();(type==='dimension'?$('value'):$('text')).focus({preventScroll:true});
@@ -105,7 +109,7 @@
     if(pinch){if(!pointers.size)pinch=null;gesture=null;return;}
     const g=gesture;gesture=null;if(!g)return;
     if(cancelled){if(g.before)doc.annotations=g.before;pendingStart=null;render();inspector();return;}
-    if(g.type==='edit'){if(doc.annotations.every(C.validAnnotation))history.commit(doc.annotations);else doc.annotations=C.clone(history.current);if(g.moved)dirty=true;render();inspector();return;}
+    if(g.type==='edit'){if(doc.annotations.every(C.validAnnotation))history.commit(doc.annotations);else doc.annotations=C.clone(history.current);if(g.moved)changed();render();inspector();return;}
     if(g.type==='tap'&&Math.hypot(p.x-g.start.x,p.y-g.start.y)<8){
       const ip=imagePoint(p);if(ip.x<0||ip.y<0||ip.x>1||ip.y>1)return;
       if(g.mode==='dimension'){
@@ -126,10 +130,11 @@
       commit(doc.annotations.map(a=>a.id===selected?C.moveAnnotation(a,dx/doc.width,dy/doc.height):a));
     }
   });
-  $('title').addEventListener('input',()=>{if(doc){doc.title=$('title').value;dirty=true;}});
-  function lock(on){busy=on;document.querySelector('.mn').classList.toggle('mn-busy',on);document.querySelector('.mn').setAttribute('aria-busy',String(on));$('workspace').inert=on;$('file').disabled=on;$('example').disabled=on;if(doc)render();}
+  $('title').addEventListener('input',()=>{if(doc){doc.title=$('title').value;changed();}});
+  $('project-name').addEventListener('input',()=>{if(project){project.name=$('project-name').value;changed();}});
+  function lock(on){busy=on;document.querySelector('.mn').classList.toggle('mn-busy',on);document.querySelector('.mn').setAttribute('aria-busy',String(on));$('workspace').inert=on;$('projects').inert=on;$('file').disabled=on;$('example').disabled=on;if(doc)render();}
   async function readPhoto(file,example=false){
-    if(busy)return;if(doc&&(dirty||draft||formDirty)&&!window.confirm('Replace this photo? This prototype does not save your annotations. Download your work before replacing it.'))return;
+    if(busy||!await leaveProject())return;
     const generation=++loadGeneration;lock(true);status('Opening photo…');let bitmap,newURL,c;
     try{
       if(!example){
@@ -141,20 +146,21 @@
       else if(window.createImageBitmap)bitmap=await createImageBitmap(file,{imageOrientation:'from-image'});
       else {const url=URL.createObjectURL(file);try{bitmap=new Image();bitmap.src=url;await bitmap.decode();}finally{URL.revokeObjectURL(url);}}
       const w=bitmap.naturalWidth||bitmap.width,h=bitmap.naturalHeight||bitmap.height;
-      if(w*h>24000000||w>16000||h>16000)throw new Error('This photo exceeds the prototype’s 24-megapixel or 16,000-pixel edge limit. Resize it first.');
+      if(w*h>24000000||w>16000||h>16000)throw new Error('This photo exceeds the prototype’s 24 megapixel or 16,000 pixel edge limit. Resize it first.');
       c=document.createElement('canvas');c.width=w;c.height=h;const ctx=c.getContext('2d');ctx.drawImage(bitmap,0,0);const normalized=await R.toBlob(c);
       newURL=URL.createObjectURL(normalized);const nextImage=new Image();nextImage.src=newURL;await nextImage.decode();
       if(generation!==loadGeneration)return;
-      const old=imageURL;image=nextImage;imageURL=newURL;newURL=null;originalFile=file;doc={schemaVersion:1,title:example?'Kitchen window':file.name.replace(/\.[^.]+$/,'').slice(0,100)||'Measurement sheet',width:w,height:h,annotations:[]};
+      const old=imageURL;image=nextImage;imageURL=newURL;newURL=null;photoBlob=normalized;originalFile=file?file.slice(0,file.size,P.signature(new Uint8Array(await file.slice(0,12).arrayBuffer()))):null;doc={schemaVersion:1,title:example?'Kitchen window':file.name.replace(/\.[^.]+$/,'').slice(0,100)||'Measurement sheet',width:w,height:h,annotations:[]};
+      project={id:crypto.randomUUID(),name:doc.title,created:Date.now(),updated:Date.now(),revision:0};$('project-name').value=project.name;$('backup').disabled=false;$('save').disabled=false;
       history=new C.History();selected=null;draft=null;formDirty=false;pendingStart=null;gesture=null;pinch=null;pointers.clear();camera={zoom:1,cx:.5,cy:.5};mode='dimension';dirty=false;
       $('workspace').hidden=false;$('empty').hidden=true;$('title').value=doc.title;$('photo-info').textContent=`${w.toLocaleString()} × ${h.toLocaleString()} px${example?' · example illustration':''}`;
-      if(old)URL.revokeObjectURL(old);render();inspector();status('Photo ready. Choose two points, then type the measurement.');
+      if(old)URL.revokeObjectURL(old);render();inspector();changed();status('Photo ready. Choose two points, then type the measurement.');
     }catch(error){status(error.message?.includes('prototype')||error.message?.includes('photo')?error.message:'That image could not be opened. Try another JPG, PNG or WebP.',true);}
     finally{bitmap?.close?.();if(c)c.width=c.height=1;if(newURL)URL.revokeObjectURL(newURL);lock(false);$('file').value='';}
   }
   $('file').addEventListener('change',()=>{if($('file').files[0])readPhoto($('file').files[0]);});$('example').addEventListener('click',()=>readPhoto(null,true));
   async function exportFile(type){
-    if(!doc||busy||draft||hasUnsavedForm())return;lock(true);status(`Preparing ${type==='png'?'full-resolution image':'PDF'}…`);
+    if(!doc||busy||draft||hasUnsavedForm())return;lock(true);status(`Preparing ${type==='png'?'full resolution image':'PDF'}…`);
     try{
       await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
       if(!C.validDocument(doc))throw new Error('There is an invalid annotation. Review your labels and try again.');
@@ -163,8 +169,106 @@
     }catch(error){status(error.message||'Export failed. Try a smaller photo.',true);}finally{lock(false);}
   }
   $('png').addEventListener('click',()=>exportFile('png'));$('pdf').addEventListener('click',()=>exportFile('pdf'));
+  function snapshot(){return {...project,document:{...C.clone(doc),annotations:C.clone(history.current)}};}
+  async function refreshProjects(){
+    const {rows,damaged}=await S.list(),select=$('project-list'),previous=select.value;select.replaceChildren();
+    const placeholder=document.createElement('option');placeholder.value='';placeholder.textContent=rows.length?'Choose a project':'No saved projects yet';select.append(placeholder);
+    for(const row of rows){const o=document.createElement('option');o.value=row.project.id;o.textContent=row.project.name+' · '+new Date(row.project.updated).toLocaleDateString();select.append(o);}
+    select.value=rows.some(r=>r.project.id===project?.id)?project.id:previous;
+    const bytes=rows.reduce((n,r)=>n+r.bytes,0);let estimate;
+    try{estimate=await navigator.storage?.estimate();}catch{}
+    $('storage').textContent=`${rows.length} saved project${rows.length===1?'':'s'} · ${(bytes/1048576).toFixed(2)} MiB of project data`+(estimate?` · Browser estimate for this whole site: ${(estimate.usage/1048576).toFixed(1)} MiB used of ${(estimate.quota/1048576).toFixed(0)} MiB quota.`:'. Browser quota is unavailable.')+(damaged?` ${damaged} damaged record(s) could not be listed. Import a backup to recover them.`:'');
+    return rows;
+  }
+  async function saveNow(){
+    clearTimeout(saveTimer);
+    if(savePromise){await savePromise;if(dirty)return saveNow();return true;}
+    if(!project||!dirty)return true;
+    if(!project.name.trim()){$('save-state').textContent='Not saved: enter a project name, or download a backup after naming it.';$('save-state').classList.add('mn-error');return false;}
+    const version=editVersion,p=snapshot();$('save-state').textContent='Saving…';
+    savePromise=(async()=>{
+      try{
+        const saved=await S.write(p,photoBlob,originalFile,p.revision||null);
+        project.revision=saved.revision;project.updated=saved.updated;
+        if(editVersion===version)dirty=false;
+        $('save-state').textContent=dirty?'Newer edits waiting to save…':'Saved in this browser.';$('save-state').classList.remove('mn-error');
+        try{await refreshProjects();}catch{}
+        return true;
+      }catch(error){$('save-state').textContent=(error.name==='QuotaExceededError'?'Storage is full. The last saved version is unchanged.':error.message||'Storage is unavailable.')+' Current edits are not saved. Keep this tab open, download a project backup, then free storage and retry.';$('save-state').classList.add('mn-error');return false;}
+    })();
+    const ok=await savePromise;savePromise=null;return ok;
+  }
+  async function leaveProject(){
+    if(draft||formDirty){status('Apply or cancel your label changes before changing projects.',true);return false;}
+    if(gesture){status('Finish the current drag first.',true);return false;}
+    lock(true);try{await saveNow();return !dirty;}finally{lock(false);}
+  }
+  async function decoded(row){
+    if(!P.metadata(row.project))throw new Error('Invalid project data.');await P.assets(row.image,row.original,row.project.document);
+    const url=URL.createObjectURL(row.image),img=new Image();
+    try{
+      img.src=url;await img.decode();if(img.naturalWidth!==row.project.document.width||img.naturalHeight!==row.project.document.height)throw new Error('Photo dimensions do not match.');
+      if(row.original){
+        let source,sourceURL;
+        try{if(window.createImageBitmap)source=await createImageBitmap(row.original,{imageOrientation:'from-image'});else{sourceURL=URL.createObjectURL(row.original);source=new Image();source.src=sourceURL;await source.decode();}
+          if((source.naturalWidth||source.width)!==img.naturalWidth||(source.naturalHeight||source.height)!==img.naturalHeight)throw new Error('Original photo dimensions do not match.');
+        }finally{source?.close?.();if(sourceURL)URL.revokeObjectURL(sourceURL);}
+      }
+      return {url,img};
+    }
+    catch{URL.revokeObjectURL(url);throw new Error('The project photo could not be decoded. No saved project was changed.');}
+  }
+  function showProject(row,loaded){
+    if(imageURL)URL.revokeObjectURL(imageURL);imageURL=loaded.url;image=loaded.img;photoBlob=row.image;originalFile=row.original;
+    const {document,...meta}=row.project;project=C.clone(meta);doc=C.clone(document);history=new C.History(doc.annotations);selected=null;draft=null;formDirty=false;dirty=false;gesture=null;pinch=null;pendingStart=null;pointers.clear();mode='select';camera={zoom:1,cx:.5,cy:.5};
+    $('workspace').hidden=false;$('empty').hidden=true;$('title').value=doc.title;$('project-name').value=project.name;$('backup').disabled=false;$('save').disabled=false;$('photo-info').textContent=`${doc.width.toLocaleString()} × ${doc.height.toLocaleString()} px`;
+    $('save-state').textContent='Saved in this browser.';$('save-state').classList.remove('mn-error');render();inspector();
+  }
+  function safeName(name){return (name.trim()||'measurement-project').replace(/[<>:"/\\|?*\u0000-\u001F]/g,'_').slice(0,90);}
+  $('save').addEventListener('click',()=>{if(!busy)saveNow();});
+  $('backup').addEventListener('click',async()=>{
+    if(busy||!doc||draft||hasUnsavedForm())return;lock(true);
+    try{const blob=await P.pack(snapshot(),photoBlob,originalFile);R.download(blob,safeName(project.name)+'.mnote');status('Editable project backup prepared. It includes applied edits, even if browser storage could not save them.');}catch(e){status(e.message,true);}finally{lock(false);}
+  });
+  $('refresh-projects').addEventListener('click',()=>refreshProjects().catch(e=>status(e.message,true)));
+  function clearProject(){
+    clearTimeout(saveTimer);project=null;doc=null;photoBlob=null;originalFile=null;image=null;if(imageURL)URL.revokeObjectURL(imageURL);imageURL=null;history=new C.History();dirty=false;draft=null;formDirty=false;selected=null;gesture=null;pendingStart=null;pointers.clear();pinch=null;
+    $('workspace').hidden=true;$('empty').hidden=false;$('backup').disabled=true;$('save').disabled=true;
+  }
+  $('close-project').addEventListener('click',async()=>{
+    if(busy||!project)return;lock(true);clearTimeout(saveTimer);
+    try{if(savePromise)await savePromise;if((dirty||draft||formDirty)&&!confirm('Close without saving current edits? Your last successful save stays intact. Download a project backup before discarding work.'))return;clearProject();$('save-state').textContent='Project closed. Open it from the saved list to continue.';status('Project closed.');}finally{lock(false);}
+  });
+  $('open-project').addEventListener('click',async()=>{
+    const id=$('project-list').value;if(!id||busy||!await leaveProject())return;lock(true);let loaded;
+    try{const row=await S.read(id);loaded=await decoded(row);showProject(row,loaded);loaded=null;status('Project opened. Applied edits save automatically.');}catch(e){status(e.message,true);}finally{if(loaded)URL.revokeObjectURL(loaded.url);lock(false);}
+  });
+  $('duplicate-project').addEventListener('click',async()=>{
+    const id=$('project-list').value;if(!id||busy||!await leaveProject())return;lock(true);let loaded;
+    try{const row=await S.read(id);loaded=await decoded(row);row.project={...row.project,id:crypto.randomUUID(),name:(row.project.name.slice(0,93)+' (copy)'),created:Date.now(),updated:Date.now(),revision:0};row.project=await S.write(row.project,row.image,row.original,null);showProject(row,loaded);loaded=null;await refreshProjects();status('Project duplicated.');}catch(e){status(e.message,true);}finally{if(loaded)URL.revokeObjectURL(loaded.url);lock(false);}
+  });
+  $('delete-project').addEventListener('click',async()=>{
+    const id=$('project-list').value;if(!id||busy||(id===project?.id&&!await leaveProject()))return;lock(true);
+    try{const row=await S.read(id);if(!confirm('Delete “'+row.project.name+'” from this browser? This cannot be undone. Keep a project backup first.'))return;await S.remove(id,row.project.revision);
+      if(project?.id===id){clearProject();$('save-state').textContent='Project deleted.';}
+      await refreshProjects();status('Saved project deleted.');
+    }catch(e){status(e.message,true);}finally{lock(false);}
+  });
+  $('import-project').addEventListener('change',async()=>{
+    const file=$('import-project').files[0];if(!file||busy)return;
+    if(!await leaveProject()){$('import-project').value='';return;}lock(true);let loaded;
+    try{
+      status('Checking project backup…');const row=await P.unpack(file);loaded=await decoded(row);
+      row.project={...row.project,id:crypto.randomUUID(),revision:0};
+      row.project=await S.write(row.project,row.image,row.original,null);
+      showProject(row,loaded);loaded=null;await refreshProjects();status('Backup imported as a new project. Existing projects were kept.');
+    }catch(e){status(e.name==='QuotaExceededError'?'Storage is full. The backup was not imported; existing projects are unchanged.':e.message,true);}finally{if(loaded)URL.revokeObjectURL(loaded.url);lock(false);$('import-project').value='';}
+  });
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&dirty)saveNow();});
+  lock(true);
+  refreshProjects().then(()=>{$('save-state').textContent='Projects are saved only in this browser. Open a saved project or start a new one.';}).catch(e=>{$('save-state').textContent='Browser storage is unavailable. You can still edit and download project backups. '+e.message;$('save-state').classList.add('mn-error');}).finally(()=>lock(false));
   new ResizeObserver(()=>{if(doc)render();}).observe(stage);
   window.addEventListener('beforeunload',e=>{if(dirty||formDirty||draft){e.preventDefault();e.returnValue='';}});
   // Read-only diagnostics for regression tests; no mutation shortcuts into the editor.
-  window.__measurement={get document(){return C.clone(doc);},get camera(){return {...camera};},get busy(){return busy;},get draft(){return C.clone(draft);}};
+  window.__measurement={get document(){return C.clone(doc);},get project(){return C.clone(project);},get dirty(){return dirty;},get camera(){return {...camera};},get busy(){return busy;},get draft(){return C.clone(draft);}};
 })();
