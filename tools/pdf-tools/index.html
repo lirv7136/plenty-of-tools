@@ -1,0 +1,61 @@
+<main class="wrap pt">
+  <div class="pt-top">
+    <h1>PDF Tools</h1>
+    <p class="muted">Merge, split, delete, rotate and reorder pages. Open one PDF or several, arrange the pages, save the result. <strong>Nothing is uploaded.</strong> Every other free PDF site sends your file to their server; this one opens it in your browser and it never leaves the device, which matters when the PDF is a contract, a payslip or a medical letter. <a href="/vs/ilovepdf/">Is it worth paying for a PDF site?</a></p>
+  </div>
+
+  <section class="card pt-open">
+    <h2>Open your PDFs</h2>
+    <div class="pt-drop" id="pt-drop">
+      <p class="pt-drop-text">Drop PDFs here, or</p>
+      <label class="btn primary" for="pt-file">Choose PDFs</label>
+      <input type="file" id="pt-file" accept="application/pdf,.pdf" multiple hidden>
+      <button class="btn" id="pt-sample" type="button">Try a sample</button>
+    </div>
+    <p class="pt-status" id="pt-status" role="status" aria-live="polite"></p>
+    <p class="pt-error" id="pt-error" role="alert" hidden></p>
+  </section>
+
+  <div class="pt-work" id="pt-work" hidden>
+    <section class="card pt-controls no-print">
+      <h2>Choose pages</h2>
+      <div class="pt-actions">
+        <button class="btn" id="pt-all" type="button">Select all</button>
+        <button class="btn" id="pt-none" type="button">Select none</button>
+        <button class="btn" id="pt-invert" type="button">Invert</button>
+        <button class="btn" id="pt-odd" type="button">Odd pages</button>
+        <button class="btn" id="pt-even" type="button">Even pages</button>
+      </div>
+      <div class="pt-actions">
+        <label class="pt-field grow"><span>Or type a range</span>
+          <input type="text" id="pt-range" placeholder="1-3, 5, 8-10" autocomplete="off">
+        </label>
+        <button class="btn" id="pt-range-go" type="button">Select range</button>
+      </div>
+
+      <h3>Change them</h3>
+      <div class="pt-actions">
+        <button class="btn" id="pt-left" type="button">Rotate left</button>
+        <button class="btn" id="pt-right" type="button">Rotate right</button>
+        <button class="btn danger" id="pt-delete" type="button">Delete selected</button>
+        <button class="btn" id="pt-reverse" type="button">Reverse order</button>
+        <button class="btn" id="pt-reset" type="button">Start again</button>
+      </div>
+
+      <h3>Save</h3>
+      <p class="pt-summary" id="pt-summary"></p>
+      <div class="pt-actions">
+        <button class="btn primary" id="pt-save" type="button">Save selected as one PDF</button>
+        <button class="btn" id="pt-save-each" type="button">Save each page separately</button>
+      </div>
+      <p class="pt-hint">Saving each page separately asks the browser for several downloads at once, which it may ask you to allow.</p>
+    </section>
+
+    <section class="card">
+      <h2 id="pt-pages-heading">Pages</h2>
+      <p class="pt-hint no-print">Tick the pages you want. The arrows move a page, and the order here is the order in the saved file.</p>
+      <ul class="pt-grid" id="pt-grid" aria-labelledby="pt-pages-heading"></ul>
+    </section>
+  </div>
+</main>
+<script src="/assets/pdf-tools/core.js" defer></script>

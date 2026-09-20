@@ -1,0 +1,104 @@
+<main class="wrap da">
+  <div class="da-top">
+    <h1>What's Eating My Disk</h1>
+    <p class="muted">Pick a folder and see what is actually using the space: a map of the biggest folders, the biggest files, duplicates found by content, and the things you have not touched in years. It reads the folder in your browser. Nothing is uploaded, nothing is installed, and it works the same on Windows, macOS and Linux. <a href="/vs/cleanmymac/">Is it worth paying for CleanMyMac?</a></p>
+  </div>
+
+  <section class="card da-pick" id="da-pick">
+    <h2>Choose a folder</h2>
+    <p class="da-hint" id="da-pick-hint">Start with Downloads, Documents, or your whole home folder. Everything stays on this device.</p>
+    <div class="da-actions">
+      <button class="btn primary" id="da-open" type="button" hidden>Choose a folder</button>
+      <label class="btn" for="da-input" id="da-input-label">Choose a folder</label>
+      <input type="file" id="da-input" webkitdirectory directory multiple hidden>
+      <button class="btn" id="da-demo" type="button">Try a sample</button>
+      <button class="btn danger" id="da-cancel" type="button" hidden>Stop scanning</button>
+    </div>
+    <p class="da-note" id="da-mode-note"></p>
+  </section>
+
+  <p class="da-status" id="da-status" role="status" aria-live="polite"></p>
+  <p class="da-error" id="da-error" role="alert" hidden></p>
+
+  <div class="da-results" id="da-results" hidden>
+    <section class="card da-summary-card">
+      <h2 id="da-summary-heading">Summary</h2>
+      <dl class="da-summary" id="da-summary"></dl>
+      <div class="da-actions">
+        <button class="btn" id="da-csv" type="button">Export CSV</button>
+        <button class="btn" id="da-reset" type="button">Scan another folder</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Where the space went</h2>
+      <p class="da-hint">Each rectangle is sized by how much space it uses. Click a folder to look inside it.</p>
+      <nav class="da-crumbs" id="da-crumbs" aria-label="Folder path"></nav>
+      <div class="da-map" id="da-map"></div>
+      <p class="da-hint" id="da-map-note"></p>
+    </section>
+
+    <section class="card">
+      <h2>Biggest files</h2>
+      <div class="da-scroll"><table class="da-table" id="da-largest"><caption class="sr-only">The fifty largest files in this folder</caption><thead><tr><th scope="col">File</th><th scope="col">Size</th><th scope="col">Last changed</th></tr></thead><tbody></tbody></table></div>
+    </section>
+
+    <section class="card">
+      <h2>By type</h2>
+      <div class="da-bars" id="da-types"></div>
+    </section>
+
+    <section class="card">
+      <h2>Duplicates</h2>
+      <p class="da-hint" id="da-dupe-hint">Files of the same size are compared by their contents, so a renamed copy is still found. Only files that could possibly match are read.</p>
+      <div class="da-actions">
+        <label class="da-field"><span>Ignore files under</span>
+          <select id="da-dupe-min">
+            <option value="1024">1 KB</option>
+            <option value="102400">100 KB</option>
+            <option value="1048576" selected>1 MB</option>
+            <option value="10485760">10 MB</option>
+          </select>
+        </label>
+        <button class="btn primary" id="da-dupe-run" type="button">Find duplicates</button>
+        <button class="btn danger" id="da-dupe-stop" type="button" hidden>Stop</button>
+      </div>
+      <p class="da-status" id="da-dupe-status" role="status" aria-live="polite"></p>
+      <div id="da-dupes"></div>
+    </section>
+
+    <section class="card">
+      <h2>Old and forgotten</h2>
+      <div class="da-actions">
+        <label class="da-field"><span>Not changed in</span>
+          <select id="da-stale-age">
+            <option value="180">6 months</option>
+            <option value="365" selected>1 year</option>
+            <option value="730">2 years</option>
+            <option value="1825">5 years</option>
+          </select>
+        </label>
+        <label class="da-field"><span>At least</span>
+          <select id="da-stale-min">
+            <option value="1048576">1 MB</option>
+            <option value="10485760" selected>10 MB</option>
+            <option value="104857600">100 MB</option>
+          </select>
+        </label>
+      </div>
+      <div class="da-scroll"><table class="da-table" id="da-stale"><caption class="sr-only">Large files you have not changed recently</caption><thead><tr><th scope="col">File</th><th scope="col">Size</th><th scope="col">Last changed</th></tr></thead><tbody></tbody></table></div>
+    </section>
+
+    <section class="card da-remove" id="da-remove-card" hidden>
+      <h2>Removing files</h2>
+      <p class="da-hint">Your browser asked permission for this folder, so files can be removed from here. Before each one is removed it is checked against what was scanned: same name, same size, same date. Anything that has changed since the scan is left alone. There is no undo and nothing goes to a recycle bin.</p>
+      <p class="da-selected" id="da-selected">Nothing selected.</p>
+      <div class="da-actions">
+        <button class="btn danger" id="da-remove" type="button" disabled>Remove selected files</button>
+        <button class="btn" id="da-clear-sel" type="button">Clear selection</button>
+      </div>
+      <p class="da-status" id="da-remove-status" role="status" aria-live="polite"></p>
+    </section>
+  </div>
+</main>
+<script src="/assets/disk-analyser/core.js" defer></script>

@@ -35,6 +35,113 @@ joins the sitemap by itself the day the tool flips to `live`.
 dimensions, save, close the tab, reopen and confirm the project is still there. Flip to `live`
 only after that.
 
+## 20 September: What's Eating My Disk (slate item #14)
+
+Live at **https://plentyoftools.io/tools/disk-analyser/**, with `/vs/cleanmymac/`. Claude's
+build, deployed 20 September. Pick a folder and it reports a treemap you can click into, the
+fifty biggest files, a breakdown by kind, duplicates matched on content, and large files not
+touched in six months to five years, plus a CSV. Two ways in: the File System Access API on
+Chromium desktop, which can also remove files, and a plain folder input everywhere else,
+which reads only. The page says which one you are getting.
+
+**The removal guard is the part worth knowing about.** Before deleting anything it re-reads
+the file and refuses unless the size and modified time still match what was scanned, so a
+stale scan cannot delete the wrong thing. `tests/disk-analyser.browser.cjs` proves this
+against the origin private file system, which hands out the same `FileSystemDirectoryHandle`
+API a chosen folder does: it writes real files, removes one, and checks the three refusal
+cases leave their file in place. **No human has yet deleted a real file with it**, which is
+the one manual check outstanding.
+
+Sixteen unit tests cover the arithmetic, and they assert the treemap's geometry rather than
+sample output: rectangles fill their box exactly, sit in proportion, never overlap, stay
+close to square, and survive empty, single item, zero size and wildly lopsided input.
+
+The comparison page is deliberately generous. DaisyDisk is US$9.99 once, not a subscription,
+and its own site says so; WinDirStat, WizTree, GrandPerspective and ncdu are free. The page
+says all of that and pitches the wedge honestly: nothing to install, any operating system,
+no admin rights. The anchor is CleanMyMac's subscription, from about US$3.33 a month billed
+annually on its own site in September 2026.
+
+Two things found while building it, both fixed: the sample folder could not demonstrate
+duplicate finding because there were no real bytes to hash, so the sample now carries small
+backing blobs; and the treemap coloured tiles by a hash of the folder name, which let two
+large neighbours land on the same colour and read as one block, so tiles are now coloured by
+position, which guarantees neighbours differ.
+
+## 20 September: Recipe Keeper (slate item #23)
+
+Live at **https://plentyoftools.io/tools/recipe-keeper/**, with `/vs/recime/`. Claude's
+build. Unlimited recipes in `localStorage`, searched by name, tag or ingredient; paste a
+recipe and it separates ingredients from method; scale to the servings you are cooking for;
+a seven day, three meal plan; and a shopping list added up across the week that says which
+recipes wanted each item. Ticking, copying, printing, export and import. Opted into the
+offline precache, which is now eleven pages.
+
+Two design decisions are load bearing and are stated on the page and in the README:
+
+- **Unlike units are never converted.** Two cups of flour plus one cup is three cups; two
+  cups plus 200 g stays two lines. Converting volume to weight depends on what is being
+  measured, and a guess would put a wrong number on a shopping list.
+- **Nothing is silently dropped.** A line the parser cannot read keeps its text and reaches
+  the list with no quantity. `a pinch of salt` reads as one pinch, because an article
+  followed by a real unit is a quantity; `a few tomatoes` is left alone, because `few` is
+  not one. Ranges take the low end, so `1-2 onions` under shops rather than over.
+
+Twenty unit tests cover the quantity grammar at both ends, unit aliases, the ingredient
+line split, the paste parser with and without headings, scaling, aggregation across
+recipes, and rebuilding an imported file field by field.
+
+Two failures worth recording, both found by the tests before anything shipped. The first
+was mine to fix: `a pinch of salt` parsed as an item with no quantity, because the parser
+only looked for digits, so a pinch never reached the shopping list as a pinch. The second
+was a wrong expectation rather than a bug: searching `garlic` returns two recipes, not one,
+because the soup has garlic in its ingredients and not in its name, which is the search
+working as intended.
+
+The comparison page is honest about where ReciMe earns its money: pulling a recipe out of
+an Instagram or TikTok video costs them real money per import and a browser tab cannot do
+it at all. ReciMe's own help centre gives one figure, US$39.99 a year in the United States,
+and says the price varies by region; it does not state the free tier's limit, so the page
+does not quote one. Paprika is named as the fair pay once option.
+
+## 20 September: PDF Tools (new, not on either slate)
+
+Live at **https://plentyoftools.io/tools/pdf-tools/**, with `/vs/ilovepdf/`. Claude's build,
+found by a fresh research pass rather than from slate 2, and cheap because pdf-lib and
+pdf.js were already vendored for Sign a PDF.
+
+Merge, split, delete, rotate, reverse and reorder pages, then save the selection as one
+file or each page as its own. Selection by clicking thumbnails or by typing a range the way
+a person says one (`1-3, 5, 8-10`), with odd and even buttons for a double sided scan.
+
+**The wedge is not the price, it is the upload.** iLovePDF, Smallpdf and Adobe all work by
+sending your document to their servers, and the PDFs people most need to merge or split are
+contracts, payslips, bank statements and medical letters. A browser can read and write a PDF
+on its own, so the upload is unnecessary for these operations.
+`tests/pdf-tools.browser.cjs` asserts it: the test fails if the page makes any request to
+another origin except the site's declared analytics beacon.
+
+The browser test does not trust the page's own report of what it did. It builds a sample PDF
+with pdf-lib, drives the real buttons, then **reads the saved bytes back with pdf.js** and
+checks the page count, the text on each page and the rotation flag. It also covers merging
+two documents, refusing a corrupt file by name, and refusing to delete every page.
+
+Deliberately not included, and said so on the page: no compression, because honest
+compression means re-encoding the images and the shortcut of rasterising every page
+silently destroys selectable text; no Word conversion; no OCR; no passwords. Those are the
+things worth paying iLovePDF for, and the comparison page says so.
+
+Verified from iLovePDF's own pricing page in September 2026: the free tier caps compress at
+2 files, merge at 25, image to PDF at 20, with file size limits from 15 MB to 400 MB, and
+Premium is AUD$7 a month billed yearly, AUD$84 a year, or AUD$11 month to month. The page
+also names Stirling PDF, macOS Preview and Windows print to PDF as genuinely free
+alternatives, because they are.
+
+Two fixes the tests forced. `baseName` left a trailing dash on a name whose last character
+was a path separator, so a saved file could be called `a-b-c-.pdf`. And the delete button
+was disabled whenever every page was selected, which is a dead control that explains
+nothing; it is now live and the click says why it will not empty the document.
+
 ## September brief: Codex completion
 
 - A: four travel calculators extend the original five. All nine text and print reports pass
@@ -92,10 +199,13 @@ posts, not ads. Kill rule at 30 days: under 100 uniques mothball, over 1000 doub
 | 15 | Read Aloud | read-aloud | live (2026-09-19) | Codex | speechify |
 | 18 | Habit Tracker | habit-tracker | live (2026-09-19) | Claude | habitify |
 | 22 | Ringtone Maker | ringtone-maker | live (2026-09-19) | Claude | ringtone-apps |
+| 14 | What's Eating My Disk | disk-analyser | live (2026-09-20) | Claude | cleanmymac |
+| 23 | Recipe Keeper | recipe-keeper | live (2026-09-20) | Claude | recime |
+| 25 | PDF Tools | pdf-tools | live (2026-09-20) | Claude | ilovepdf |
 
-**Sixteen tools live.** Ten of them plus the home page are precached for offline use:
+**Nineteen tools live.** Eleven of them plus the home page are precached for offline use:
 cv-builder, subscription-finder, qr-codes, invoice-generator, worth-it-calculators, settle-up,
-tuner-metronome, screen-recorder, gpx-route-builder and habit-tracker. Opt a tool in with
+tuner-metronome, screen-recorder, gpx-route-builder, habit-tracker and recipe-keeper. Opt a tool in with
 `"offline": true` in `tools.json`. Left out on size: pdf-sign 2.3 MB, image-converter 2.0 MB,
 background-remover 16.6 MB, transcription 21.9 MB, measurement-notebook 0.5 MB and hidden, plus
 drive-storage-analyser, which needs the network by definition. read-aloud has not been opted in
@@ -264,8 +374,9 @@ Claude / Codex:
 2. AlternativeTo submissions (`docs/distribution/alternativeto.md`) once the posts are out.
 3. Monthly `price_pain` diff mine in `~/dev/idea-engine` (next: 1 October).
 4. Consider a redirect from the pages.dev subdomain to plentyoftools.io (needs zone write).
-5. Slate 2 remaining web tools in calendar order: #18 habit tracker PWA, #22 ringtone maker,
-   #14 disk analyser, #15 read aloud, #16 scan to PDF, #20 receipts, #21 UV index, #23, #24.
+5. Slate 2 remaining web tools in calendar order: #16 scan to PDF, #20 receipts,
+   #21 UV index, #24 vocal remover. (#14, #15, #18, #22 and #23 are live.)
+   #21 is the only one that would need a server, even a tiny one; that is Lachlan's call.
 
 ## Gotchas worth remembering
 

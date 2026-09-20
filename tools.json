@@ -199,5 +199,40 @@
     ],
     "status": "live",
     "vs": "ringtone-apps"
+  },
+  {
+    "slug": "disk-analyser",
+    "name": "What's Eating My Disk",
+    "tagline": "Pick a folder and see what is using the space: a treemap, the biggest files, duplicates matched by content and the things you have not touched in years.",
+    "replaces": [
+      "CleanMyMac",
+      "DaisyDisk"
+    ],
+    "status": "live",
+    "vs": "cleanmymac"
+  },
+  {
+    "slug": "recipe-keeper",
+    "name": "Recipe Keeper",
+    "tagline": "Keep your recipes, plan the week, and get the shopping list added up across every meal. No cap, no account, works offline.",
+    "replaces": [
+      "ReciMe",
+      "Paprika"
+    ],
+    "status": "live",
+    "vs": "recime",
+    "offline": true
+  },
+  {
+    "slug": "pdf-tools",
+    "name": "PDF Tools",
+    "tagline": "Merge, split, delete, rotate and reorder PDF pages. Your file is never uploaded, because there is no server to upload it to.",
+    "replaces": [
+      "iLovePDF",
+      "Smallpdf",
+      "Adobe Acrobat online"
+    ],
+    "status": "live",
+    "vs": "ilovepdf"
   }
 ]

@@ -1,0 +1,106 @@
+<main class="wrap rk">
+  <div class="rk-top">
+    <h1>Recipe Keeper</h1>
+    <p class="muted">Keep your recipes, plan the week and get the shopping list added up for you. As many recipes as you like, no account, no cap, nothing uploaded. Paste a recipe in and it sorts the ingredients from the method itself. <a href="/vs/recime/">Is it worth paying for a recipe app?</a></p>
+  </div>
+
+  <section class="card rk-bar no-print">
+    <h2 class="sr-only">Your collection</h2>
+    <p class="rk-summary" id="rk-summary">No recipes yet.</p>
+    <div class="rk-actions">
+      <button class="btn primary" id="rk-new" type="button">Add a recipe</button>
+      <button class="btn" id="rk-paste-open" type="button">Paste a recipe</button>
+      <button class="btn" id="rk-sample" type="button">Try a sample</button>
+      <button class="btn" id="rk-export" type="button">Export file</button>
+      <label class="btn" for="rk-import">Import file</label>
+      <input type="file" id="rk-import" accept="application/json,.json" hidden>
+      <button class="btn danger" id="rk-clear" type="button">Clear</button>
+    </div>
+  </section>
+  <p class="rk-toast" id="rk-toast" role="status" aria-live="polite"></p>
+
+  <div class="rk-grid">
+    <section class="card rk-library no-print">
+      <h2>Recipes</h2>
+      <label class="rk-search"><span class="sr-only">Search recipes</span>
+        <input type="search" id="rk-search" placeholder="Search by name, tag or ingredient" autocomplete="off">
+      </label>
+      <ul class="rk-list" id="rk-list"></ul>
+      <p class="rk-empty" id="rk-empty">Add a recipe, or paste one in, and it will appear here.</p>
+    </section>
+
+    <section class="card rk-detail" id="rk-detail" hidden>
+      <h2 id="rk-detail-title">Recipe</h2>
+      <p class="rk-meta" id="rk-detail-meta"></p>
+      <div class="rk-actions no-print">
+        <label class="rk-field"><span>Cook for</span>
+          <input type="number" id="rk-servings" min="1" max="100" step="1" value="4">
+          <span id="rk-servings-unit">servings</span>
+        </label>
+        <button class="btn" id="rk-edit" type="button">Edit</button>
+        <button class="btn" id="rk-print" type="button">Print</button>
+        <button class="btn danger" id="rk-delete" type="button">Delete</button>
+      </div>
+      <h3>Ingredients</h3>
+      <ul class="rk-ings" id="rk-ings"></ul>
+      <h3>Method</h3>
+      <ol class="rk-steps" id="rk-steps"></ol>
+      <div id="rk-notes-wrap" hidden>
+        <h3>Notes</h3>
+        <p class="rk-notes" id="rk-notes"></p>
+      </div>
+    </section>
+  </div>
+
+  <section class="card rk-editor no-print" id="rk-editor" hidden>
+    <h2 id="rk-editor-heading">Add a recipe</h2>
+    <form id="rk-form" autocomplete="off">
+      <div class="rk-row">
+        <label class="rk-field grow"><span>Name</span><input id="rk-title" type="text" maxlength="120" placeholder="Simple pancakes"></label>
+        <label class="rk-field"><span>Serves</span><input id="rk-serves" type="number" min="1" max="100" step="1" value="4"></label>
+        <label class="rk-field"><span>Minutes</span><input id="rk-minutes" type="number" min="0" max="1440" step="5" value="20"></label>
+      </div>
+      <label class="rk-field"><span>Tags, separated by commas</span><input id="rk-tags" type="text" maxlength="200" placeholder="quick, vegetarian"></label>
+      <label class="rk-field"><span>Where it came from, optional</span><input id="rk-source" type="text" maxlength="300" placeholder="Grandma, or a book, or a link"></label>
+      <label class="rk-field"><span>Ingredients, one per line</span><textarea id="rk-ingredients" rows="7" placeholder="2 cups plain flour&#10;2 eggs&#10;1 1/2 cups milk&#10;a pinch of salt"></textarea></label>
+      <label class="rk-field"><span>Method, one step per line</span><textarea id="rk-steps-input" rows="6" placeholder="Whisk everything together.&#10;Fry spoonfuls until golden."></textarea></label>
+      <label class="rk-field"><span>Notes, optional</span><textarea id="rk-notes-input" rows="2" maxlength="2000"></textarea></label>
+      <p class="rk-error" id="rk-error" role="alert" hidden></p>
+      <div class="rk-actions">
+        <button class="btn primary" id="rk-save" type="submit">Save recipe</button>
+        <button class="btn" id="rk-cancel" type="button">Cancel</button>
+      </div>
+    </form>
+  </section>
+
+  <section class="card rk-paste no-print" id="rk-paste" hidden>
+    <h2>Paste a recipe</h2>
+    <p class="rk-hint">Copy a recipe from anywhere and paste it here. It looks for an ingredients heading and a method heading, and failing that it sorts lines by shape: a line that starts with an amount is an ingredient, a long sentence is a step. Check what it produced before saving, and fix anything it got wrong.</p>
+    <label class="rk-field"><span class="sr-only">Recipe text</span><textarea id="rk-paste-text" rows="10" placeholder="Simple Pancakes&#10;&#10;Ingredients&#10;2 cups plain flour&#10;2 eggs&#10;&#10;Method&#10;1. Whisk it all together."></textarea></label>
+    <div class="rk-actions">
+      <button class="btn primary" id="rk-paste-go" type="button">Read it</button>
+      <button class="btn" id="rk-paste-cancel" type="button">Cancel</button>
+    </div>
+  </section>
+
+  <section class="card rk-plan">
+    <h2>This week</h2>
+    <p class="rk-hint no-print">Put a recipe in a meal and the shopping list below adds itself up. Leave the servings blank to use the recipe's own.</p>
+    <div class="rk-scroll"><table class="rk-plan-table" id="rk-plan"><caption class="sr-only">Meal plan for the week</caption></table></div>
+    <div class="rk-actions no-print">
+      <button class="btn" id="rk-plan-clear" type="button">Clear the week</button>
+    </div>
+  </section>
+
+  <section class="card rk-shop">
+    <h2>Shopping list</h2>
+    <p class="rk-hint" id="rk-shop-note">Plan some meals and the list appears here, with the same ingredient added up across recipes.</p>
+    <ul class="rk-shop-list" id="rk-shop-list"></ul>
+    <div class="rk-actions no-print">
+      <button class="btn" id="rk-copy" type="button">Copy list</button>
+      <button class="btn" id="rk-shop-print" type="button">Print list</button>
+      <button class="btn" id="rk-untick" type="button">Untick all</button>
+    </div>
+  </section>
+</main>
+<script src="/assets/recipe-keeper/core.js" defer></script>
