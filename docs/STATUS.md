@@ -229,9 +229,12 @@ Until that evening **the site had no analytics at all**. The beacon was never in
 request counts, which are dominated by scanners and crawlers. The thirty day decision rule in
 PORTFOLIO.md had nothing real to measure.
 
-Cloudflare Web Analytics is now on every page, including `404.html`. Site tag
+Cloudflare Web Analytics is now on every page, including `404.html`. Beacon token
 **`264e4341231044e4919c83c7da7d5ce9`**, which is a public identifier and not a secret; it is
-visible in the page source of every visitor. `build.py` emits Cloudflare's own module script from
+visible in the page source of every visitor. **The token is not the siteTag the data is filed
+under.** Queries filter on siteTag **`e2e4102c2f1848a2984c56adf6d3449e`** (found 26 September by
+querying with no site filter); filtering on the token returns zero for every day, which is why no
+numbers were read in the first week. `build.py` emits Cloudflare's own module script from
 `analytics_tag()`. Verified in Chrome: the beacon loads and posts to
 `https://cloudflareinsights.com/cdn-cgi/rum`, which answers `204`.
 
@@ -240,7 +243,7 @@ and the window must be one day or less.
 
 ```bash
 TOKEN=$(grep oauth_token ~/.config/.wrangler/config/default.toml | cut -d'"' -f2)
-SITE=264e4341231044e4919c83c7da7d5ce9
+SITE=e2e4102c2f1848a2984c56adf6d3449e   # the siteTag, not the beacon token
 curl -s https://api.cloudflare.com/client/v4/graphql -H "Authorization: Bearer $TOKEN" \
   -H 'Content-Type: application/json' -d @- <<Q
 {"query":"{ viewer { accounts(filter:{accountTag:\"5e0f03f73cfa3e8ae2053605f57409d6\"}) { rumPageloadEventsAdaptiveGroups(limit:30, filter:{datetime_geq:\"2026-09-20T00:00:00Z\", datetime_lt:\"2026-09-21T00:00:00Z\", siteTag:\"$SITE\"}) { count sum { visits } dimensions { requestPath refererHost countryName } } } } }"}

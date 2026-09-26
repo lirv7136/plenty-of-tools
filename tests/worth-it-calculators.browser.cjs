@@ -109,7 +109,8 @@ async function screenshot(name){fs.writeFileSync(path.join(directory,name+'.png'
   await choose('fasttrack');await value('wc-fast','40');assert.ok(await evaluate("document.getElementById('wc-notes').textContent.includes('no time')"));
   await send('Emulation.setEmulatedMedia',{features:[{name:'prefers-color-scheme',value:'dark'}]});await screenshot('dark');
   assert.equal(await evaluate('localStorage.length+sessionStorage.length'),0);
-  assert.equal(requests.length,requestCount,'Calculator operations made a network request');
+  // the site's page view counter (declared on /privacy/) can post after load; it is shell, not the calculator
+  assert.deepEqual(requests.slice(requestCount).filter(u=>!/^https:\/\/(static\.)?cloudflareinsights\.com\//.test(u)),[],'Calculator operations made a network request');
   await send('Network.emulateNetworkConditions',{offline:false,latency:0,downloadThroughput:-1,uploadThroughput:-1});
   await choose('etsy');
   await send('Page.reload');

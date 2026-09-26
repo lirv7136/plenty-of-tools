@@ -60,7 +60,8 @@ const click = id => evaluate(`document.getElementById(${JSON.stringify(id)}).cli
   assert.ok(await evaluate("document.getElementById('tr-error').hidden"),await evaluate("document.getElementById('tr-error').textContent"));
   const transcript=await evaluate("Array.from(document.querySelectorAll('#tr-segments textarea'),x=>x.value).join(' ')");console.log('Recognised:',transcript);assert.match(transcript,/country/i);assert.match(transcript,/ask/i);
   assert.ok(requests.some(r=>r.url.includes('encoder_model_quantized.onnx')));assert.ok(requests.some(r=>r.url.endsWith('.wasm')));
-  assert.ok(requests.every(r=>r.method==='GET'&&!r.hasPostData),'Audio or transcript was posted');
+  // the site's page view counter (declared on /privacy/) posts timings only; everything else must be a GET
+  assert.ok(requests.filter(r=>!/^https:\/\/(static\.)?cloudflareinsights\.com\//.test(r.url)).every(r=>r.method==='GET'&&!r.hasPostData),'Audio or transcript was posted');
   const keys=await evaluate("caches.open(TranscriptionCore.CACHE_NAME).then(c=>c.keys()).then(keys=>keys.map(k=>k.url))");
   assert.ok(keys.some(k=>k.includes('decoder_model_merged_quantized.onnx')),'Model was not cached');
   assert.ok(keys.every(k=>k.startsWith('https://huggingface.co/Xenova/whisper-tiny.en/resolve/79fb389fc764e7c395bd330e9531d9d32ada7049/')),'Unexpected cache content');

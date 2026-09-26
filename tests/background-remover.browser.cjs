@@ -63,7 +63,8 @@ const click = id => evaluate(`document.getElementById(${JSON.stringify(id)}).cli
   assert.ok(stats.transparent>20000, JSON.stringify(stats)); assert.ok(stats.opaque>20000,JSON.stringify(stats));
   assert.ok(requests.some(r=>r.url.endsWith('/u2netp.onnx')), 'Did not observe worker model request');
   assert.ok(requests.some(r=>r.url.endsWith('.wasm')), 'Did not observe WASM request');
-  assert.ok(requests.every(r=>(r.url.startsWith('http://127.0.0.1:8765/')||r.url.startsWith('data:')||r.url.startsWith('blob:'))&&r.method==='GET'&&!r.hasPostData),JSON.stringify(requests));
+  // the site's page view counter (declared on /privacy/) is shell, not the tool reaching out
+  assert.ok(requests.filter(r=>!/^https:\/\/(static\.)?cloudflareinsights\.com\//.test(r.url)).every(r=>(r.url.startsWith('http://127.0.0.1:8765/')||r.url.startsWith('data:')||r.url.startsWith('blob:'))&&r.method==='GET'&&!r.hasPostData),JSON.stringify(requests));
   assert.equal(await evaluate('localStorage.length+sessionStorage.length'),0);
   await send('Browser.setDownloadBehavior',{behavior:'allow',downloadPath:directory});
   await click('br-download');
