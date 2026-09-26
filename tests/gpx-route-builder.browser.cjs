@@ -52,7 +52,7 @@ async function upload(files) {
   await send('Emulation.setDeviceMetricsOverride',{width:1280,height:1050,deviceScaleFactor:1,mobile:false});
   await send('Page.navigate',{url:process.env.TEST_URL || 'http://127.0.0.1:8765/tools/gpx-route-builder/'});
   await until("document.readyState==='complete' && !!window.GPXCore && !!document.querySelector('.leaflet-pane')");
-  assert.ok(!requests.some(url=>url.startsWith('http')&&!url.startsWith('http://127.0.0.1:8765')), 'External request before consent');
+  assert.ok(!requests.some(url=>url.startsWith('http')&&!url.startsWith('http://127.0.0.1:8765')&&!/^https:\/\/(static\.)?cloudflareinsights\.com\//.test(url)), 'External request before consent'); // the page view counter is shell, declared on /privacy/
   await click('gp-demo');
   assert.equal(await evaluate("document.querySelectorAll('#gp-list li').length"),3);
   await until("!!document.querySelector('.leaflet-heatmap-layer')");
@@ -135,7 +135,7 @@ async function upload(files) {
   for(let i=0;i<100&&!fs.existsSync(path.join(directory,'Offline.gpx'));i++)await new Promise(r=>setTimeout(r,50));
   assert.ok(fs.existsSync(path.join(directory,'Offline.gpx')));
   assert.equal(await evaluate('localStorage.length+sessionStorage.length'),0);
-  assert.ok(!requests.some(url=>url.startsWith('http')&&!url.startsWith('http://127.0.0.1:8765')),'File operations sent external requests');
+  assert.ok(!requests.some(url=>url.startsWith('http')&&!url.startsWith('http://127.0.0.1:8765')&&!/^https:\/\/(static\.)?cloudflareinsights\.com\//.test(url)),'File operations sent external requests'); // page view counter is shell
   await send('Network.emulateNetworkConditions',{offline:false,latency:0,downloadThroughput:-1,uploadThroughput:-1});
   // Stub optional tiles locally; test consent without contacting OSM in automation.
   await send('Fetch.enable',{patterns:[{urlPattern:'https://tile.openstreetmap.org/*'}]});
