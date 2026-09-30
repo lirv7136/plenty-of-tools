@@ -1,0 +1,148 @@
+<main class="wrap lb">
+  <div class="lb-top">
+    <h1><span class="eyebrow">Free ATO car logbook</span>Car Logbook</h1>
+    <p class="muted">Keep the 12 week logbook the ATO asks for, see your business use percentage as you go, and print a clean report for your tax agent. No app to install, no account, nothing uploaded. <a href="/vs/driversnote/">Is it worth paying for a logbook app?</a></p>
+  </div>
+
+  <section class="lb-print-head" aria-hidden="true">
+    <h2>Car logbook</h2>
+    <p id="lb-print-car"></p>
+  </section>
+
+  <section class="lb-bar no-print">
+    <p class="lb-summary" id="lb-summary">No logbook yet.</p>
+    <div class="lb-actions">
+      <button class="btn" id="lb-sample" type="button">Try an example</button>
+      <button class="btn" id="lb-print" type="button">Print report</button>
+      <button class="btn" id="lb-csv" type="button">CSV</button>
+      <button class="btn" id="lb-export" type="button">Backup file</button>
+      <label class="btn" for="lb-import">Restore file</label>
+      <input type="file" id="lb-import" accept="application/json,.json" hidden>
+      <button class="btn danger" id="lb-clear" type="button">Clear</button>
+    </div>
+  </section>
+  <p class="lb-toast" id="lb-toast" role="status" aria-live="polite"></p>
+
+  <div class="lb-grid">
+    <section class="card lb-car no-print" aria-labelledby="lb-car-title">
+      <h2 id="lb-car-title">Your car and logbook period</h2>
+      <div class="lb-row" id="lb-car-pick-row" hidden>
+        <label class="lb-field grow"><span>Car</span><select id="lb-car-pick"></select></label>
+        <button class="btn" id="lb-car-new" type="button">Add another car</button>
+      </div>
+      <form id="lb-car-form" autocomplete="off">
+        <div class="lb-row">
+          <label class="lb-field grow"><span>Name</span><input id="lb-car-name" type="text" maxlength="80" placeholder="Work ute"></label>
+          <label class="lb-field"><span>Registration, optional</span><input id="lb-car-rego" type="text" maxlength="20" placeholder="ABC123"></label>
+        </div>
+        <label class="lb-field"><span>Make and model, optional</span><input id="lb-car-model" type="text" maxlength="80" placeholder="Toyota Hilux"></label>
+        <div class="lb-row">
+          <label class="lb-field"><span>Logbook starts</span><input id="lb-car-start" type="date"></label>
+          <label class="lb-field"><span>Odometer at start (km)</span><input id="lb-car-startodo" type="number" inputmode="decimal" min="0" step="0.1"></label>
+        </div>
+        <details class="lb-close" id="lb-close">
+          <summary>End the logbook period</summary>
+          <div class="lb-row">
+            <label class="lb-field"><span>Logbook ends</span><input id="lb-car-end" type="date"></label>
+            <label class="lb-field"><span>Odometer at end (km)</span><input id="lb-car-endodo" type="number" inputmode="decimal" min="0" step="0.1"></label>
+          </div>
+          <p class="lb-hint">Leave these empty while the logbook is running. The ATO asks for at least 12 continuous weeks.</p>
+        </details>
+        <p class="lb-error" id="lb-car-error" role="alert" hidden></p>
+        <div class="lb-actions"><button class="btn primary" id="lb-car-save" type="submit">Start logbook</button></div>
+      </form>
+    </section>
+
+    <section class="card lb-add no-print" aria-labelledby="lb-add-title">
+      <h2 id="lb-add-title">Add a trip</h2>
+      <form id="lb-trip-form" autocomplete="off">
+        <div class="lb-row" id="lb-fav-row" hidden>
+          <label class="lb-field grow"><span>Fill from a saved trip</span><select id="lb-fav"></select></label>
+        </div>
+        <div class="lb-row">
+          <label class="lb-field"><span>Date</span><input id="lb-date" type="date"></label>
+          <label class="lb-field"><span>Start odometer</span><input id="lb-start" type="number" inputmode="decimal" min="0" step="0.1"></label>
+          <label class="lb-field"><span>End odometer</span><input id="lb-end" type="number" inputmode="decimal" min="0" step="0.1"></label>
+          <p class="lb-km" id="lb-km" aria-live="polite"></p>
+        </div>
+        <fieldset class="lb-type">
+          <legend>Type of trip</legend>
+          <label><input type="radio" name="lb-type" value="work" checked> Work</label>
+          <label><input type="radio" name="lb-type" value="private"> Private</label>
+        </fieldset>
+        <div class="lb-row" id="lb-work-fields">
+          <label class="lb-field grow"><span>Purpose</span><input id="lb-purpose" type="text" maxlength="200" placeholder="Client meeting" list="lb-purposes"></label>
+          <label class="lb-field grow"><span>Destination</span><input id="lb-dest" type="text" maxlength="200" placeholder="Parramatta" list="lb-dests"></label>
+        </div>
+        <datalist id="lb-purposes"></datalist>
+        <datalist id="lb-dests"></datalist>
+        <label class="lb-check" id="lb-savefav-row"><input type="checkbox" id="lb-savefav"> Save as a favourite trip</label>
+        <p class="lb-error" id="lb-trip-error" role="alert" hidden></p>
+        <div class="lb-actions">
+          <button class="btn primary" id="lb-trip-save" type="submit">Add trip</button>
+          <button class="btn" id="lb-trip-cancel" type="button" hidden>Cancel</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="card lb-period" aria-labelledby="lb-period-title">
+      <h2 id="lb-period-title">Logbook period</h2>
+      <p class="lb-hint" id="lb-period-empty">Start a logbook to see the period here.</p>
+      <div id="lb-period-body" hidden>
+        <div class="lb-progress" role="progressbar" id="lb-progress" aria-valuemin="0" aria-valuemax="84" aria-valuenow="0" aria-label="Days of the 12 week logbook"><span id="lb-progress-bar"></span></div>
+        <p class="lb-progress-text" id="lb-progress-text"></p>
+        <dl class="lb-stats">
+          <div><dt>Business use</dt><dd id="lb-pct">–</dd></div>
+          <div><dt>Work km</dt><dd id="lb-bkm">0</dd></div>
+          <div><dt>Total km</dt><dd id="lb-tkm">0</dd></div>
+          <div><dt>Odometer</dt><dd id="lb-odo">–</dd></div>
+        </dl>
+        <ul class="lb-checks" id="lb-checks"></ul>
+      </div>
+    </section>
+
+    <section class="card lb-trips" aria-labelledby="lb-trips-title">
+      <h2 id="lb-trips-title">Trips <span class="badge" id="lb-count">0</span></h2>
+      <p class="lb-hint" id="lb-trips-empty">No trips yet.</p>
+      <div class="lb-tablewrap" id="lb-wrap" hidden>
+        <table id="lb-table">
+          <thead><tr><th scope="col">Date</th><th scope="col" class="num">Odometer</th><th scope="col" class="num">km</th><th scope="col">Type</th><th scope="col">Purpose and destination</th><th scope="col">Entered</th><th scope="col" class="no-print"><span class="lb-sr">Actions</span></th></tr></thead>
+          <tbody id="lb-rows"></tbody>
+        </table>
+      </div>
+      <div class="lb-actions no-print"><button class="btn" id="lb-merge" type="button" hidden>Combine same day journeys</button></div>
+    </section>
+
+    <section class="card lb-years" aria-labelledby="lb-years-title">
+      <h2 id="lb-years-title">Later years</h2>
+      <p class="lb-hint" id="lb-valid"></p>
+      <form class="lb-row no-print" id="lb-year-form" autocomplete="off">
+        <label class="lb-field"><span>Income year</span><select id="lb-year"></select></label>
+        <label class="lb-field"><span>Odometer at 1 July</span><input id="lb-year-open" type="number" inputmode="decimal" min="0" step="0.1"></label>
+        <label class="lb-field"><span>Odometer at 30 June</span><input id="lb-year-close" type="number" inputmode="decimal" min="0" step="0.1"></label>
+        <button class="btn" type="submit">Save readings</button>
+      </form>
+      <ul class="lb-yearlist" id="lb-yearlist"></ul>
+    </section>
+  </div>
+
+  <section class="prose lb-faq no-print">
+    <h2>What the ATO asks for</h2>
+    <ul>
+      <li><strong>At least 12 continuous weeks,</strong> representative of how you use the car across the year.</li>
+      <li><strong>Odometer readings</strong> at the start and end of the logbook period, and the total kilometres in between.</li>
+      <li><strong>For each work journey:</strong> the purpose, the destination, the odometer at the start and end, and the kilometres. Two or more journeys in a row on the same day can be one entry, which is what "Combine same day journeys" does.</li>
+      <li><strong>Entries at the time,</strong> at the end of the journey or as soon as possible afterwards. This page records when each trip was entered and marks anything added more than a week later, so there are no surprises at tax time.</li>
+      <li><strong>Business use percentage</strong> is work kilometres divided by total kilometres for the period. A logbook stays valid for five years; in the later years keep the odometer readings at the start and end of each income year.</li>
+    </ul>
+    <p>Read the rules on the ATO's <a href="https://www.ato.gov.au/businesses-and-organisations/income-deductions-and-concessions/income-and-deductions-for-business/deductions/deductions-for-motor-vehicle-expenses/logbook-method" rel="noopener">logbook method</a> page. This page helps you keep the records; your tax agent or the ATO decides what you can claim.</p>
+    <h2>Good to know</h2>
+    <ul>
+      <li><strong>The ATO has a free app too.</strong> myDeductions, inside the ATO app, logs car trips on your phone. This page is for people who would rather use a laptop as well as a phone, skip the myGov sign in, or want a printed report and files they keep.</li>
+      <li><strong>No automatic GPS tracking.</strong> A web page stops when your phone locks, so it cannot log trips in the background. You type the odometer readings, which is what the ATO asks for anyway. Apps that detect trips automatically are what the paid logbook apps sell.</li>
+      <li><strong>Everything stays on this device.</strong> Trips live in this browser's storage. Nothing is uploaded and there is no account, so use Backup file to keep a copy or move to another device.</li>
+      <li><strong>Works offline.</strong> After your first visit the page opens with no connection. Add it to your home screen and it behaves like an app.</li>
+    </ul>
+  </section>
+</main>
+<script src="/assets/car-logbook/core.js" defer></script>

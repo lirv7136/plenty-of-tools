@@ -234,5 +234,30 @@
     ],
     "status": "live",
     "vs": "ilovepdf"
+  },
+  {
+    "slug": "car-logbook",
+    "name": "Car Logbook",
+    "tagline": "The 12 week ATO car logbook, with your business use percentage as you go and a report for your tax agent. No app or account.",
+    "replaces": [
+      "Driversnote",
+      "paid logbook apps"
+    ],
+    "status": "hidden",
+    "vs": "driversnote",
+    "offline": true
+  },
+  {
+    "slug": "hours-log",
+    "name": "Hours Log",
+    "tagline": "Log hours worked from home for the ATO fixed rate, with a timer, weekly timesheets and invoice lines. No account.",
+    "replaces": [
+      "Toggl Track",
+      "Harvest",
+      "work from home spreadsheets"
+    ],
+    "status": "hidden",
+    "vs": "timesheet-apps",
+    "offline": true
   }
 ]

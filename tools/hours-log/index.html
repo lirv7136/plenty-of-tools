@@ -1,0 +1,142 @@
+<main class="wrap hl">
+  <div class="hl-top">
+    <h1><span class="eyebrow">Free work from home hours log and timesheet</span>Hours Log</h1>
+    <p class="muted">Keep the record of hours worked from home that the ATO's fixed rate method asks for, see the deduction as you go, and turn the same hours into a timesheet or invoice lines. No account, nothing uploaded. <a href="/vs/timesheet-apps/">Is it worth paying for a time tracker?</a></p>
+  </div>
+
+  <section class="hl-print-head" aria-hidden="true">
+    <h2 id="hl-print-title">Hours log</h2>
+    <p id="hl-print-sub"></p>
+  </section>
+
+  <section class="hl-bar no-print">
+    <p class="hl-summary" id="hl-summary">Nothing logged yet.</p>
+    <div class="hl-actions">
+      <button class="btn" id="hl-sample" type="button">Try an example</button>
+      <button class="btn" id="hl-csv" type="button">CSV</button>
+      <button class="btn" id="hl-export" type="button">Backup file</button>
+      <label class="btn" for="hl-import">Restore file</label>
+      <input type="file" id="hl-import" accept="application/json,.json" hidden>
+      <button class="btn danger" id="hl-clear" type="button">Clear</button>
+    </div>
+  </section>
+  <p class="hl-toast" id="hl-toast" role="status" aria-live="polite"></p>
+
+  <div class="hl-grid">
+    <section class="card hl-timer no-print" aria-labelledby="hl-timer-title">
+      <h2 id="hl-timer-title">Timer</h2>
+      <p class="hl-clock" id="hl-clock" aria-live="off">0:00:00</p>
+      <p class="hl-hint" id="hl-timer-state">Start it when you start work. It keeps running if you close the tab.</p>
+      <div class="hl-row">
+        <label class="hl-field"><span>Where</span><select id="hl-t-place"><option value="home">Home</option><option value="work">Workplace</option><option value="other">Other</option></select></label>
+        <label class="hl-field grow"><span>Client or employer, optional</span><input id="hl-t-client" type="text" maxlength="80" list="hl-clients"></label>
+      </div>
+      <div class="hl-actions"><button class="btn primary" id="hl-t-toggle" type="button">Start</button><button class="btn" id="hl-t-discard" type="button" hidden>Discard</button></div>
+    </section>
+
+    <section class="card hl-add no-print" aria-labelledby="hl-add-title">
+      <h2 id="hl-add-title">Add hours</h2>
+      <form id="hl-form" autocomplete="off">
+        <div class="hl-row">
+          <label class="hl-field"><span>Date</span><input id="hl-date" type="date"></label>
+          <label class="hl-field"><span>Start</span><input id="hl-start" type="time"></label>
+          <label class="hl-field"><span>Finish</span><input id="hl-end" type="time"></label>
+          <label class="hl-field"><span>Unpaid break (min)</span><input id="hl-break" type="number" inputmode="numeric" min="0" step="1" value="0"></label>
+        </div>
+        <p class="hl-length" id="hl-length" aria-live="polite"></p>
+        <fieldset class="hl-place">
+          <legend>Where</legend>
+          <label><input type="radio" name="hl-place" value="home" checked> Home</label>
+          <label><input type="radio" name="hl-place" value="work"> Workplace</label>
+          <label><input type="radio" name="hl-place" value="other"> Other</label>
+        </fieldset>
+        <div class="hl-row">
+          <label class="hl-field grow"><span>Client or employer, optional</span><input id="hl-client" type="text" maxlength="80" list="hl-clients"></label>
+          <label class="hl-field grow"><span>Note, optional</span><input id="hl-note" type="text" maxlength="200"></label>
+        </div>
+        <datalist id="hl-clients"></datalist>
+        <p class="hl-error" id="hl-error" role="alert" hidden></p>
+        <div class="hl-actions">
+          <button class="btn primary" id="hl-save" type="submit">Add hours</button>
+          <button class="btn" id="hl-cancel" type="button" hidden>Cancel</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="card hl-year" aria-labelledby="hl-year-title">
+      <h2 id="hl-year-title">Income year</h2>
+      <div class="hl-row no-print">
+        <label class="hl-field"><span>Year</span><select id="hl-fy"></select></label>
+        <button class="btn" id="hl-print-year" type="button">Print year report</button>
+      </div>
+      <dl class="hl-stats">
+        <div><dt>Hours at home</dt><dd id="hl-home">0.00</dd></div>
+        <div><dt>Rate</dt><dd id="hl-rate">–</dd></div>
+        <div><dt>Fixed rate deduction</dt><dd id="hl-ded">$0</dd></div>
+        <div><dt>All hours logged</dt><dd id="hl-all">0.00</dd></div>
+      </dl>
+      <p class="hl-note" id="hl-year-note"></p>
+      <div class="hl-tablewrap">
+        <table class="hl-months" id="hl-months">
+          <thead><tr><th scope="col">Month</th><th scope="col" class="num">Home</th><th scope="col" class="num">Elsewhere</th></tr></thead>
+          <tbody id="hl-month-rows"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card hl-week" aria-labelledby="hl-week-title">
+      <h2 id="hl-week-title">Timesheet</h2>
+      <div class="hl-row no-print">
+        <button class="btn small" id="hl-prev" type="button" aria-label="Previous week">←</button>
+        <p class="hl-weeklabel" id="hl-weeklabel"></p>
+        <button class="btn small" id="hl-next" type="button" aria-label="Next week">→</button>
+        <button class="btn" id="hl-print-week" type="button">Print timesheet</button>
+        <button class="btn" id="hl-lines" type="button">Copy invoice lines</button>
+      </div>
+      <div class="hl-tablewrap">
+        <table id="hl-days">
+          <thead><tr><th scope="col">Day</th><th scope="col" class="num">Hours</th><th scope="col" class="num">At home</th></tr></thead>
+          <tbody id="hl-day-rows"></tbody>
+          <tfoot><tr><th scope="row">Week</th><td class="num" id="hl-week-total">0.00</td><td class="num" id="hl-week-home">0.00</td></tr></tfoot>
+        </table>
+      </div>
+      <h3 class="hl-sub">By client</h3>
+      <div class="hl-tablewrap">
+        <table id="hl-clients-table">
+          <thead><tr><th scope="col">Client or employer</th><th scope="col" class="num">Hours</th><th scope="col" class="num">Rate per hour</th><th scope="col" class="num">Amount</th></tr></thead>
+          <tbody id="hl-client-rows"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card hl-list" aria-labelledby="hl-list-title">
+      <h2 id="hl-list-title">Entries <span class="badge" id="hl-count">0</span></h2>
+      <p class="hl-hint" id="hl-empty">Nothing logged in this income year yet.</p>
+      <div class="hl-tablewrap" id="hl-wrap" hidden>
+        <table id="hl-table">
+          <thead><tr><th scope="col">Date</th><th scope="col">Time</th><th scope="col" class="num">Hours</th><th scope="col">Where</th><th scope="col">Client and note</th><th scope="col">Entered</th><th scope="col" class="no-print"><span class="hl-sr">Actions</span></th></tr></thead>
+          <tbody id="hl-rows"></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <section class="prose hl-faq no-print">
+    <h2>What the ATO asks for</h2>
+    <ul>
+      <li><strong>A record of every hour you work from home, for the whole income year,</strong> kept at the time: a timesheet, roster, diary or a log of start and finish times like this one. Since 1 March 2023 the ATO does not accept an estimate or a four week sample.</li>
+      <li><strong>The fixed rate</strong> is 70 cents an hour for 2024–25 and 2025–26 (67 cents for the two years before, 52 cents before that). It covers electricity and gas, internet, phone, stationery and computer consumables. Things like a desk or laptop are claimed separately with their own records.</li>
+      <li><strong>Cents are disregarded, not rounded.</strong> 136 hours at 70 cents is $95.20, which is claimed as $95.</li>
+      <li><strong>2026–27 is provisional.</strong> The ATO had not published a rate for the current year when this page was written, so it uses 70 cents and says so until the rate is confirmed.</li>
+      <li><strong>Entries made after the day are marked.</strong> Only a record kept at the time counts, so anything added later shows "added later" on the screen and in the report.</li>
+    </ul>
+    <p>Read the rules on the ATO's <a href="https://www.ato.gov.au/individuals-and-families/income-deductions-offsets-and-records/deductions-you-can-claim/work-related-deductions/working-from-home-expenses/fixed-rate-method" rel="noopener">fixed rate method</a> page. You also need one record of each running expense you pay for, such as a bill. This page helps you keep the records; your tax agent or the ATO decides what you can claim.</p>
+    <h2>Good to know</h2>
+    <ul>
+      <li><strong>The ATO has a free app too.</strong> myDeductions, inside the ATO app, can record hours worked from home. This page is for people who would rather use a laptop, skip the myGov sign in, keep timesheets for clients as well, or want files they keep.</li>
+      <li><strong>Everything stays on this device.</strong> Nothing is uploaded and there is no account, so use Backup file to keep a copy or move to another device.</li>
+      <li><strong>Works offline.</strong> After your first visit the page opens with no connection, and the timer keeps its start time if you close the tab.</li>
+    </ul>
+  </section>
+</main>
+<script src="/assets/hours-log/core.js" defer></script>

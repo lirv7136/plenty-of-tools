@@ -473,3 +473,13 @@ Claude / Codex:
 - `$CLAUDE_JOB_DIR/tmp/linkcheck.py` style check: walking `dist/` for every `href`/`src` and
   resolving it against the built tree catches typos across all 35 pages in a second. Worth
   re-running after any shell or build change.
+
+## 30 September: Car Logbook and Hours Log (hidden)
+
+Built by Claude from `docs/SPEC-ato-tools.md`, both `hidden` in `tools.json`, both opted into the
+offline precache for when they go live. `/tools/car-logbook/` (vs `/vs/driversnote/`) keeps the 12 week
+ATO logbook with business use %, entry times and a tax agent report. `/tools/hours-log/` (vs
+`/vs/timesheet-apps/`) logs hours worked from home at the ATO fixed rate (70c, 2026-27 marked provisional),
+with a timer, weekly timesheets by client and invoice lines. 25 new unit tests and two browser tests;
+accessibility (50 pages) and offline tests pass. **Before either goes live:** keep a real week on a phone,
+print each report, and check ato.gov.au for a published 2026-27 fixed rate. See each tool README.

@@ -1,0 +1,12 @@
+{
+  "slug": "timesheet-apps",
+  "incumbent": "time tracking apps",
+  "title": "Free work from home hours log: are time tracking apps worth paying for?",
+  "tool_slug": "hours-log",
+  "tool_name": "Hours Log",
+  "reviewed": "September 2026",
+  "short_answer": "Not for one person logging their own hours. The paid tiers of Toggl Track, Harvest and Clockify are built for teams: approvals, billable rates across staff, profitability reports. For your own work from home record and a timesheet per client, the free log here does the job and keeps the data on your device.",
+  "paywall": "<p>Toggl Track's free plan covers a timer and personal reports, but billable rates start on Starter at about US$9 per user a month. Harvest's free plan is one person and two projects, then about US$9 a seat a month. Clockify is the most generous: free for up to five users with unlimited tracking, but billable rates are not in the free plan and exports are PDF only; its Basic plan is US$3.99 a seat a month billed annually, or US$4.99 monthly (prices from each company's own pricing page, in US dollars).</p><p>None of them is built around the ATO's fixed rate method, and the ATO's own myDeductions, inside the free ATO app, can record hours worked from home if you are happy doing it on your phone with a myGov sign in.</p>",
+  "free_does": "<ul><li>A timer that keeps its start time if you close the tab, and manual entries with unpaid breaks, shifts past midnight and daylight saving handled.</li><li>Hours at home for each Australian income year, the fixed rate deduction as you go (70 cents an hour for 2024–25 and 2025–26, cents disregarded as the ATO says, and a clearly marked provisional rate for a year the ATO has not published), and a printable year report.</li><li>It records when each entry was made and marks anything added after the day, since only a record kept at the time counts.</li><li>A weekly timesheet by client with your own hourly rates, invoice lines you can paste into an invoice, CSV and a backup file. No account, works offline, nothing uploaded.</li></ul>",
+  "when_pay": "<ul><li>A team tracks time together and a manager approves timesheets, or you need profitability and labour cost reports across staff.</li><li>You want time tracked automatically from the apps you use, or integrations with Jira, Asana and accounting software.</li><li>You want your hours synced across several devices without moving a backup file.</li></ul>"
+}

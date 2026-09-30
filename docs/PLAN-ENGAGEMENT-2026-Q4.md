@@ -81,12 +81,32 @@ Visitors say whether a page is found; completed tasks say whether a tool is wort
      ringtone from Files; **verify on a real iPhone before the page claims it**)
   3. Splitwise alternative (the free tier's daily cap is the pain)
   4. Sign or edit a PDF without uploading
-- **Weeks 4 to 8, pages that generate from real inputs, only where the output actually changes:**
-  invoice variants for NZ GST, UK VAT, sole trader not registered for GST, and a quote template
-  (about 6 pages); "is X worth it" calculators people already argue about (Uber One, Amazon Prime
-  AU, Canva Pro, Strava, Adobe; up to 8).
-- **Rule:** no page ships without a working tool on it. Pages with zero impressions after 6 weeks
-  are noindexed.
+- **Cut on 29 Sep: mass produced variant pages.** Google's September 2023 helpful content update
+  and March 2024 core and spam updates took calculator and converter sites that shipped thin,
+  near duplicate pages to near zero, and the penalty applied to the whole site. So no batch of
+  invoice variants or "is X worth it" pages. At most one or two genuinely different pages
+  (for example a quote template, whose output really differs), each edited by a person.
+- **Rule:** no page ships without a working tool on it, and every page says something the others
+  do not. Pages with zero impressions after 6 weeks are noindexed.
+
+### 5. New tools (agents; order set 29 Sep from search demand and repeat use)
+
+1. **ATO car logbook**: 12 week logbook, business use %, a report for a tax agent. Brief:
+   `docs/CODEX-BRIEF-2026-09-29.md`. Also the cheap test of a native logbook app in January.
+2. **Hours log**: work from home hours at the ATO fixed rate plus a timesheet, in one tool. Same
+   brief.
+3. **Flashcards** with a free Learn mode, spaced repetition and Quizlet import (Quizlet Learn is
+   behind Plus). Crowded search, so it is for repeat use and student channels.
+4. **Australian payslip generator** (PAYG, super, year to date), reusing the invoice PDF code.
+5. **Workout log** (Strong and Hevy cap free routines).
+6. Small add ons: scan to PDF as a mode in PDF Tools, a video compressor to a target size, and the
+   vocal remover in December.
+
+Not building: UV index (SunSmart is free, and it needs a server), receipts as a standalone
+(myDeductions does it), passport photos (a rejected photo costs the user real money), and pay,
+HECS or stamp duty calculators (banks and government give them away). Both ATO tools say
+plainly that the ATO's free myDeductions exists and what we add: desktop use, nothing to
+install, a print ready report.
 
 ## Week by week (Lachlan's hours in brackets)
 
@@ -95,9 +115,9 @@ Visitors say whether a page is found; completed tasks say whether a tool is wort
 | 1 | 28 Sep–4 Oct, **break** | (3 h) Review and merge `seo-pass`. Check Search Console coverage and request indexing for home. Create the AlternativeTo account (it must be 7 days old to submit). Post the two drafted forum replies. Show HN on Thu 1 Oct. One OzBargain forum post (marked Associated) led by the invoice generator | Event counter, "did the job" panel, update Show HN and AlternativeTo drafts to 19 tools |
 | 2 | 5–11 Oct, P1 due | (0.5 h) Sunday review | Recent work lists, Settle Up landing view, 2 content pages |
 | 3 | 12–18 Oct | (1.5 h) AlternativeTo listings for 4 tools; open the awesome-privacy PR | Changelog + RSS, install prompts |
-| 4 | 19–25 Oct, A2 due | 0 | Invoice variants |
-| 5 | 26 Oct–1 Nov | (1 h) Two replies in existing "is X worth it" threads | Calculators 1 to 4 |
-| 6 | 2–8 Nov | (1 h) Uneed, SaaSHub, pwa.directory, pwastore (agent fills the forms, he submits) | Calculators 5 to 8 |
+| 4 | 19–25 Oct, A2 due | 0 | Car logbook and hours log reviewed and live, with `vs/` pages |
+| 5 | 26 Oct–1 Nov | (1 h) Two replies in existing "is X worth it" threads | Flashcards |
+| 6 | 2–8 Nov | (1 h) Uneed, SaaSHub, pwa.directory, pwastore (agent fills the forms, he submits) | Payslip generator; scan to PDF mode |
 | 7–10 | 9 Nov–6 Dec, STUVAC, exams, thesis | 0 (5 min Sunday review) | Refresh pages with impressions but few clicks; write the December launch queue |
 | 11 | 7–13 Dec | (3 h) r/InternetIsBeautiful, second OzBargain post, Peerlist | Launch support |
 | 12 | 14–20 Dec | (4 h) Product Hunt for the brand; Show HN for the best single tool | Scoreboard, verdicts, app decision (below) |
@@ -134,8 +154,14 @@ The problem is that nobody has been sent to the site, and a store listing does n
 | Keep the PWA, improve install prompts | **Now.** No cost, keeps every web visit |
 | Android wrapper on Google Play (TWA via Bubblewrap) | **Maybe, from 14 Dec**, only if the site reaches the keep band (100+ uniques a month) and install prompts are being accepted. A personal Play account needs a 14 day closed test with 12 testers, per app; reuse Talkeven's tester pool |
 | iOS wrapper (Capacitor) | **No.** App Store guideline 4.2 rejects repackaged websites |
-| One native umbrella app | **No.** "Plenty of tools" matches no search, and it means two codebases for 19 tools |
-| Separate native apps | **Only where native wins.** ATO car logbook (background GPS) in Jan to Feb, aiming for the store before EOFY. A habit tracker with home screen widgets second, if the web version shows retention. Tuner, splitter, ringtone and text to speech gain nothing from native |
+| One native umbrella app | **No.** "Plenty of tools" matches no search, generic "toolbox" apps sit at a handful of ratings, and it means two codebases for 19 tools |
+| One app per tool | **No.** Apple's guideline 4.3 rejects many near identical apps from one developer, and each Play app needs its own 14 day closed test |
+| One app per category | **Only on a signal.** A "PDF, Sign & Scan" app named for the search, if the PDF tools pass about 1,000 users a month mostly on phones. iLovePDF's app works this way, fed by its website |
+| Separate native apps | **Only where native wins, and only on evidence.** ATO car logbook (background GPS) in Jan to Feb, aiming for the store before EOFY, **if** the web logbook shows demand and a real gap remains: TripLog Basic is free and unlimited, and myDeductions is free. A habit tracker with home screen widgets second, if the web version keeps about 200 returning users a week. Tuner, splitter, ringtone and text to speech gain nothing from native |
+
+Utility app money comes from subscriptions (RevenueCat 2026: median first year revenue about
+US$72 a month; 17% of new utility apps reach US$1k a month within two years), which a "free, no
+subscription" brand gives up. For us an app is a way to be found and kept, not a revenue line.
 
 Store accounts are already paid for (Apple team for Talkeven; personal Play account from 20 Sep),
 so the cost of any app is owner time and review risk, not fees. App Store search for ringtone
@@ -152,3 +178,17 @@ of the three where small apps still rank.
 - **10015.io and TinyWow:** one page per tool, with search as the engine (about half of 10015's
   desktop traffic, per a third party estimate), plus a way to reach users again. Ours, without
   email, is RSS plus installs.
+
+**Added 29 Sep from a second research pass** (student and solo origins):
+- **Canva:** Melanie Perkins started at 19 as a UWA student with Fusion Books, yearbook design
+  for schools, and won that narrow audience first. Ours is students: CV builder, expense
+  splitter, PDF tools and flashcards in uni channels.
+- **Photopea:** $0 for about four years, grown by answering every "Photoshop alternative" thread
+  and article. An hour a week answering existing "free alternative to X" threads is our version
+  (not on Whirlpool, whose rules forbid self promotion).
+- **Linktree (Melbourne):** a six hour side project where every output carried the brand, then one
+  Product Hunt post. Settle Up's shared links are our equivalent.
+- **Plausible:** eleven months stuck at about US$400 a month, then one essay ("Why you should stop
+  using Google Analytics") on Hacker News did four months of signups in a week. The Show HN first
+  comment should read as a short essay on why these tools are free and private, not a feature list.
+- **Pattern:** one or two spikes did most of the work, after months of flat numbers. Expect that.

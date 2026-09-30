@@ -1,0 +1,81 @@
+.hl{padding-block:24px 8px}
+.hl-top{max-width:64ch;margin-bottom:18px}
+.hl-top p{margin:0}
+.hl-print-head{display:none}
+
+.hl-bar{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;justify-content:space-between;padding:12px 14px;border:1px solid var(--line);border-radius:var(--radius);background:var(--soft)}
+.hl-summary{margin:0;font-weight:600}
+.hl-actions{display:flex;flex-wrap:wrap;gap:8px}
+.hl-toast{min-height:1.4rem;margin:8px 0 0;color:var(--muted);font-size:.9rem}
+
+.hl-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;margin-top:16px}
+.hl-grid>.card{min-width:0;gap:12px}
+.hl-timer{grid-column:1}
+.hl-add{grid-column:2}
+.hl-year,.hl-week,.hl-list{grid-column:1 / -1}
+/* the shell's ".card p" is more specific than a bare class, so these are scoped to .hl */
+.hl .hl-clock{margin:0;font-size:2.4rem;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.hl .hl-length{color:var(--ink)}
+.hl .hl-weeklabel{color:var(--ink)}
+.hl-add form{display:flex;flex-direction:column;gap:12px}
+
+.hl-row{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end}
+.hl-field{display:flex;flex-direction:column;gap:4px;font-size:.85rem;color:var(--muted);min-width:0}
+.hl-field.grow{flex:1 1 12rem}
+.hl-field input,.hl-field select,.hl-rate{font:inherit;font-size:.95rem;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px;min-width:0;max-width:100%}
+.hl-field input[type=number]{width:7rem}
+.hl-rate{width:6.5rem;text-align:right;padding:5px 8px}
+.hl-place{border:1px solid var(--line);border-radius:8px;padding:8px 12px;margin:0;display:flex;flex-wrap:wrap;gap:6px 18px;font-size:.95rem}
+.hl-place legend{font-size:.85rem;color:var(--muted);padding:0 4px}
+.hl-place label{display:flex;align-items:center;gap:6px}
+.hl-length{margin:0;font-weight:600;min-height:1.3rem}
+.hl-hint,.hl-note{margin:0;color:var(--muted);font-size:.88rem}
+.hl-error{margin:0;color:var(--danger);font-size:.9rem}
+
+.hl-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:0}
+.hl-months{max-width:36rem}
+.hl-stats div{border:1px solid var(--line);border-radius:8px;padding:10px 12px;min-width:0}
+.hl-stats dt{font-size:.8rem;color:var(--muted)}
+.hl-stats dd{margin:2px 0 0;font-size:1.3rem;font-weight:700;overflow-wrap:anywhere}
+
+.hl-weeklabel{margin:0 4px;font-weight:600;align-self:center}
+.hl-sub{font-size:1rem;margin:8px 0 0}
+.hl-tablewrap{overflow-x:auto;min-width:0}
+.hl table{width:100%;border-collapse:collapse;font-size:.93rem}
+.hl th,.hl td{text-align:left;padding:8px 12px 8px 0;border-bottom:1px solid var(--line);vertical-align:top}
+.hl thead th{font-size:.82rem;color:var(--muted);font-weight:600}
+.hl tbody th{font-weight:400}
+.hl tfoot th,.hl tfoot td{font-weight:700;border-bottom:0}
+.hl .num{text-align:right;white-space:nowrap}
+.hl-when{white-space:nowrap;color:var(--muted);font-size:.85rem}
+.hl-late{display:inline-block;margin-left:4px;padding:1px 6px;border-radius:999px;font-size:.75rem;color:var(--danger);border:1px solid var(--danger)}
+.hl-rowact{white-space:nowrap;display:flex;gap:6px}
+.hl-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+@media (max-width:760px){
+  .hl-grid{grid-template-columns:1fr}
+  .hl-timer,.hl-add{grid-column:1}
+  .hl-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+
+@media print{
+  @page{size:A4;margin:14mm}
+  html,body{background:#fff!important;color:#111!important}
+  .no-print,.hl-top,.hl-toast,.hl-faq,.hl-bar{display:none!important}
+  .hl{padding:0}
+  .hl-print-head{display:block;margin-bottom:10px}
+  .hl-print-head h2{margin:0 0 4px;font-size:16pt}
+  .hl-print-head p{margin:0;font-size:10pt}
+  .hl-grid{display:block;margin:0}
+  .hl-grid>.card{border:0;padding:0;margin:0 0 12px}
+  .hl h2{font-size:12pt;margin:8px 0 4px}
+  .hl-stats{grid-template-columns:repeat(4,1fr)}
+  .hl-stats dd{font-size:12pt}
+  .hl table{font-size:8.5pt}
+  .hl tr{break-inside:avoid}
+  .hl thead{display:table-header-group}
+  .hl-rate{border:0;padding:0;width:auto}
+  .hl-late{color:#111;border-color:#111}
+  body:not([data-print=week]) .hl-week{display:none!important}
+  body[data-print=week] .hl-year,body[data-print=week] .hl-list{display:none!important}
+}
