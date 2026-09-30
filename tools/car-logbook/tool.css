@@ -1,0 +1,82 @@
+.lb{padding-block:24px 8px}
+.lb-top{max-width:64ch;margin-bottom:18px}
+.lb-top p{margin:0}
+.lb-print-head{display:none}
+
+.lb-bar{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;justify-content:space-between;padding:12px 14px;border:1px solid var(--line);border-radius:var(--radius);background:var(--soft)}
+.lb-summary{margin:0;font-weight:600}
+.lb-actions{display:flex;flex-wrap:wrap;gap:8px}
+.lb-toast{min-height:1.4rem;margin:8px 0 0;color:var(--muted);font-size:.9rem}
+
+.lb-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;margin-top:16px}
+.lb-grid>.card{min-width:0;gap:12px}
+.lb-car{grid-column:1}
+.lb-add{grid-column:2}
+.lb-period,.lb-trips,.lb-years{grid-column:1 / -1}
+.lb-car form,.lb-add form{display:flex;flex-direction:column;gap:12px}
+
+.lb-row{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end}
+.lb-field{display:flex;flex-direction:column;gap:4px;font-size:.85rem;color:var(--muted);min-width:0}
+.lb-field.grow{flex:1 1 12rem}
+.lb-field input,.lb-field select{font:inherit;font-size:.95rem;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px;min-width:0;max-width:100%}
+.lb-field input[type=number]{width:9.5rem}
+.lb .lb-km{margin:0 0 9px;font-weight:600;min-width:5rem;color:var(--ink)}
+.lb .lb-progress-text{color:var(--ink)}
+.lb-type{border:1px solid var(--line);border-radius:8px;padding:8px 12px;margin:0;display:flex;gap:18px;font-size:.95rem}
+.lb-type legend{font-size:.85rem;color:var(--muted);padding:0 4px}
+.lb-type label,.lb-check{display:flex;align-items:center;gap:6px;font-size:.92rem}
+.lb-close summary{cursor:pointer;font-size:.92rem;color:var(--muted)}
+.lb-close[open] summary{margin-bottom:10px}
+.lb-hint{margin:0;color:var(--muted);font-size:.88rem}
+.lb-error{margin:0;color:var(--danger);font-size:.9rem}
+
+.lb-progress{height:12px;border-radius:999px;background:var(--soft);border:1px solid var(--line);overflow:hidden}
+.lb-progress span{display:block;height:100%;width:0;background:var(--accent);opacity:.55;transition:width .3s}
+.lb-progress.done span{opacity:1}
+.lb-progress-text{margin:6px 0 0;font-size:.92rem}
+.lb-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:14px 0 0}
+.lb-stats div{border:1px solid var(--line);border-radius:8px;padding:10px 12px;min-width:0}
+.lb-stats dt{font-size:.8rem;color:var(--muted)}
+.lb-stats dd{margin:2px 0 0;font-size:1.35rem;font-weight:700;overflow-wrap:anywhere}
+.lb-checks{margin:12px 0 0;padding-left:1.2rem;color:var(--danger);font-size:.92rem}
+.lb-checks:empty{display:none}
+
+.lb-tablewrap{overflow-x:auto;min-width:0}
+#lb-table{width:100%;border-collapse:collapse;font-size:.93rem}
+#lb-table th,#lb-table td{text-align:left;padding:9px 12px 9px 0;border-bottom:1px solid var(--line);vertical-align:top}
+#lb-table th{font-size:.82rem;color:var(--muted);font-weight:600}
+#lb-table .num{text-align:right;white-space:nowrap}
+.lb-when{white-space:nowrap;color:var(--muted);font-size:.85rem}
+.lb-late{display:inline-block;margin-left:4px;padding:1px 6px;border-radius:999px;font-size:.75rem;color:var(--danger);border:1px solid var(--danger)}
+.lb-rowact{white-space:nowrap;display:flex;gap:6px}
+.lb-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.lb-yearlist{margin:10px 0 0;padding-left:1.2rem;font-size:.93rem}
+.lb-yearlist:empty{display:none}
+
+@media (max-width:760px){
+  .lb-grid{grid-template-columns:1fr}
+  .lb-car,.lb-add{grid-column:1}
+  .lb-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .lb-field input[type=number]{width:100%}
+}
+
+@media print{
+  @page{size:A4;margin:14mm}
+  html,body{background:#fff!important;color:#111!important}
+  .no-print,.lb-top,.lb-toast,.lb-faq{display:none!important}
+  .lb{padding:0}
+  .lb-print-head{display:block;margin-bottom:10px}
+  .lb-print-head h2{margin:0 0 4px;font-size:16pt}
+  .lb-print-head p{margin:0;font-size:10pt}
+  .lb-grid{display:block;margin:0}
+  .lb-grid>.card{border:0;padding:0;margin:0 0 12px}
+  .lb-period h2,.lb-trips h2,.lb-years h2{font-size:12pt;margin:8px 0 4px}
+  .lb-progress{display:none}
+  .lb-stats{grid-template-columns:repeat(4,1fr)}
+  .lb-stats dd{font-size:12pt}
+  .lb-checks{color:#111}
+  #lb-table{font-size:8.5pt}
+  #lb-table tr{break-inside:avoid}
+  #lb-table thead{display:table-header-group}
+  .lb-late{color:#111;border-color:#111}
+}

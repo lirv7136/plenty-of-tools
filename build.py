@@ -42,7 +42,7 @@ def analytics_tag():
 # as Codex writes it.
 GROUPS = {
     "documents": ["pdf-tools", "pdf-sign", "invoice-generator", "cv-builder", "image-converter"],
-    "money": ["settle-up", "subscription-finder", "worth-it-calculators", "invoice-generator"],
+    "money": ["settle-up", "subscription-finder", "worth-it-calculators", "invoice-generator", "car-logbook", "hours-log"],
     "audio and video": ["ringtone-maker", "transcription", "read-aloud", "screen-recorder", "tuner-metronome"],
     "images": ["background-remover", "image-converter", "qr-codes", "pdf-tools"],
     "everyday": ["habit-tracker", "recipe-keeper", "gpx-route-builder", "disk-analyser", "qr-codes"],

@@ -1,0 +1,12 @@
+{
+  "slug": "driversnote",
+  "incumbent": "Driversnote",
+  "title": "Free ATO car logbook: is Driversnote worth paying for?",
+  "tool_slug": "car-logbook",
+  "tool_name": "Car Logbook",
+  "reviewed": "September 2026",
+  "short_answer": "Only if you want trips tracked automatically. Driversnote's free plan reports just 15 trips a month, fewer than most 12 week logbooks need, and Pro is A$17 a month before GST. If you are happy to type two odometer readings per trip, the free logbook here keeps what the ATO asks for and prints the report.",
+  "paywall": "<p>Driversnote's free plan includes automatic trip tracking on iOS, Android and the web, but its reports stop at 15 trips a month. A 12 week logbook for someone who drives for work most weekdays passes that in the first month, which is when the paywall appears. Pro removes the cap for A$17 a month (prices on driversnote.com.au exclude GST), and yearly plans include an iBeacon that starts tracking when you get in the car, otherwise about A$60.</p><p>The ATO's own myDeductions, inside the free ATO app, also records car trips, with no trip cap, if you are comfortable doing it on your phone and signing in with myGov.</p>",
+  "free_does": "<ul><li>The records the ATO asks for: at least 12 continuous weeks, odometer readings at the start and end of the period, and for each work trip its purpose, destination, start and end readings and kilometres.</li><li>Your business use percentage as you go, a 12 week progress bar, and checks for overlapping readings, trips outside the period and short periods.</li><li>It records when each trip was entered and marks anything added more than a week later, since the ATO expects entries at the time.</li><li>Saved favourite trips, a way to combine same day journeys as the ATO allows, readings for the later years a logbook covers, a printable report for your tax agent, CSV and a backup file. No trip limit, no account, works offline, nothing uploaded.</li></ul>",
+  "when_pay": "<ul><li>You want trips detected and logged automatically in the background. A web page stops when your phone locks, so it cannot do that; this is what Driversnote Pro and the iBeacon are for.</li><li>You manage several drivers and need reports collected and checked by an admin, which Driversnote Teams covers.</li><li>You would rather log on your phone with no cost at all and no report to print: then try the ATO's free myDeductions first.</li></ul>"
+}
