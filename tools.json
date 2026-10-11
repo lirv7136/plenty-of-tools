@@ -234,5 +234,34 @@
     ],
     "status": "live",
     "vs": "ilovepdf"
+  },
+  {
+    "slug": "receipts",
+    "name": "Receipts to Expenses",
+    "tagline": "Photograph receipts, get merchant, date, total, GST and ABN read on your device, and download a CSV. No uploads, no account.",
+    "replaces": [
+      "Expensify",
+      "Smart Receipts"
+    ],
+    "status": "hidden"
+  },
+  {
+    "slug": "uv-index",
+    "name": "UV Index Now",
+    "tagline": "The live UV reading for your city from ARPANSA's sensors, and whether you need sun protection right now. No app, no account.",
+    "replaces": [
+      "UV and tanning apps"
+    ],
+    "status": "hidden"
+  },
+  {
+    "slug": "scan-to-pdf",
+    "name": "Scan to PDF",
+    "tagline": "Photograph documents, drag the corners, and get a straightened, clean PDF. Multi page, no uploads, no subscription.",
+    "replaces": [
+      "CamScanner",
+      "iScanner"
+    ],
+    "status": "hidden"
   }
 ]

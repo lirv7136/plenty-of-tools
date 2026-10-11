@@ -1,0 +1,49 @@
+<main class="wrap sc">
+  <div class="sc-top">
+    <h1>Scan to PDF</h1>
+    <p class="muted">Photograph a document, drag the four corners to the page edges, and add it as a straightened page. Build up as many pages as you like, then download one PDF. Everything happens in your browser; nothing is uploaded.</p>
+  </div>
+
+  <section class="card sc-add no-print">
+    <label class="btn primary" for="files">Add photos</label>
+    <input id="files" type="file" accept="image/*" capture="environment" multiple hidden>
+    <p class="hint">On a phone this opens the camera. Shoot from above, on a darker surface, with the whole page in view.</p>
+    <p class="hint toast" id="status" role="status" aria-live="polite"></p>
+  </section>
+
+  <section class="card sc-editor" id="editor" hidden>
+    <h2>Drag the corners to the page edges <span class="muted" id="queue"></span></h2>
+    <div class="sc-stage" id="stage"><canvas id="photo"></canvas><canvas id="overlay" aria-label="Page corners: drag each handle to a corner of the page"></canvas></div>
+    <div class="sc-controls">
+      <label class="field"><span>Look</span><select id="mode"><option value="document">Document (black and white)</option><option value="colour">Colour</option></select></label>
+      <button class="btn" id="btn-rotate" type="button">Rotate</button>
+      <button class="btn" id="btn-reset" type="button">Reset corners</button>
+      <button class="btn" id="btn-skip" type="button">Skip photo</button>
+      <button class="btn primary" id="btn-page" type="button">Add as page</button>
+    </div>
+  </section>
+
+  <section class="card sc-pages">
+    <div class="sc-head">
+      <h2>Pages <span class="muted" id="count"></span></h2>
+      <div class="sc-actions">
+        <label class="field"><span>File name</span><input id="name" type="text" value="scan" maxlength="60" autocomplete="off"></label>
+        <button class="btn primary" id="btn-pdf" type="button" disabled>Download PDF</button>
+        <button class="btn danger" id="btn-clear" type="button">Clear</button>
+      </div>
+    </div>
+    <p class="hint" id="empty">No pages yet.</p>
+    <ol class="sc-thumbs" id="thumbs"></ol>
+  </section>
+
+  <section class="card sc-notes">
+    <h2>How it works</h2>
+    <ul>
+      <li><strong>Straightened, not just cropped.</strong> The four corners define the page; the tool undoes the camera&rsquo;s angle so the page comes out square.</li>
+      <li><strong>Document mode</strong> evens out shadows and uneven light and turns the page into clean black and white. Use Colour for photos and stamps.</li>
+      <li><strong>Private by design.</strong> Photos are read in this tab and never sent anywhere. Pages are kept only until you close the tab.</li>
+      <li>The PDF is A4, one page per photo, at about 200 dpi.</li>
+    </ul>
+  </section>
+</main>
+<script src="/assets/scan-to-pdf/core.js" defer></script>

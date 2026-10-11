@@ -1,0 +1,45 @@
+<main class="wrap rx">
+  <div class="rx-top">
+    <h1>Receipts to Expenses</h1>
+    <p class="muted">Add photos of receipts. Each one is read on this device: merchant, date, total, GST, ABN and a category. Fix anything it got wrong, then download a CSV for your accountant or tax return. Nothing is uploaded.</p>
+  </div>
+
+  <section class="card rx-drop no-print" id="drop">
+    <label class="btn primary" for="files">Add receipt photos</label>
+    <input id="files" type="file" accept="image/*" capture="environment" multiple hidden>
+    <p class="hint">Or drop images here. A flat, well lit photo reads best. The first one takes a little longer while the reader loads (about 7 MB, once).</p>
+    <p class="hint toast" id="status" role="status" aria-live="polite"></p>
+  </section>
+
+  <section class="card rx-table">
+    <div class="rx-head">
+      <h2>Expenses <span class="muted" id="count"></span></h2>
+      <div class="rx-actions no-print">
+        <button class="btn" id="btn-add" type="button">Add a row</button>
+        <button class="btn" id="btn-csv" type="button">Download CSV</button>
+        <button class="btn" id="btn-print" type="button">Print</button>
+        <button class="btn danger" id="btn-clear" type="button">Clear</button>
+      </div>
+    </div>
+    <p class="hint" id="empty">No receipts yet.</p>
+    <div class="rx-scroll"><table id="table" hidden>
+      <thead><tr><th>Date</th><th>Merchant</th><th>Category</th><th class="n">Total</th><th class="n">GST</th><th>ABN</th><th>Note</th><th class="no-print"></th></tr></thead>
+      <tbody id="rows"></tbody>
+      <tfoot id="foot"></tfoot>
+    </table></div>
+    <div id="by-category" class="rx-cats"></div>
+  </section>
+
+  <section class="card rx-notes">
+    <h2>How it works</h2>
+    <ul>
+      <li><strong>Read on your device.</strong> The text reader (Tesseract, open source) runs in your browser. Photos never leave it, and they aren't kept after reading.</li>
+      <li><strong>Check every row.</strong> Faded thermal paper and creased receipts trip any reader. The table is yours to edit; the CSV is what you see.</li>
+      <li><strong>GST in grey is an estimate</strong> (one eleventh of the total) for receipts that don't state it. Only claim GST a tax invoice shows.</li>
+      <li><strong>ABNs are checked</strong> with the ATO's checksum, so a misread number is left blank rather than wrong.</li>
+      <li>This device keeps an autosaved copy of the table. <em>Clear</em> removes it.</li>
+    </ul>
+  </section>
+</main>
+<script src="/assets/receipts/core.js" defer></script>
+<script src="/assets/receipts/vendor/tesseract.min.js" defer></script>

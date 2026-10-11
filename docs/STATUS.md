@@ -5,6 +5,26 @@ session. The next plan is `docs/PLAN-2026-09-20.md`.
 The operating plan, calendar and decision rules live in `~/dev/idea-engine/PORTFOLIO.md`
 (status log at the bottom). This file is the "where are we" summary.
 
+## 7 October: Receipts to Expenses (#20), built hidden, on branch three-hidden-tools
+
+Claude built slate item #20 during an unattended session at `/tools/receipts/` (status
+`hidden` in tools.json). On device OCR with self-hosted tesseract.js 7 (about 7 MB on first
+use), an Australian receipt parser (date, total, GST, ABN checksum, category), editable table,
+CSV. `tests/receipts.test.cjs` (7) and `tests/receipts.browser.cjs` (real OCR) pass; the full
+suite passes. Committed 11 Oct on branch `three-hidden-tools` (not merged; all three tools stay hidden). Gate before
+`live`: real receipts photographed on a phone. See `tools/receipts/README.md`.
+
+Same session, slate item #21 **UV Index Now** at `/tools/uv-index/` (hidden, uncommitted).
+ARPANSA's feed turned out to allow cross origin requests (`Access-Control-Allow-Origin: *`),
+so no Worker proxy is needed, contrary to SLATE2. `tests/uv-index.test.cjs` (5) and
+`tests/uv-index.browser.cjs` (feed intercepted over CDP) pass. Gate before `live`: confirm
+ARPANSA's exact attribution wording. See `tools/uv-index/README.md`.
+
+And slate item #16 **Scan to PDF** at `/tools/scan-to-pdf/` (hidden, uncommitted), with no
+dependencies: own homography, warp, document mode and PDF writer. `tests/scan-to-pdf.test.cjs`
+(7) and `tests/scan-to-pdf.browser.cjs` (renders the output with the vendored pdf.js) pass.
+Gate before `live`: a phone camera on real paper. See `tools/scan-to-pdf/README.md`.
+
 ## Next app: Measurement Notebook
 
 Lachlan requested the build blueprint on 18 September. See

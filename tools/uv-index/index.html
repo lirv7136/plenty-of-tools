@@ -1,0 +1,35 @@
+<main class="wrap uv">
+  <div class="uv-top">
+    <h1>UV Index Now</h1>
+    <p class="muted">The live UV reading from ARPANSA&rsquo;s sensors, updated every minute, and whether you need sun protection right now. No app, no account.</p>
+  </div>
+
+  <section class="card uv-now" id="now" aria-live="polite">
+    <label class="field"><span>City</span><select id="station"></select></label>
+    <div class="uv-reading" id="reading" hidden>
+      <div class="uv-number" id="number"></div>
+      <div>
+        <div class="uv-cat" id="cat"></div>
+        <p class="uv-advice" id="advice"></p>
+        <p class="hint" id="when"></p>
+      </div>
+    </div>
+    <p class="hint toast" id="status" role="status"></p>
+  </section>
+
+  <section class="card">
+    <h2>Every station</h2>
+    <div class="uv-all" id="all"></div>
+  </section>
+
+  <section class="card uv-notes">
+    <h2>About these readings</h2>
+    <ul>
+      <li><strong>Measured, not forecast.</strong> These are live readings from ARPANSA&rsquo;s UV detectors in each city. Cloud can change them minute to minute.</li>
+      <li><strong>3 or above means sun protection.</strong> Cancer Council Australia and ARPANSA recommend a hat, SPF 50+ sunscreen, sunglasses, shade and covering clothing whenever the UV index is 3 or higher.</li>
+      <li>The page refreshes every five minutes while it&rsquo;s open. Your city is remembered on this device only.</li>
+    </ul>
+    <p class="hint">UV data: <a href="https://www.arpansa.gov.au/our-services/monitoring/ultraviolet-radiation-monitoring">ARPANSA</a>, under <a href="https://creativecommons.org/licenses/by/2.5/au/">Creative Commons Attribution 2.5 Australia</a>. ARPANSA provides it free for the public&rsquo;s benefit; it isn&rsquo;t a substitute for a health professional&rsquo;s advice, and ARPANSA accepts no liability for its use.</p>
+  </section>
+</main>
+<script src="/assets/uv-index/core.js" defer></script>
