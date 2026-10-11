@@ -1,8 +1,10 @@
 # Product Hunt launch draft
 
-Launch on a Tuesday, Wednesday or Thursday at 12:01 am Pacific, which is 5:01 pm Sydney on the
-same day. Schedule it in the break (28 September to 9 October), not the same day as Show HN.
-Have five friends ready to leave real comments in the first hour; do not ask for upvotes.
+**Planned for Tuesday 15 December 2026** (see `docs/PLAN-DISTRIBUTION-2026-Q4.md`, section 7.2):
+12:01 am Pacific, which is **7:01 pm Sydney** in December, because Sydney is on daylight time
+from 4 October (it is 5:01 pm only in the Australian winter). Never the same week as a Show HN.
+Tell friends it is live and invite them to have a look; do not ask for upvotes, and never carry
+this to Hacker News, where asking friends to comment is also against the rules.
 
 **Name:** Plenty of Tools
 

@@ -68,6 +68,7 @@
     const report=[d.name+' calculation',`Currency: ${$('wc-currency').value}`,state().example?'Includes illustrative example inputs; edited values may differ.':'User entered assumptions.','',...inputSummary().map(([k,v])=>`${k}: ${v}`),'',`${d.label}: ${format(lastResult.net,'money')}`,d[lastResult.direction],...d.metrics.map(([label,key,kind])=>`${label}: ${format(lastResult[key],kind)}`),...lastResult.notes,'','Alternative scenarios (all other inputs fixed):',...C.scenarios(active,state().values).map(s=>`${d.scenarioLabel}: ${format(s.value,d.scenarioKind)} — ${format(s.net,'money')}${s.current?' (your figure)':''}`),'',d.formula,d.assumption,d.sourceNote,d.source,'','Calculated locally with Plenty of Tools. Values are estimates, not guaranteed outcomes.'].join('\n');
     const url=URL.createObjectURL(new Blob([report],{type:'text/plain;charset=utf-8'})),a=document.createElement('a');a.href=url;a.download=`${active}-calculation.txt`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
   });
-  window.addEventListener('hashchange',()=>activate(location.hash.slice(1),true));
-  activate(location.hash.slice(1));
+  const fromHash=()=>({'uber-one':'uber'}[location.hash.slice(1)]||location.hash.slice(1));
+  window.addEventListener('hashchange',()=>activate(fromHash(),true));
+  activate(fromHash());
 })();

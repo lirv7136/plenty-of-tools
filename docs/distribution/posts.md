@@ -18,8 +18,9 @@ Posted 2 April 2026, marked solved, still open with a dozen replies. The asker h
 Existing answers: the HEIF extension plus Paint or Photos (needs the paid HEVC codec), a
 desktop converter marked as the solution, a browser converter, a PowerShell script. The
 Apple Discussions thread "How to import iPhone photos as JPG instead of HEIC on Windows 11?"
-(discussions.apple.com/thread/255973242) is the same question from the other side and takes
-the same reply with the first paragraph adjusted.
+(discussions.apple.com/thread/255973242) is the same question from the other side, **but
+Apple's terms forbid links to personal websites** ("do not post a URL unless it directly answers
+a user's question"; discussions.apple.com/terms), so answer there in text only, with no link.
 
 **Draft.**
 
