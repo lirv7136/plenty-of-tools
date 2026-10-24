@@ -217,7 +217,10 @@
   // Google's sign in library asks for the gmail.send scope only (send as you; it cannot read
   // mail). The token lives in this tab's memory. The message goes from this browser straight to
   // the Gmail API; nothing passes through this site.
-  const gmailId=()=>(window.POT&&window.POT.gmailClientId)||'';
+  // Until Google verifies the app, only listed test users can sign in, so the button shows only
+  // when the site says it is public, or on a device that opened the page with ?gmail=1 once.
+  const gmailBeta=(()=>{try{if(/[?&]gmail=1\b/.test(location.search))localStorage.setItem('pot:invoice-generator:gmail-beta','1');if(/[?&]gmail=0\b/.test(location.search))localStorage.removeItem('pot:invoice-generator:gmail-beta');return localStorage.getItem('pot:invoice-generator:gmail-beta')==='1';}catch(e){return /[?&]gmail=1\b/.test(location.search);}})();
+  const gmailId=()=>window.POT&&window.POT.gmailClientId&&(window.POT.gmailPublic||gmailBeta)?window.POT.gmailClientId:'';
   let gmailToken=null,gmailClient=null;
   function loadGis(){return new Promise((res,rej)=>{if(window.google&&google.accounts&&google.accounts.oauth2)return res();const s=document.createElement('script');s.src='https://accounts.google.com/gsi/client';s.async=true;s.onload=res;s.onerror=()=>rej(new Error("Google's sign in could not load. Check your connection or ad blocker."));document.head.append(s);});}
   function gmailAuth(){return new Promise((resolve,reject)=>{

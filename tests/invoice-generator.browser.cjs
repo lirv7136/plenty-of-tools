@@ -149,7 +149,7 @@ async function pdf(name){const r=await send('Page.printToPDF',{printBackground:t
   assert.equal(await evaluate("window.__invoice.templates().templates.length"),1);
   console.log('  ok  a damaged templates file is refused and the saved template is untouched');
   // Send with Gmail, with Google's sign in and the Gmail endpoint stubbed (a real send needs a person's account).
-  await evaluate(`(()=>{window.POT=Object.assign(window.POT||{},{gmailClientId:'test-client'});
+  await evaluate(`(()=>{window.POT=Object.assign(window.POT||{},{gmailClientId:'test-client',gmailPublic:true});
     window.google={accounts:{oauth2:{initTokenClient:o=>({client_id:o.client_id,scope:o.scope,requestAccessToken(){window.__gmailScope=this.scope;setTimeout(()=>this.callback({access_token:'tok'}),10);}})}}};
     const real=window.fetch.bind(window);window.__gmailSent=[];
     window.fetch=(url,opts)=>String(url).startsWith('https://gmail.googleapis.com/')?(window.__gmailSent.push({url:String(url),auth:opts.headers.Authorization,raw:JSON.parse(opts.body).raw}),Promise.resolve(new Response(JSON.stringify({id:'m1'}),{status:200}))):real(url,opts);})()`);
