@@ -138,7 +138,8 @@ def main():
     shell_css = f"/assets/shell.css?v={SHELL_V}"
 
     # tools
-    pot_cfg = json.dumps({"googleClientId": SITE.get("google_client_id", "")})
+    pot_cfg = json.dumps({"googleClientId": SITE.get("google_client_id", ""),
+                          "gmailClientId": SITE.get("gmail_client_id", "")})
     for t in TOOLS:
         if t["status"] not in ("live", "hidden"):
             continue

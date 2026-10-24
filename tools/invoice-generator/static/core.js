@@ -171,7 +171,27 @@
   const gmailUrl=m=>`https://mail.google.com/mail/?view=cm&fs=1&to=${q(m.to)}&su=${q(m.subject)}&body=${q(m.body)}`;
   const outlookUrl=m=>`https://outlook.live.com/mail/0/deeplink/compose?to=${q(m.to)}&subject=${q(m.subject)}&body=${q(m.body)}`;
 
-  const api={defaults,today,validDate,addDays,abnValid,decimal,calculate,validate,parseDraft,serialize,title,fields,
+  // ---------- Send with Gmail: the message itself ----------
+  // A multipart MIME message (the text, and the PDF as an attachment) in the base64url form the
+  // Gmail API's users.messages.send takes as `raw`. Gmail fills in From with the signed in account.
+  const emailOk=s=>/^[^\s@,;<>"]+@[^\s@,;<>"]+\.[^\s@,;<>"]+$/.test(String(s).trim());
+  function bytesToB64(bytes){let bin='';for(let i=0;i<bytes.length;i+=0x8000)bin+=String.fromCharCode.apply(null,bytes.subarray(i,i+0x8000));return btoa(bin);}
+  const utf8B64=s=>bytesToB64(new TextEncoder().encode(s));
+  const wrap76=s=>s.replace(/.{1,76}/g,'$&\r\n').trimEnd();
+  function buildMime(msg,pdfBytes,filename){
+    if(!emailOk(msg.to))throw new Error('Enter a valid customer email address.');
+    const subject=String(msg.subject||'').replace(/[\r\n]+/g,' ').trim();
+    if(!subject)throw new Error('Add a subject.');
+    const name=(String(filename||'invoice.pdf').replace(/[^A-Za-z0-9._-]+/g,'-').slice(0,90)||'invoice')+(/\.pdf$/i.test(filename||'')?'':'.pdf');
+    const boundary='pot-'+Math.random().toString(36).slice(2)+Date.now().toString(36);
+    const lines=['To: '+String(msg.to).trim(),'Subject: =?UTF-8?B?'+utf8B64(subject)+'?=','MIME-Version: 1.0',`Content-Type: multipart/mixed; boundary="${boundary}"`,'',
+      '--'+boundary,'Content-Type: text/plain; charset="UTF-8"','Content-Transfer-Encoding: base64','',wrap76(utf8B64(String(msg.body||''))),'',
+      '--'+boundary,`Content-Type: application/pdf; name="${name}"`,`Content-Disposition: attachment; filename="${name}"`,'Content-Transfer-Encoding: base64','',wrap76(bytesToB64(pdfBytes)),'',
+      '--'+boundary+'--',''];
+    return utf8B64(lines.join('\r\n')).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+  }
+
+  const api={defaults,today,validDate,addDays,abnValid,decimal,calculate,validate,parseDraft,serialize,title,fields,emailOk,buildMime,
     MAX_COLUMNS,COLUMN_MAX,EXTRA_MAX,cleanColumns,cleanExtra,nextNumber,makeTemplate,applyTemplate,validateTemplates,parseTemplates,
     serializeTemplates,MAX_TEMPLATES,emailMessage,mailtoUrl,gmailUrl,outlookUrl,aud};
   if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.InvoiceCore=api;

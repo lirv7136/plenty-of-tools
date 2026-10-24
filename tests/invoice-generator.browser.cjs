@@ -148,6 +148,25 @@ async function pdf(name){const r=await send('Page.printToPDF',{printBackground:t
   await until("/not imported/.test(document.getElementById('inv-status').textContent)");
   assert.equal(await evaluate("window.__invoice.templates().templates.length"),1);
   console.log('  ok  a damaged templates file is refused and the saved template is untouched');
+  // Send with Gmail, with Google's sign in and the Gmail endpoint stubbed (a real send needs a person's account).
+  await evaluate(`(()=>{window.POT=Object.assign(window.POT||{},{gmailClientId:'test-client'});
+    window.google={accounts:{oauth2:{initTokenClient:o=>({client_id:o.client_id,scope:o.scope,requestAccessToken(){window.__gmailScope=this.scope;setTimeout(()=>this.callback({access_token:'tok'}),10);}})}}};
+    const real=window.fetch.bind(window);window.__gmailSent=[];
+    window.fetch=(url,opts)=>String(url).startsWith('https://gmail.googleapis.com/')?(window.__gmailSent.push({url:String(url),auth:opts.headers.Authorization,raw:JSON.parse(opts.body).raw}),Promise.resolve(new Response(JSON.stringify({id:'m1'}),{status:200}))):real(url,opts);})()`);
+  await setv('#inv-clientName','Jane Citizen');await setv('#inv-clientEmail','jane@example.com');
+  await setv('.inv-line textarea','Monthly retainer');await setv('.inv-line [data-field="price"]','500.00');
+  await click('inv-email');await until("!document.getElementById('inv-mail').hidden&&!document.getElementById('inv-mail-gmailsend').hidden");
+  await setv('#inv-mail-subject','Edited subject for EXAMPLE-003');
+  await click('inv-mail-gmailsend');
+  await until("/Sent from your Gmail to jane@example\\.com/.test(document.getElementById('inv-status').textContent)");
+  const sent=await evaluate(`(()=>{const s=window.__gmailSent[0];const mime=atob(s.raw.replace(/-/g,'+').replace(/_/g,'/'));
+    return {n:window.__gmailSent.length,url:s.url,auth:s.auth,scope:window.__gmailScope,to:/^To: (.*)$/m.exec(mime)[1],subject:decodeURIComponent(escape(atob(/Subject: =\\?UTF-8\\?B\\?([^?]+)\\?=/.exec(mime)[1]))),
+      attached:/filename="EXAMPLE-003\\.pdf"/.test(mime)}})()`);
+  assert.deepEqual(sent,{n:1,url:'https://gmail.googleapis.com/gmail/v1/users/me/messages/send',auth:'Bearer tok',scope:'https://www.googleapis.com/auth/gmail.send',
+    to:'jane@example.com',subject:'Edited subject for EXAMPLE-003',attached:true},JSON.stringify(sent));
+  assert.equal(await evaluate("document.getElementById('inv-mail-gmailsend').textContent"),'Sent');
+  await until("/EXAMPLE-003/.test(document.getElementById('inv-tpl').selectedOptions[0]?.textContent||'')||window.__invoice.templates().templates[0].lastNumber==='EXAMPLE-003'");
+  console.log('  ok  Send with Gmail asks only for gmail.send, sends the edited message with the PDF attached, and marks the number used');
   assert.deepEqual(errors,[]);
   console.log('PASS: validation, GST modes, calculations, actual single/multipage PDFs with all rows and repeated headings, quotes, draft download/reopen, add/remove, malformed draft preservation, HTML escaping, mobile layout and offline/no-storage use; extra columns, direct PDF download, templates with numbering, the email panel and template import refusal.');
   console.log('PDFs, screenshots and saved drafts: '+directory);

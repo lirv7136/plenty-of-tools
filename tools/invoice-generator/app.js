@@ -204,12 +204,45 @@
   $('email').addEventListener('click',async()=>{
     const p=await makePdf();if(!p)return;mailPdf=p;
     mail=core.emailMessage(data,core.calculate(data));
-    $('mail-to').value=mail.to||'(add the customer email above)';$('mail-subject').value=mail.subject;$('mail-body').value=mail.body;
-    $('mail-share').hidden=!(navigator.canShare&&navigator.canShare({files:[p.file]}));
+    $('mail-to').value=mail.to;$('mail-to').placeholder='customer@example.com';$('mail-subject').value=mail.subject;$('mail-body').value=mail.body;
+    $('mail-share').hidden=!(navigator.canShare&&navigator.canShare({files:[p.file]}));$('mail-gmailsend').hidden=!gmailId();$('mail-gmailsend').disabled=false;$('mail-gmailsend').textContent='Send with Gmail';
     $('mail-note').textContent=(mail.to?'':'Tip: add the customer email in the Customer section and it fills in for you. ')+p.note;
     $('mail').hidden=false;$('mail').scrollIntoView({block:'nearest'});$('mail-title').focus?.();status('Message ready. Choose how to send it.');
   });
   $('mail-close').addEventListener('click',()=>{$('mail').hidden=true;});
+  // The message fields are editable; every way of sending uses what is in them now.
+  for(const [id,key] of [['mail-to','to'],['mail-subject','subject'],['mail-body','body']])$(id).addEventListener('input',()=>{if(mail)mail[key]=$(id).value;});
+
+  // ---------- Send with Gmail ----------
+  // Google's sign in library asks for the gmail.send scope only (send as you; it cannot read
+  // mail). The token lives in this tab's memory. The message goes from this browser straight to
+  // the Gmail API; nothing passes through this site.
+  const gmailId=()=>(window.POT&&window.POT.gmailClientId)||'';
+  let gmailToken=null,gmailClient=null;
+  function loadGis(){return new Promise((res,rej)=>{if(window.google&&google.accounts&&google.accounts.oauth2)return res();const s=document.createElement('script');s.src='https://accounts.google.com/gsi/client';s.async=true;s.onload=res;s.onerror=()=>rej(new Error("Google's sign in could not load. Check your connection or ad blocker."));document.head.append(s);});}
+  function gmailAuth(){return new Promise((resolve,reject)=>{
+    gmailClient=gmailClient||google.accounts.oauth2.initTokenClient({client_id:gmailId(),scope:'https://www.googleapis.com/auth/gmail.send',callback:()=>{}});
+    gmailClient.callback=r=>r&&r.access_token?resolve(r.access_token):reject(new Error(r&&r.error?'Google sign in was cancelled or refused.':'No permission was given.'));
+    gmailClient.error_callback=e=>reject(new Error(e&&e.type==='popup_closed'?'Google sign in was closed before finishing.':'Google sign in did not complete.'));
+    gmailClient.requestAccessToken({prompt:''});
+  });}
+  async function gmailPost(raw){return fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages/send',{method:'POST',headers:{Authorization:'Bearer '+gmailToken,'Content-Type':'application/json'},body:JSON.stringify({raw})});}
+  $('mail-gmailsend').addEventListener('click',async()=>{
+    const button=$('mail-gmailsend');
+    if(!core.emailOk(mail.to)){status('Enter the customer email address in the To box first.');$('mail-to').focus();return;}
+    let raw;try{raw=core.buildMime(mail,new Uint8Array(await mailPdf.file.arrayBuffer()),mailPdf.file.name);}catch(e){status(e.message);return;}
+    button.disabled=true;status('Connecting to your Gmail…');
+    try{
+      await loadGis();
+      if(!gmailToken)gmailToken=await gmailAuth();
+      status(`Sending to ${mail.to}…`);
+      let r=await gmailPost(raw);
+      if(r.status===401){gmailToken=await gmailAuth();r=await gmailPost(raw);}
+      if(!r.ok){let why='';try{why=((await r.json()).error||{}).message||'';}catch(e){}throw new Error(`Gmail did not accept the message${why?': '+why:''}.`);}
+      markUsed();status(`Sent from your Gmail to ${mail.to}, with ${mailPdf.file.name} attached. A copy is in your Sent folder.`);
+      button.textContent='Sent';
+    }catch(e){status(e.message+' Nothing was sent. You can still use the other options.');button.disabled=false;}
+  });
   $('mail-share').addEventListener('click',async()=>{
     try{await navigator.share({files:[mailPdf.file],title:mail.subject,text:mail.body});markUsed();status('Shared. Check the message in your mail app before you send it.');}
     catch(e){status(e&&e.name==='AbortError'?'Sharing cancelled.':'Sharing did not work here. Use "Download PDF and open email" instead.');}
