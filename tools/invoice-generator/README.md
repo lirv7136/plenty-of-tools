@@ -32,9 +32,45 @@ browser test accepts `CHROME_BIN` and `TEST_URL` overrides.
    Disable browser headers and footers for the clean document.
 6. Save a JSON draft to retain editable source. Open that file to continue later.
 
-The tool does not automatically save, send invoices, request payment or keep a
-ledger. Refreshing/closing the tab clears unsaved state. Example and New document
+The tool does not send email from a server, request payment or keep a ledger.
+Refreshing/closing the tab clears unsaved state. Example and New document
 replace the current draft; save a file first if you need to retain it.
+
+## Added 24 October 2026 (Claude): extra columns, direct PDF, email, templates
+
+- **Extra columns.** Up to two per document (`data.columns`, headings up to 24
+  characters), with one text value per line in `item.extra` (up to 60). Shown in
+  the editor, the preview and the PDF next to the description. Descriptive only:
+  they never enter `calculate`. Drafts are now `version: 2`; version 1 drafts
+  still open (no columns).
+- **Download PDF.** `static/pdf.js` (`InvoicePdf.build`) draws the document with
+  pdf-lib as selectable text on A4: wrapped cells, the table header repeated on
+  each page, page numbers, document title and author. pdf-lib is vendored at
+  `static/pdf-lib.min.js` (MIT, licence beside it) and **loaded only when a PDF
+  is asked for**, so it is not in the offline precache; offline, the page says
+  so and points to Print. Helvetica covers Windows-1252 only: other characters
+  become "?" and are listed (`replaced`), and the page suggests Print for those.
+- **Email to customer.** A web page cannot send mail, so the panel writes the
+  message (`core.emailMessage`: to, subject, amount and due date, payment
+  details) and offers: the system share sheet with the PDF attached where
+  `navigator.canShare({files})` allows it (phones, macOS Safari, Windows Chrome);
+  otherwise download the PDF and open a `mailto:`, Gmail or Outlook.com compose
+  link; or copy the message. Nothing is sent from our side.
+- **Templates.** Saved in `localStorage` (`pot:invoice-generator:templates:v1`,
+  at most 50), only when the person clicks Save template. A template keeps the
+  business details, GST mode, payment terms, notes, columns, the gap between
+  issue and due dates, and the last number used; optionally the customer and the
+  line items. "New document from template" numbers it with `core.nextNumber`
+  (last digit run plus one, zero padding kept, BigInt so long numbers stay
+  exact). Downloading, emailing or printing a document started from a template
+  records its number as the template's last number. Export and import as a JSON
+  file; every load and import goes through `core.validateTemplates`.
+- Competitor check (24 Oct 2026, vendors' own pages): Xero Ignite caps at 20
+  invoices a month; Invoice Home's free plan at $1,000 invoiced per 30 days;
+  Invoice Ninja's free plan at 5 clients. Per line custom columns are rare
+  anywhere (Square and QuickBooks only add invoice level fields), so do not claim
+  competitors charge for them; templates are free at most tools, so the claim
+  is "no account", not "free".
 
 ## Calculation and validation
 
