@@ -127,3 +127,21 @@ test('the PDF is a real document with the right title, page breaks and character
   const loaded=await PDFLib.PDFDocument.load(r.bytes);assert.equal(loaded.getPageCount(),r.pages);assert.equal(loaded.getTitle(),'Tax Invoice INV-9');
   const quote=await pdf.build(PDFLib,core,invoice({kind:'quote'}));assert.equal(quote.pages,1);assert.deepEqual(quote.replaced,[]);
 });
+test('Send with Gmail builds a MIME message whose text and PDF attachment decode back exactly',async()=>{
+  const r=await pdf.build(PDFLib,core,invoice({number:'INV-12'}));
+  const msg={to:'jane@example.com',subject:'Invoice INV-12 from Café Ōtaki',body:'Hi Jane,\n\nPlease find attached invoice INV-12 for $100.00.\n\nThank you,\nCafé'};
+  const raw=core.buildMime(msg,r.bytes,'INV-12.pdf');
+  assert.match(raw,/^[A-Za-z0-9_-]+$/,'base64url with no padding');
+  const mime=Buffer.from(raw.replace(/-/g,'+').replace(/_/g,'/'),'base64').toString('utf8');
+  assert.match(mime,/^To: jane@example\.com\r\n/);
+  const subj=/Subject: =\?UTF-8\?B\?([^?]+)\?=/.exec(mime)[1];assert.equal(Buffer.from(subj,'base64').toString('utf8'),msg.subject);
+  const boundary=/boundary="([^"]+)"/.exec(mime)[1];const parts=mime.split('--'+boundary);
+  const text=parts[1].split('\r\n\r\n')[1].replace(/\r\n/g,'');assert.equal(Buffer.from(text,'base64').toString('utf8'),msg.body);
+  assert.match(parts[2],/Content-Disposition: attachment; filename="INV-12\.pdf"/);
+  const att=Buffer.from(parts[2].split('\r\n\r\n')[1].replace(/\r\n/g,''),'base64');assert.ok(att.equals(Buffer.from(r.bytes)),'the attached PDF is byte for byte the one made');
+  assert.ok(parts[3].startsWith('--'),'the message closes its boundary');
+  assert.throws(()=>core.buildMime({...msg,to:'not an email'},r.bytes,'x.pdf'),/valid customer email/);
+  assert.throws(()=>core.buildMime({...msg,to:'a@b.com\r\nBcc: evil@x.com'},r.bytes,'x.pdf'),/valid customer email/,'no header injection through the To box');
+  const injected=Buffer.from(core.buildMime({...msg,subject:'Hi\r\nBcc: evil@x.com'},r.bytes,'x.pdf').replace(/-/g,'+').replace(/_/g,'/'),'base64').toString('utf8');
+  assert.doesNotMatch(injected,/\r\nBcc:/,'no header injection through the subject');
+});
