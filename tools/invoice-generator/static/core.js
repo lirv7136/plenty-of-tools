@@ -63,6 +63,13 @@
     return out.slice(0,count);
   }
 
+  // A column headed Date (or Visit date, Service date…) gets a date picker on each line, stores
+  // the date as YYYY-MM-DD and shows it on the invoice as "3 Nov 2026". Anything else typed into
+  // it (an old draft's "Tues 3rd") is kept and shown exactly as typed.
+  const isDateHeading=label=>/^(dates?|(visit|service|support|work|job|session) dates?)$/i.test(String(label||'').trim());
+  const shortDate=v=>new Intl.DateTimeFormat('en-AU',{day:'numeric',month:'short',year:'numeric',timeZone:'UTC'}).format(new Date(v+'T00:00:00Z'));
+  const cellText=(heading,value)=>isDateHeading(heading)&&validDate(value)?shortDate(value):String(value||'');
+
   function cleanData(input){
     const data={};
     for(const [key,max] of Object.entries(fields)){if(typeof input[key]!=='string'||input[key].length>max)throw new Error(`The draft has an invalid ${key} field.`);data[key]=input[key];}
@@ -93,6 +100,26 @@
     const next=(BigInt(m[2])+1n).toString().padStart(m[2].length,'0');
     return (m[1]+next+m[3]).slice(0,60);
   }
+  // One running sequence for everything made on this device: a template saved for each customer
+  // must never hand out a number another customer already has. A number's pattern is what
+  // surrounds its last run of digits (INV-… , Q-… , 2026-…). nextFrom counts on from the highest
+  // number of the same pattern among everything known: every template's last number and the
+  // device's list of highest numbers used. A different pattern (quotes, a second business) keeps
+  // its own count. recordUsed keeps that list: one entry per pattern that only ever goes up.
+  function pattern(s){const m=/^(.*?)(\d+)(\D*)$/.exec(String(s||'').trim());return m&&{key:m[1]+'\u0000'+m[3],n:BigInt(m[2])};}
+  function nextFrom(ref,known=[]){
+    const start=String(ref||'').trim()||'INV-000',r=pattern(start);
+    if(!r)return nextNumber(start);
+    let best=start,top=r.n;
+    for(const k of [].concat(known||[])){const p=pattern(k);if(p&&p.key===r.key&&p.n>top){top=p.n;best=String(k).trim();}}
+    return nextNumber(best);
+  }
+  function recordUsed(used,number){
+    const n=String(number||'').trim().slice(0,60),p=pattern(n),list=Array.isArray(used)?used:[];
+    if(!p)return list.slice(0,20);
+    const prev=list.find(x=>{const q=pattern(x);return q&&q.key===p.key;}),keep=prev&&pattern(prev).n>p.n?prev:n;
+    return [keep,...list.filter(x=>x!==prev)].slice(0,20);
+  }
   const daysBetween=(a,b)=>Math.round((Date.parse(b+'T00:00:00Z')-Date.parse(a+'T00:00:00Z'))/86400000);
 
   // ---------- templates ----------
@@ -114,9 +141,9 @@
     if(opts.includeItems)t.data.items=data.items.map(i=>({...i,extra:(i.extra||[]).slice()}));
     return t;
   }
-  function applyTemplate(t,date=today()){
+  function applyTemplate(t,date=today(),known=[]){
     const base=defaults(date);
-    const doc={...base,...t.data,number:nextNumber(t.lastNumber),issueDate:date,dueDate:addDays(date,t.termsDays),paid:'0.00'};
+    const doc={...base,...t.data,number:nextFrom(t.lastNumber,known),issueDate:date,dueDate:addDays(date,t.termsDays),paid:'0.00'};
     if(!t.includesClient)for(const k of CLIENT)doc[k]='';
     const cols=doc.columns.length;
     doc.items=(t.includesItems&&t.data.items?t.data.items:base.items).map(i=>({...i,extra:cleanExtra(i.extra,cols)}));
@@ -126,7 +153,9 @@
     if(!store||store.v!==1||!Array.isArray(store.templates))throw new Error('This is not a saved templates file.');
     if(store.templates.length>MAX_TEMPLATES)throw new Error(`Keep at most ${MAX_TEMPLATES} templates.`);
     const ids=new Set();
-    return {v:1,templates:store.templates.map(t=>{
+    const used=(Array.isArray(store.used)?store.used:[]).filter(x=>typeof x==='string'&&x.trim()&&x.length<=60).slice(0,20);
+    const lastInvoice=typeof store.lastInvoice==='string'?store.lastInvoice.slice(0,60):'';
+    return {v:1,used,lastInvoice,templates:store.templates.map(t=>{
       if(!t||typeof t.id!=='string'||!/^[A-Za-z0-9_-]{1,40}$/.test(t.id)||ids.has(t.id))throw new Error('A template has an invalid id.');ids.add(t.id);
       if(typeof t.name!=='string'||!t.name.trim()||t.name.length>60)throw new Error('A template has an invalid name.');
       if(typeof t.lastNumber!=='string'||t.lastNumber.length>60)throw new Error(`Template "${t.name}" has an invalid number.`);
@@ -156,6 +185,11 @@
   // webmail compose link plus the downloaded PDF to attach.
   const aud=cents=>new Intl.NumberFormat('en-AU',{style:'currency',currency:'AUD'}).format(cents/100);
   const longDate=v=>validDate(v)?new Intl.DateTimeFormat('en-AU',{day:'numeric',month:'long',year:'numeric',timeZone:'UTC'}).format(new Date(v+'T00:00:00Z')):v;
+  // The words on a "start again" button: who it is for, if the template keeps the customer.
+  function quickLabel(t){
+    const doc=t.data.kind==='quote'?'quote':'invoice',who=t.includesClient&&t.data.clientName&&t.data.clientName.trim();
+    return who?`New ${doc} for ${who.slice(0,60)}`:`New ${doc} from "${t.name}"`;
+  }
   function emailMessage(data,totals){
     const doc=title(data).toLowerCase(),who=data.sellerName.trim()||'us';
     const subject=`${title(data)} ${data.number.trim()} from ${who}`.slice(0,200);
@@ -192,7 +226,7 @@
   }
 
   const api={defaults,today,validDate,addDays,abnValid,decimal,calculate,validate,parseDraft,serialize,title,fields,emailOk,buildMime,
-    MAX_COLUMNS,COLUMN_MAX,EXTRA_MAX,cleanColumns,cleanExtra,nextNumber,makeTemplate,applyTemplate,validateTemplates,parseTemplates,
+    MAX_COLUMNS,COLUMN_MAX,EXTRA_MAX,cleanColumns,cleanExtra,nextNumber,nextFrom,recordUsed,isDateHeading,cellText,quickLabel,makeTemplate,applyTemplate,validateTemplates,parseTemplates,
     serializeTemplates,MAX_TEMPLATES,emailMessage,mailtoUrl,gmailUrl,outlookUrl,aud};
   if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.InvoiceCore=api;
 })(typeof globalThis!=='undefined'?globalThis:this);

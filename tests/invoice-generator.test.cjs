@@ -145,3 +145,47 @@ test('Send with Gmail builds a MIME message whose text and PDF attachment decode
   const injected=Buffer.from(core.buildMime({...msg,subject:'Hi\r\nBcc: evil@x.com'},r.bytes,'x.pdf').replace(/-/g,'+').replace(/_/g,'/'),'base64').toString('utf8');
   assert.doesNotMatch(injected,/\r\nBcc:/,'no header injection through the subject');
 });
+
+// ---------- 11 Nov 2026: what a first real user could not find ----------
+test('a Date column is recognised and its values print as short dates; other text is kept as typed',()=>{
+  for(const h of ['Date','date ',' Visit date','Service dates'])assert.ok(core.isDateHeading(h),h);
+  for(const h of ['Hours','Day','Job no.','Date paid','Updated','',undefined])assert.ok(!core.isDateHeading(h),String(h));
+  assert.equal(core.cellText('Date','2026-11-03'),'3 Nov 2026');
+  assert.equal(core.cellText('Date','Tues 3rd'),'Tues 3rd');
+  assert.equal(core.cellText('Date','2026-02-30'),'2026-02-30');
+  assert.equal(core.cellText('Hours','2026-11-03'),'2026-11-03');
+  assert.equal(core.cellText('Date',''),'');
+});
+test('templates for different customers share one running number, unless their pattern differs',()=>{
+  assert.equal(core.nextFrom('INV-002','INV-007'),'INV-008');
+  assert.equal(core.nextFrom('INV-009','INV-007'),'INV-010');
+  assert.equal(core.nextFrom('INV-002',''),'INV-003');
+  assert.equal(core.nextFrom('Q-002','INV-007'),'Q-003');
+  assert.equal(core.nextFrom('2026-05','2026-011'),'2026-012');
+  assert.equal(core.nextFrom('','INV-007'),'INV-008');
+  assert.equal(core.nextFrom('',[]),'INV-001');
+  assert.equal(core.nextFrom('INV-002',['INV-010','Q-050','EXAMPLE-009']),'INV-011');
+  const t=core.makeTemplate('Sue',invoice({number:'INV-002',clientName:'Sue Smith'}),{includeClient:true,includeItems:true});
+  const next=core.applyTemplate(t,'2026-12-01',['INV-005']);
+  assert.deepEqual([next.number,next.issueDate,next.clientName,next.items[0].description],['INV-006','2026-12-01','Sue Smith','Services']);
+});
+test('the start again label names the customer when the template keeps one',()=>{
+  const d=invoice({clientName:'Sue Smith'});
+  assert.equal(core.quickLabel(core.makeTemplate('Sue',d,{includeClient:true})),'New invoice for Sue Smith');
+  assert.equal(core.quickLabel(core.makeTemplate('Retainer',d)),'New invoice from "Retainer"');
+  assert.equal(core.quickLabel(core.makeTemplate('Q',invoice({kind:'quote',clientName:'Bo'}),{includeClient:true})),'New quote for Bo');
+});
+test('the list of numbers used only goes up for each pattern',()=>{
+  assert.deepEqual(core.recordUsed([],'INV-001'),['INV-001']);
+  assert.deepEqual(core.recordUsed(['INV-010','Q-001'],'INV-002'),['INV-010','Q-001'],'re-sending an old invoice does not wind the count back');
+  assert.deepEqual(core.recordUsed(['INV-010'],'Q-003'),['Q-003','INV-010'],'a quote does not replace the invoice count');
+  assert.deepEqual(core.recordUsed(['INV-010'],'INV-011'),['INV-011']);
+  assert.deepEqual(core.recordUsed(['INV-010'],'no digits'),['INV-010']);
+  assert.equal(core.recordUsed(Array.from({length:30},(_,i)=>`P${i}-1`),'X-1').length,20);
+});
+test('stored numbers survive a reload, and a store without them still loads',()=>{
+  const t=core.makeTemplate('Sue',invoice(),{});
+  const s=core.validateTemplates({v:1,used:['INV-004',7,''],lastInvoice:'INV-004',templates:[t]});
+  assert.deepEqual([s.used,s.lastInvoice],[['INV-004'],'INV-004']);
+  assert.deepEqual([core.validateTemplates({v:1,templates:[t]}).used,core.validateTemplates({v:1,used:'x',templates:[]}).used],[[],[]]);
+});

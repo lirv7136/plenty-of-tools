@@ -74,7 +74,7 @@
     for (const l of wrap(sellerLines.join('\n'), reg, 9.5, leftW)) { text(l, M.l, ly - 10, 9.5, reg, C.grey); ly -= 13; }
     let ry = y;
     right(safe(core.title(data)), rightX, ry - 22, 24, bold, C.green); ry -= 34;
-    for (const l of [data.number.trim(), 'Issued: ' + date(data.issueDate), (data.kind === 'quote' ? 'Valid until: ' : 'Due: ') + date(data.dueDate)]) {
+    for (const l of [data.number.trim(), 'Date: ' + date(data.issueDate), (data.kind === 'quote' ? 'Valid until: ' : 'Due: ') + date(data.dueDate)]) {
       right(safe(l), rightX, ry - 10, 10); ry -= 14;
     }
     y = Math.min(ly, ry) - 12;
@@ -118,7 +118,7 @@
     headerRow();
     data.items.forEach((item, i) => {
       const t = totals.items[i];
-      const values = [item.description, ...cols.map((_, k) => (item.extra || [])[k] || ''), item.quantity, money(t.price),
+      const values = [item.description, ...cols.map((c, k) => core.cellText(c, (item.extra || [])[k])), item.quantity, money(t.price),
         ...(tax ? [t.taxable ? money(t.gst) : 'No GST'] : []), money(t.total)];
       const cells = values.map((v, k) => wrap(v, reg, 9, columns[k].w - PAD * 2));
       const h = Math.max(...cells.map(l => l.length)) * 11.5 + 10;

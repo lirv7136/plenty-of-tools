@@ -38,7 +38,7 @@
         input.value=item[key];wrap.append(input);return wrap;
       }
       panel.append(field('description','Description','textarea'));
-      data.columns.forEach((label,k)=>{const wrap=node('label',label.trim()||`Column ${k+1}`),input=node('input');input.type='text';input.maxLength=core.EXTRA_MAX;input.dataset.extra=String(k);input.setAttribute('aria-label',`Item ${index+1} ${(label.trim()||`column ${k+1}`).toLowerCase()}`);input.value=item.extra[k]||'';wrap.append(input);panel.append(wrap);});
+      data.columns.forEach((label,k)=>{const wrap=node('label',label.trim()||`Column ${k+1}`),input=node('input');input.type='text';input.maxLength=core.EXTRA_MAX;input.dataset.extra=String(k);if(core.isDateHeading(label)&&(!item.extra[k]||core.validDate(item.extra[k])))input.type='date';input.setAttribute('aria-label',`Item ${index+1} ${(label.trim()||`column ${k+1}`).toLowerCase()}`);input.value=item.extra[k]||'';wrap.append(input);panel.append(wrap);});
       const row=node('div',undefined,'inv-row');row.append(field('quantity','Quantity'),field('price','Unit price'));panel.append(row,field('tax','GST treatment','select'));$('items').append(panel);
     });settings();
   }
@@ -53,7 +53,7 @@
     seller.append(node('h2',data.sellerName||'Your business'));
     if(data.sellerAbn.trim())block(seller,'p','ABN '+data.sellerAbn.trim());
     for(const key of ['sellerAddress','sellerEmail','sellerPhone'])block(seller,'p',data[key]);
-    meta.append(node('h1',core.title(data)),node('p',data.number||'Document number'),node('p','Issued: '+date(data.issueDate)),node('p',(data.kind==='quote'?'Valid until: ':'Due: ')+date(data.dueDate)));
+    meta.append(node('h1',core.title(data)),node('p',data.number||'Document number'),node('p','Date: '+date(data.issueDate)),node('p',(data.kind==='quote'?'Valid until: ':'Due: ')+date(data.dueDate)));
     head.append(seller,meta);paper.append(head);
     const parties=node('div',undefined,'inv-parties'),buyer=node('div'),amount=node('div');buyer.append(node('h3',data.kind==='quote'?'Prepared for':'Bill to'),node('p',data.clientName||'Customer name'));
     if(data.clientAbn.trim())block(buyer,'p','ABN '+data.clientAbn.trim());
@@ -69,7 +69,7 @@
     const tbody=node('tbody');
     data.items.forEach((item,i)=>{
       const row=node('tr'),computed=totals?.items[i];
-      const values=[item.description||'Item description',...data.columns.map((_,k)=>item.extra[k]||''),item.quantity||'—',computed?money(computed.price):'—',...(tax?[computed?(computed.taxable?money(computed.gst):'No GST'):'—']:[]),computed?money(computed.total):'—'];
+      const values=[item.description||'Item description',...data.columns.map((c,k)=>core.cellText(c,item.extra[k])),item.quantity||'—',computed?money(computed.price):'—',...(tax?[computed?(computed.taxable?money(computed.gst):'No GST'):'—']:[]),computed?money(computed.total):'—'];
       values.forEach((value,k)=>{const td=node('td',value);if(k>0&&k<=data.columns.length)td.style.textAlign='left';row.append(td);});tbody.append(row);
     });table.append(tbody);paper.append(table);
     if(calculationError)paper.append(node('p','Draft: '+calculationError,'inv-doc-subtle'));
@@ -87,25 +87,27 @@
     settings();return errors;
   }
   function populate(){for(const key of Object.keys(core.fields))$(key).value=data[key];renderColumns();itemInputs();render();}
-  function replace(next,message){revision++;data=next;fromTemplate=null;showErrors=false;displayErrors([]);populate();status(message);}
+  function replace(next,message){revision++;data=next;fromTemplate=null;isExample=false;$('offer').hidden=true;showErrors=false;displayErrors([]);populate();status(message);}
   function update(event){
     const input=event.target;
     if(input.dataset.field){const index=Number(input.closest('.inv-line').dataset.index);data.items[index][input.dataset.field]=input.value;}
     else if(input.dataset.extra){const index=Number(input.closest('.inv-line').dataset.index);data.items[index].extra[Number(input.dataset.extra)]=input.value;}
-    else if(input.dataset.col){data.columns[Number(input.dataset.col)]=input.value;relabelExtras();}
+    else if(input.dataset.col){const k=Number(input.dataset.col),was=core.isDateHeading(data.columns[k]);data.columns[k]=input.value;if(was!==core.isDateHeading(input.value)){itemInputs();syncDateButton();}else relabelExtras();}
     else if(input.closest('.inv-templates'))return;
     else if(input.id.startsWith('inv-')&&Object.hasOwn(core.fields,input.id.slice(4)))data[input.id.slice(4)]=input.value;
     else return;
+    if(input.id==='inv-clientName')$('offer').hidden=true;
     revision++;render();status('Unsaved edits. Save a draft file to keep your work.');
   }
   $('form').addEventListener('submit',event=>event.preventDefault());
   $('form').addEventListener('input',update);$('form').addEventListener('change',update);
   $('items').addEventListener('click',event=>{const button=event.target.closest('[data-remove]');if(!button||data.items.length===1)return;data.items.splice(Number(button.dataset.remove),1);revision++;itemInputs();render();status('Item removed.');});
   $('add').addEventListener('click',()=>{if(data.items.length>=100)return;data.items.push({description:'',quantity:'1',price:'0.00',tax:'gst',extra:data.columns.map(()=>'')});revision++;itemInputs();render();$('items').lastElementChild.querySelector('textarea').focus();});
-  $('clear').addEventListener('click',()=>replace(core.defaults(),'New document. Nothing has been saved automatically.'));
+  const blank=()=>{const d=core.defaults();d.number=core.nextFrom(store.lastInvoice,known());return d;};
+  $('clear').addEventListener('click',()=>replace(blank(),'New document. Nothing has been saved automatically.'));
   $('example').addEventListener('click',()=>{
     const example=core.defaults();Object.assign(example,{number:'EXAMPLE-001',sellerName:'Example Studio (sample)',sellerAddress:'Sydney NSW\nAustralia',sellerEmail:'studio@example.com',clientName:'Example Customer',clientAddress:'Melbourne VIC\nAustralia',paid:'200.00',payment:'Example only — replace with your own payment details.\nUse the invoice number as your payment reference.',notes:'Fictional example. Replace all details before use.',items:[{description:'Website design services',quantity:'8',price:'125.00',tax:'gst',extra:[]},{description:'Project setup',quantity:'1',price:'150.00',tax:'gst',extra:[]}]});
-    replace(example,'Fictional example loaded. The example uses no GST.');
+    replace(example,'Fictional example loaded. The example uses no GST.');isExample=true;
   });
   const filename=()=>((data.number||'invoice').replace(/[^a-zA-Z0-9_-]+/g,'-').slice(0,80)||'invoice');
   $('save').addEventListener('click',()=>{const blob=new Blob([core.serialize(data)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=filename()+'.json';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);status('Draft download started. Keep this file to reopen and edit later.');});
@@ -129,20 +131,26 @@
       row.append(wrap,remove);$('columns').append(row);
     });
     $('col-add').disabled=data.columns.length>=core.MAX_COLUMNS;
+    syncDateButton();
   }
+  function syncDateButton(){$('date-col').hidden=data.columns.length>=core.MAX_COLUMNS||data.columns.some(core.isDateHeading);}
+  $('date-col').addEventListener('click',()=>{if(data.columns.length>=core.MAX_COLUMNS)return;data.columns.unshift('Date');data.items.forEach(i=>i.extra.unshift(''));revision++;renderColumns();itemInputs();render();$('items').querySelector('[data-extra="0"]').focus();status('Date column added. Pick the date for each line.');});
   function relabelExtras(){for(const input of $('items').querySelectorAll('[data-extra]')){const k=Number(input.dataset.extra),label=data.columns[k].trim()||`Column ${k+1}`;input.parentElement.firstChild.textContent=label;input.setAttribute('aria-label',`Item ${Number(input.closest('.inv-line').dataset.index)+1} ${label.toLowerCase()}`);}}
   $('col-add').addEventListener('click',()=>{if(data.columns.length>=core.MAX_COLUMNS)return;data.columns.push('');data.items.forEach(i=>i.extra.push(''));revision++;renderColumns();itemInputs();render();$('columns').lastElementChild.querySelector('input').focus();status('Column added. Give it a heading.');});
   $('columns').addEventListener('click',event=>{const b=event.target.closest('[data-col-remove]');if(!b)return;const k=Number(b.dataset.colRemove);data.columns.splice(k,1);data.items.forEach(i=>i.extra.splice(k,1));revision++;renderColumns();itemInputs();render();status('Column removed.');});
 
   // ---------- templates (this browser only) ----------
   const TKEY='pot:invoice-generator:templates:v1';
-  let store={v:1,templates:[]},fromTemplate=null;
+  let store={v:1,used:[],lastInvoice:'',templates:[]},fromTemplate=null,isExample=false;
+  // Every number this device knows was used: the high water list and each template's last number.
+  const known=()=>[...store.used,...store.templates.map(t=>t.lastNumber)];
   function loadTemplates(){try{const raw=localStorage.getItem(TKEY);if(raw)store=core.validateTemplates(JSON.parse(raw));}catch(e){status('Saved templates could not be read, so they were left alone.');}}
   function saveTemplates(){try{localStorage.setItem(TKEY,JSON.stringify(store));return true;}catch(e){status('This browser would not save templates (private windows and full storage do that). Export them to keep a copy.');return false;}}
   function renderTemplates(selected){
     const sel=$('tpl'),keep=selected!==undefined?selected:sel.value;
     sel.replaceChildren(store.templates.length?new Option('Choose a template',''):new Option('No templates yet',''),...store.templates.map(t=>new Option(`${t.name} (last ${t.lastNumber||'none'})`,t.id)));
     sel.value=store.templates.some(t=>t.id===keep)?keep:'';
+    renderQuick();
     const has=!!sel.value;$('tpl-use').disabled=!has;$('tpl-delete').disabled=!has;$('tpl-update').disabled=!has;$('tpl-export').disabled=!store.templates.length;
   }
   const chosen=()=>store.templates.find(t=>t.id===$('tpl').value);
@@ -156,7 +164,7 @@
     store.templates=same?store.templates.map(x=>x.id===t.id?t:x):store.templates.concat(t);
     if(!saveTemplates())return;
     fromTemplate=t.id;$('tpl-name').value='';$('tpl-client').checked=false;$('tpl-items').checked=false;$('tpl-name').closest('details').open=false;
-    renderTemplates(t.id);status(`Saved the template "${t.name}". Next time, choose it and start a new document: it will be numbered ${core.nextNumber(t.lastNumber)}.`);
+    renderTemplates(t.id);status(`Saved the template "${t.name}". Next time it waits at the top of this page: the next one will be numbered ${core.nextFrom(t.lastNumber,known())}.`);
   });
   $('tpl-update').addEventListener('click',()=>{
     const old=chosen();if(!old)return;
@@ -164,12 +172,14 @@
     const t=core.makeTemplate(old.name,data,{includeClient:old.includesClient,includeItems:old.includesItems},old.id);
     store.templates=store.templates.map(x=>x.id===old.id?t:x);if(saveTemplates()){renderTemplates(t.id);status(`Updated "${t.name}".`);}
   });
-  $('tpl-use').addEventListener('click',()=>{
-    const t=chosen();if(!t)return;
-    if(revision&&!confirm('Start a new document from this template? Unsaved edits to the current document will be lost.'))return;
-    let next;try{next=core.applyTemplate(t);}catch(e){return status('That template could not be used: '+e.message);}
-    replace(next,`New ${core.title(next).toLowerCase()} ${next.number} from "${t.name}". Check the customer and items, then download or email it.`);fromTemplate=t.id;
-  });
+  function useTemplate(t){
+    if(!t)return false;
+    if(revision&&!confirm('Start a new document from this template? Unsaved edits to the current document will be lost.'))return false;
+    let next;try{next=core.applyTemplate(t,undefined,known());}catch(e){status('That template could not be used: '+e.message);return false;}
+    replace(next,`New ${core.title(next).toLowerCase()} ${next.number} from "${t.name}", dated today. Check the customer and items, then download or email it.`);fromTemplate=t.id;
+    return true;
+  }
+  $('tpl-use').addEventListener('click',()=>useTemplate(chosen()));
   $('tpl-delete').addEventListener('click',()=>{const t=chosen();if(!t||!confirm(`Delete the template "${t.name}"?`))return;store.templates=store.templates.filter(x=>x.id!==t.id);if(fromTemplate===t.id)fromTemplate=null;if(saveTemplates()){renderTemplates('');status('Template deleted.');}});
   $('tpl-export').addEventListener('click',()=>{download('invoice-templates.json',new Blob([core.serializeTemplates(store)],{type:'application/json'}));status('Templates file saved. Import it in another browser to use them there.');});
   $('tpl-import').addEventListener('click',()=>$('tpl-load').click());
@@ -177,12 +187,60 @@
     const file=event.target.files[0];event.target.value='';if(!file)return;
     try{const incoming=core.parseTemplates(await file.text());const ids=new Set(store.templates.map(t=>t.id));const added=incoming.templates.filter(t=>!ids.has(t.id));
       if(store.templates.length+added.length>core.MAX_TEMPLATES)throw new Error(`That would make more than ${core.MAX_TEMPLATES} templates.`);
-      store.templates=store.templates.concat(added);if(saveTemplates()){renderTemplates();status(`Imported ${added.length} template${added.length===1?'':'s'}${incoming.templates.length>added.length?'; ones already here were kept':''}.`);}}
+      store.templates=store.templates.concat(added);for(const n of incoming.used.slice().reverse())store.used=core.recordUsed(store.used,n);if(saveTemplates()){renderTemplates();status(`Imported ${added.length} template${added.length===1?'':'s'}${incoming.templates.length>added.length?'; ones already here were kept':''}.`);}}
     catch(e){status('Templates were not imported: '+e.message);}
   });
   // Once a document from a template is downloaded, emailed or printed, its number becomes the
   // template's last number, so the next document from it is numbered one higher.
-  function markUsed(){const t=store.templates.find(x=>x.id===fromTemplate);if(!t||!data.number.trim())return;t.lastNumber=data.number.trim().slice(0,60);if(saveTemplates())renderTemplates();}
+  // The device's last number is kept only once something has been saved in this browser, so a
+  // person who never saves leaves nothing behind.
+  function markUsed(){
+    if(isExample)return;   // the fictional example never counts as a number used, and is never offered for saving
+    const n=data.number.trim().slice(0,60),t=store.templates.find(x=>x.id===fromTemplate);
+    if(n&&store.templates.length){recordNumber(n);if(t)t.lastNumber=n;if(saveTemplates())renderTemplates();}
+    offerSave();
+  }
+  function recordNumber(n){store.used=core.recordUsed(store.used,n);if(data.kind==='invoice')store.lastInvoice=n;}
+  // Another tab saved: take its templates and numbers, so two tabs never hand out the same number.
+  window.addEventListener('storage',event=>{if(event.key===TKEY){loadTemplates();renderTemplates();}});
+
+  // ---------- after the first download or email: offer to keep the details ----------
+  const declined=new Set();
+  const saved=name=>store.templates.some(x=>x.includesClient&&(x.data.clientName||'').trim().toLowerCase()===name.toLowerCase());
+  function offerSave(){
+    const who=data.clientName.trim();
+    if(!who||saved(who)||declined.has(who.toLowerCase())){$('offer').hidden=true;return;}
+    $('offer-who').textContent=who.slice(0,60);const first=$('offer').hidden;$('offer').hidden=false;if(first&&$('mail').hidden)$('offer').scrollIntoView({block:'nearest'});
+  }
+  $('offer-no').addEventListener('click',()=>{declined.add(data.clientName.trim().toLowerCase());$('offer').hidden=true;status('Not saved. You can save it later at the bottom of the form.');});
+  $('offer-save').addEventListener('click',()=>{
+    const who=data.clientName.trim().slice(0,60);if(!who)return;
+    const same=store.templates.find(x=>x.name.toLowerCase()===who.toLowerCase());
+    if(same&&!same.includesClient&&!confirm(`Replace your template "${same.name}" with these details?`))return;
+    if(!same&&store.templates.length>=core.MAX_TEMPLATES)return status(`Keep at most ${core.MAX_TEMPLATES} templates. Delete one at the bottom of the form first.`);
+    let t;try{t=core.makeTemplate(who,data,{includeClient:true,includeItems:true},same&&same.id);}catch(e){return status(e.message);}
+    store.templates=same?store.templates.map(x=>x.id===t.id?t:x):store.templates.concat(t);
+    const before={used:store.used,lastInvoice:store.lastInvoice};if(data.number.trim())recordNumber(data.number.trim().slice(0,60));
+    if(!saveTemplates()){Object.assign(store,before);return;}
+    fromTemplate=t.id;$('offer').hidden=true;renderTemplates(t.id);
+    status(`Saved. Next time, open this page and tap "${core.quickLabel(t)}": it fills in everything with that day's date and number ${core.nextFrom(t.lastNumber,known())}.`);
+  });
+
+  // ---------- start where you left off: one button per saved template, at the top ----------
+  function renderQuick(){
+    const list=$('quick-list');list.replaceChildren();
+    const recent=store.templates.slice().sort((a,b)=>String(b.savedAt).localeCompare(String(a.savedAt)));
+    for(const t of recent.slice(0,6)){
+      const b=node('button',undefined,'btn primary inv-quick-btn');b.type='button';b.dataset.quick=t.id;
+      b.append(node('span',core.quickLabel(t)),node('small',`Next number ${core.nextFrom(t.lastNumber,known())}`));list.append(b);
+    }
+    if(recent.length>6){const a=node('a',`All ${recent.length} saved`,'inv-quick-more');a.href='#inv-tpl';list.append(a);}
+    $('quick').hidden=!recent.length;
+  }
+  $('quick-list').addEventListener('click',event=>{
+    const b=event.target.closest('[data-quick]');if(!b)return;
+    if(useTemplate(store.templates.find(t=>t.id===b.dataset.quick)))$('toolbar').scrollIntoView({block:'start'});
+  });
 
   // ---------- PDF and email ----------
   function download(name,blob){const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);}
@@ -258,5 +316,5 @@
 
   loadTemplates();renderTemplates();
   window.__invoice={state:()=>data,templates:()=>store};   // test hook
-  populate();status('No account and nothing uploaded. Your draft stays in this tab; templates stay in this browser.');
+  data=blank();populate();status('No account and nothing uploaded. Your draft stays in this tab; templates stay in this browser.');
 })();

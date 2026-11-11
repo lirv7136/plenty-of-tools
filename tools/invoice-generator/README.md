@@ -134,3 +134,25 @@ Primary references checked September 2026:
 
 The example is fictional and deliberately uses no GST and no ABN. Tests use the
 ABR's published ABN example solely to verify checksum/validation behaviour.
+
+## Added 11 November 2026 (Claude): what the first real user could not find
+
+The first real user asked for a date on the invoice and on each line, and a way to save a
+template. All three already existed; she did not find them. Changes:
+
+- **Start where you left off.** With anything saved, the page opens with one button per saved
+  customer above the hero: "New invoice for Sue Smith", with today's date and the next number.
+- **Save these details for next time.** After the first PDF download, print or email send, a
+  one tap offer saves the customer, line items and number as a template named after the
+  customer. "Not now" is not asked again for that customer in the tab. Nothing is written to
+  the browser until the person taps save.
+- **One running number.** `core.nextFrom` counts on from the highest number of the same
+  pattern among every template's last number and `store.used` (one entry per pattern, only
+  ever goes up, kept only once something is saved). So two customers' templates never share a
+  number, re-sending an old invoice or the example never winds the count back, and quotes
+  (Q-…) keep their own count. A `storage` listener picks up saves from another open tab.
+- **A date on each line, one tap away.** "+ Add a date to each line" adds a Date column with a
+  date picker. A column headed Date, Visit date, Service date and similar stores YYYY-MM-DD and
+  shows "3 Nov 2026"; free text already in such a column is kept as typed.
+- The corner of the invoice says **Date:** instead of Issued:. On phones a **See the invoice**
+  button jumps past the form to the preview. The templates panel moved to the end of the form.
