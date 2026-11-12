@@ -126,6 +126,9 @@ def main():
     page("/404/", f'Page not found · {SITE["brand"]}', "This page does not exist.", nf, robots="noindex,nofollow")
     (DIST / "404" / "index.html").rename(DIST / "404.html"); (DIST / "404").rmdir()
 
+    # IndexNow key file, so Bing and others accept URL submissions without an account.
+    if SITE.get("indexnow_key") and not STAGING:
+        (DIST / f'{SITE["indexnow_key"]}.txt').write_text(SITE["indexnow_key"])
     (DIST / "robots.txt").write_text(f"User-agent: *\nAllow: /\n" + ("" if STAGING else f"Sitemap: {BASE}/sitemap.xml\n"))
     (DIST / "sitemap.xml").write_text('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
                                       + "".join(f"  <url><loc>{u}</loc></url>\n" for u in urls) + "</urlset>\n")

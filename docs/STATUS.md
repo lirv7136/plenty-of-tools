@@ -1,3 +1,26 @@
+# Plain Invoice (plaininvoice.com.au): launched 12 Nov 2026
+
+The invoice maker as its own site, in `sites/plain-invoice/`. See its README and
+`docs/research/invoice-teardown.md`. Branch `invoice-site`, not pushed.
+
+- **Live:** 12 Nov 2026, free tool plus NDIS, no GST, tax invoice, cleaning and tutoring pages.
+- **Pro test started 13 Nov 2026:** Pro is shown, not sold, at A$5 a month. `/pro/` takes an email.
+- **Gate for building Pro:** 20 different people leave an email, or 500 people a month make
+  invoices. If neither by **12 Jan 2027** (60 days), the site stays free and gets no more work.
+- **Numbers each Monday** (command in the site README): invoices made (pdf + print + email),
+  Pro taps by feature, emails left; visits from Cloudflare Web Analytics.
+
+| Week to | Visits | Invoices made | Pro taps | Emails |
+|---|---|---|---|---|
+| 13 Nov 2026 (launch) | 0 | 0 | 0 | 0 |
+
+- **Next build:** CSV export of the invoice list, then CSV import that makes many invoices at
+  once (NDIS shift log first). Lachlan's idea, 13 Nov.
+- **Waiting on Lachlan:** post the two drafts and the AlternativeTo listing in
+  `docs/distribution/plain-invoice.md`; Search Console and Bing need his login.
+
+---
+
 # Plenty of Tools — status and handoff
 
 Last updated 2026-09-19 (night, after the review pass and the habit tracker). Read this first when resuming in a new
