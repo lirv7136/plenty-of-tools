@@ -7,5 +7,6 @@
   "redirect_pages_dev": true,
   "pro_price_month": "5",
   "pro_price_year": "48",
-  "indexnow_key": "cf7ad52b462d464d8a1ea638e5d1bd84"
+  "indexnow_key": "cf7ad52b462d464d8a1ea638e5d1bd84",
+  "sync": true
 }

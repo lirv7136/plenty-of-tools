@@ -228,7 +228,7 @@ const bulk0 = require('../tools/invoice-generator/static/bulk.js');
   if (api === 204) {
     await open(ROOT + 'pro/?f=reminders');
     assert.equal(await ev("document.getElementById('pro-feature').value"), 'reminders');
-    assert.match(await text('main'), /Pro is not open yet, and nothing can be bought/);
+    assert.match(await text('main'), /Nothing can be bought yet/);
     await setv('#pro-email', 'nope'); await click('#pro-form button[type=submit]');
     assert.match(await text('#pro-result'), /Enter your email address first/);
     const addr = `test+${Date.now()}@example.com`;
