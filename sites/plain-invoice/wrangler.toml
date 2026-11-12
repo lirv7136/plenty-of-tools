@@ -1,0 +1,10 @@
+# Plain Invoice on Cloudflare Pages. Deploy from this directory (see README.md).
+name = "plain-invoice"
+pages_build_output_dir = "dist"
+compatibility_date = "2026-05-01"
+
+# Anonymous daily counts and the Pro waitlist. Nothing else is stored server side.
+[[d1_databases]]
+binding = "DB"
+database_name = "plain-invoice"
+database_id = "ae293c91-dfc9-4e5a-affd-35510a72dec6"

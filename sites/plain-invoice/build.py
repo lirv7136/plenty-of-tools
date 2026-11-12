@@ -46,13 +46,16 @@ PAGES = [
     ("/pricing/", f'Pricing · {SITE["brand"]}',
      "Free forever: invoices, quotes, PDF, email, saved customers and a date on each line. Pro, not open yet, adds sync, sending and reminders.",
      "pricing.html"),
+    ("/pro/", f'Pro, not open yet · {SITE["brand"]}',
+     "Plain Invoice Pro would send invoices on a schedule, chase overdue ones and sync your phone and laptop. Not open yet: leave your email to hear when it is.",
+     "pro.html"),
     ("/privacy/", f'Privacy · {SITE["brand"]}',
      "Nothing you type into the invoice maker is uploaded. What is kept in your browser, and what the site collects.",
      "privacy.html"),
     ("/terms/", f'Terms of use · {SITE["brand"]}',
      "Free to use, provided as is, open source. Your invoices stay on your device.", "terms.html"),
     ("/guides/", f'Free invoice templates for Australia · {SITE["brand"]}',
-     "Free invoice templates for Australian sole traders: no GST, tax invoice, cleaning and tutoring, each with ABN and a PDF.",
+     "Free invoice templates for Australian businesses: no GST, tax invoice, NDIS, cleaning and tutoring, each with ABN and a PDF.",
      "guides/index.html"),
     ("/invoice-template-no-gst/", "Invoice template for sole traders not registered for GST (Australia)",
      "A free Australian invoice for sole traders who are not registered for GST: ABN, no GST line, how to pay. Make it in your browser and download a PDF.",
@@ -102,13 +105,13 @@ def main():
     tool_assets = [f'/assets/invoice.css?v={ver(TOOL / "tool.css")}', sv("core.js"), sv("pdf.js"),
                    f'/assets/invoice.js?v={ver(TOOL / "app.js")}', pdflib]
     head = (f'<link rel="stylesheet" href="{tool_assets[0]}">'
-            f'<script>window.INV_PDFLIB={json.dumps(pdflib)};</script>')
+            f'<script>window.INV_PDFLIB={json.dumps(pdflib)};window.INV_COUNT_URL="/api/count";</script>')
     scripts = "".join(f'\n<script src="{u}" defer></script>' for u in tool_assets[1:4])
     app_ld = {"@context": "https://schema.org", "@type": "WebApplication", "name": SITE["brand"], "url": BASE + "/",
               "description": SITE["tagline"], "applicationCategory": "BusinessApplication",
               "operatingSystem": "Any (runs in a web browser)", "browserRequirements": "Requires JavaScript",
               "isAccessibleForFree": True, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "AUD"}}
-    urls = [page("/", f'Free invoice maker for Australian sole traders · {SITE["brand"]}',
+    urls = [page("/", f'Free invoice maker for Australian businesses · {SITE["brand"]}',
                  "Make an Australian invoice or quote with ABN, GST or no GST and a date on each line. Download a PDF or email it. No account, nothing uploaded, no limits.",
                  (HERE / "pages" / "home.html").read_text() + scripts, head_extra=head, body_class="tool",
                  jsonld=ld(app_ld))]

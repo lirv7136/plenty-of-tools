@@ -121,7 +121,7 @@
     try{if(file.size>1000000)throw new Error('Draft files must be smaller than 1 MB.');const next=core.parseDraft(await file.text());if(token!==revision){status('Draft was not opened because the current document changed. Open it again to replace this document.');return;}replace(next,'Draft opened locally. Review the details before printing.');}
     catch(error){displayErrors([error.message]);status('The current document has been kept.');}
   });
-  $('print').addEventListener('click',()=>{showErrors=true;const errors=render();if(errors.length){$('errors').focus();return;}document.title=filename()+' — '+core.title(data);markUsed();window.print();});
+  $('print').addEventListener('click',()=>{showErrors=true;const errors=render();if(errors.length){$('errors').focus();return;}document.title=filename()+' — '+core.title(data);markUsed('print');window.print();});
   window.addEventListener('beforeprint',render);
   window.addEventListener('afterprint',()=>{document.title=originalTitle;});
 
@@ -198,7 +198,11 @@
   // template's last number, so the next document from it is numbered one higher.
   // The device's last number is kept only once something has been saved in this browser, so a
   // person who never saves leaves nothing behind.
-  function markUsed(){
+  // An anonymous count of documents made, only where the site asks for one (Plain Invoice sets
+  // INV_COUNT_URL; Plenty of Tools does not). One word is sent: no id, no content, no cookie.
+  function count(event){try{if(window.INV_COUNT_URL&&navigator.sendBeacon)navigator.sendBeacon(window.INV_COUNT_URL,event);}catch(e){}}
+  function markUsed(how){
+    if(how)count(how);
     if(isExample)return;   // the fictional example never counts as a number used, and is never offered for saving
     const n=data.number.trim().slice(0,60),t=store.templates.find(x=>x.id===fromTemplate);
     if(n&&store.templates.length){recordNumber(n);if(t&&(t.data.kind||'invoice')===data.kind)t.lastNumber=n;if(saveTemplates())renderTemplates();recordHistory();}
@@ -261,7 +265,7 @@
     const note=r.replaced.length?` Some characters (${r.replaced.slice(0,6).join(' ')}) cannot go into this PDF and show as "?". Use Print and Save as PDF for those.`:'';
     return {file:new File([r.bytes],filename()+'.pdf',{type:'application/pdf'}),note,pages:r.pages};
   }
-  $('pdf').addEventListener('click',async()=>{const p=await makePdf();if(!p)return;download(p.file.name,p.file);markUsed();status(`Downloaded ${p.file.name} (${p.pages} page${p.pages===1?'':'s'}).${p.note}`);});
+  $('pdf').addEventListener('click',async()=>{const p=await makePdf();if(!p)return;download(p.file.name,p.file);markUsed('pdf');status(`Downloaded ${p.file.name} (${p.pages} page${p.pages===1?'':'s'}).${p.note}`);});
   let mail=null,mailPdf=null;
   $('email').addEventListener('click',async()=>{
     const p=await makePdf();if(!p)return;mailPdf=p;
@@ -304,15 +308,15 @@
       let r=await gmailPost(raw);
       if(r.status===401){gmailToken=await gmailAuth();r=await gmailPost(raw);}
       if(!r.ok){let why='';try{why=((await r.json()).error||{}).message||'';}catch(e){}throw new Error(`Gmail did not accept the message${why?': '+why:''}.`);}
-      markUsed();status(`Sent from your Gmail to ${mail.to}, with ${mailPdf.file.name} attached. A copy is in your Sent folder.`);
+      markUsed('email');status(`Sent from your Gmail to ${mail.to}, with ${mailPdf.file.name} attached. A copy is in your Sent folder.`);
       button.textContent='Sent';
     }catch(e){status(e.message+' Nothing was sent. You can still use the other options.');button.disabled=false;}
   });
   $('mail-share').addEventListener('click',async()=>{
-    try{await navigator.share({files:[mailPdf.file],title:mail.subject,text:mail.body});markUsed();status('Shared. Check the message in your mail app before you send it.');}
+    try{await navigator.share({files:[mailPdf.file],title:mail.subject,text:mail.body});markUsed('email');status('Shared. Check the message in your mail app before you send it.');}
     catch(e){status(e&&e.name==='AbortError'?'Sharing cancelled.':'Sharing did not work here. Use "Download PDF and open email" instead.');}
   });
-  function openWith(url,target){download(mailPdf.file.name,mailPdf.file);markUsed();const a=document.createElement('a');a.href=url;if(target){a.target='_blank';a.rel='noopener';}document.body.append(a);a.click();a.remove();status(`${mailPdf.file.name} is in your downloads. Attach it to the message before you send.`);}
+  function openWith(url,target){download(mailPdf.file.name,mailPdf.file);markUsed('email');const a=document.createElement('a');a.href=url;if(target){a.target='_blank';a.rel='noopener';}document.body.append(a);a.click();a.remove();status(`${mailPdf.file.name} is in your downloads. Attach it to the message before you send.`);}
   $('mail-app').addEventListener('click',()=>openWith(core.mailtoUrl(mail)));
   $('mail-gmail').addEventListener('click',()=>openWith(core.gmailUrl(mail),true));
   $('mail-outlook').addEventListener('click',()=>openWith(core.outlookUrl(mail),true));

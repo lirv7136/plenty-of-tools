@@ -22,22 +22,33 @@ A11Y_DIST=sites/plain-invoice/dist A11Y_PAGES=/,/pricing/,/privacy/,/terms/,/gui
 
 ## Deploy (only when Lachlan says so)
 
-Its own Cloudflare Pages project, `plain-invoice`, not yet created:
+Cloudflare Pages project `plain-invoice`, domain plaininvoice.com.au. Deploy from this
+directory, so `wrangler.toml` and `functions/` are picked up:
 
 ```sh
-npx wrangler pages project create plain-invoice --production-branch main
-PI_STAGING=1 python3 sites/plain-invoice/build.py
-npx wrangler pages deploy sites/plain-invoice/dist --project-name plain-invoice --branch staging
+cd sites/plain-invoice
+python3 build.py && npx wrangler pages deploy --branch main            # production
+PI_STAGING=1 python3 build.py && npx wrangler pages deploy --branch staging   # staging.plain-invoice.pages.dev
 ```
 
-Before the real launch: buy the domain, attach it to the project, set `redirect_pages_dev: true`
-and a Cloudflare Web Analytics token in `site.json` (the privacy page text follows the token),
-then build without PI_STAGING and deploy to `main`.
+## The only server side part
+
+`functions/api/count.js` adds one to a daily total for an action (pdf, print, email, Pro page
+opens). `functions/api/waitlist.js` keeps an email address for people who ask to hear when Pro
+opens, and removes it on request. Both use the D1 database `plain-invoice` (schema in
+`migrations/`). No ids, cookies or IP addresses are stored; the privacy page says exactly this.
+Every page is still a static file: only `/api/*` runs code.
+
+```sh
+npx wrangler pages dev --port 8788          # site and endpoints locally, with a local database
+TEST_URL=http://127.0.0.1:8788/ node ../../tests/plain-invoice.browser.cjs
+npx wrangler d1 execute plain-invoice --remote --command "SELECT day,event,n FROM counts ORDER BY day DESC, event; SELECT feature,count(*) FROM waitlist GROUP BY feature"
+```
 
 ## Pages
 
 - `/` the invoice maker; `?start=visits` (Date column), `?start=nogst`, `?start=tax`, `?start=ndis`
-- `/pricing/` Free, and Pro (not available yet, A$5 a month or A$48 a year)
+- `/pricing/` Free, and Pro (not available yet, A$5 a month or A$48 a year); `/pro/` the waitlist
 - `/privacy/`, `/terms/`
 - `/guides/` and five search pages: NDIS, no GST, tax invoice, cleaning, tutoring
 

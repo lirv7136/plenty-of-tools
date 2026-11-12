@@ -58,3 +58,7 @@ p{margin:0 0 1rem}
 .inv-bank{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}.inv-bank .wide{grid-column:1/-1}
 .inv-history{border:1px solid var(--line);border-radius:10px;padding:16px 18px;margin:24px 0 0}.inv-history h2{font-size:1.1rem;margin:0 0 4px}.inv-hlist{list-style:none;padding:0;margin:10px 0 0}.inv-hrow{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}.inv-hwhat{display:flex;flex-direction:column;min-width:0}.inv-hwhat span{font-size:.85rem;color:var(--muted)}.inv-hacts{display:flex;gap:6px}.inv-htag{font-size:.75rem;font-weight:700;padding:2px 8px;border-radius:999px;border:1px solid var(--line)}.inv-htag-paid{color:var(--accent);border-color:var(--accent)}.inv-htag-overdue{color:var(--danger);border-color:var(--danger)}
 @media(max-width:540px){.inv-hrow{grid-template-columns:1fr auto}.inv-hacts{grid-column:1/-1}.inv-bank{grid-template-columns:1fr}}
+#pro-form label{display:block;font-weight:600;font-size:.9rem;margin:12px 0 4px}#pro-form input,#pro-form select{font:inherit;width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink)}
+.pi-hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}.pi-link{background:none;border:0;padding:0;font:inherit;color:var(--accent);text-decoration:underline;cursor:pointer}
+.pi-picked{border-color:var(--accent)!important;background:var(--soft)}
+.inv-pro{font-size:.82rem;color:var(--muted);margin:10px 0 0}.inv-pro a{font-weight:600}

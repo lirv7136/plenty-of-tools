@@ -30,8 +30,10 @@ const ok = m => console.log('  ok  ' + m);
   const { targetId } = await send('Target.createTarget', { url: 'about:blank' });
   session = (await send('Target.attachToTarget', { targetId, flatten: true })).sessionId;
   await send('Runtime.enable'); await send('Page.enable'); await send('Network.enable');
-  // Test visits must not count as real ones in the site's analytics.
-  await send('Network.setBlockedURLs', { urls: ['*cloudflareinsights.com*'] });
+  // Test visits must not count as real ones in the site's analytics…
+  // …nor in its own counts or waitlist: against a real site the /api endpoints are blocked too.
+  const local = /^https?:\/\/(127\.0\.0\.1|localhost)[:/]/.test(ROOT);
+  await send('Network.setBlockedURLs', { urls: ['*cloudflareinsights.com*', ...(local ? [] : ['*/api/*'])] });
   await send('Browser.setDownloadBehavior', { behavior: 'allow', downloadPath: dir });
 
   // Every page answers, has one h1, and fits a phone.
@@ -164,6 +166,24 @@ const ok = m => console.log('  ok  ' + m);
   assert.match(await text('[data-quick]'), /New invoice for Jane Citizen/);
   await ev("document.getElementById('inv-preview').scrollIntoView()"); await size(1280, 900); await click('[data-quick]'); await ev("document.getElementById('inv-preview').scrollIntoView()"); await shot('laptop-ndis-invoice'); await size(390, 844);
   ok('an NDIS invoice asks for the participant, NDIS number, ABN, date and support item, warns at 90 days, and "New invoice for" names the participant');
+
+  // Pro: shown beside the moments people want it, never sold. Only where the site has its endpoints.
+  const api = await ev("fetch('/api/count',{method:'POST',body:'pro_page'}).then(r=>r.status).catch(()=>0)");
+  if (api === 204) {
+    await open(ROOT + 'pro/?f=reminders');
+    assert.equal(await ev("document.getElementById('pro-feature').value"), 'reminders');
+    assert.match(await text('main'), /Pro is not open yet, and nothing can be bought/);
+    await setv('#pro-email', 'nope'); await click('#pro-form button[type=submit]');
+    assert.match(await text('#pro-result'), /Enter your email address first/);
+    const addr = `test+${Date.now()}@example.com`;
+    await setv('#pro-email', addr); await click('#pro-form button[type=submit]');
+    await until("/You will get one email when Pro opens/.test(document.getElementById('pro-result').textContent)");
+    assert.deepEqual(await ev("fetch('/api/waitlist',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:'x@y.co',website:'spam'})}).then(r=>r.json())"), { ok: true }, 'the honeypot is ignored quietly');
+    assert.equal(await ev("fetch('/api/count',{method:'POST',body:'not-an-event'}).then(r=>r.status)"), 400);
+    await click('#pro-remove');
+    await until("/no longer on the list/.test(document.getElementById('pro-result').textContent)");
+    ok('the Pro page says it is not open, takes an email, refuses junk and lets people take it back');
+  } else console.log('  --  no /api here (static server): Pro waitlist and counts not tested');
 
   // Delete everything saved here.
   await open(); await setv('#inv-sellerName', 'X'); await click('#inv-forget');
