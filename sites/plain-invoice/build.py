@@ -122,7 +122,7 @@ def main():
               "isAccessibleForFree": True, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "AUD"}}
     urls = [page("/", f'Free invoice maker, no account · {SITE["brand"]}',
                  "Make an invoice or quote in your browser and download a PDF. Built for Australia (ABN, GST, PayID, NDIS), set up for NZ, UK, Europe, US and Canada. No account, no limits.",
-                 (HERE / "pages" / "home.html").read_text().replace("{{jump_signin}}", '<a href="#inv-sync">Sign in to sync your phone and laptop</a> · ' if SYNC_ON else "") + scripts, head_extra=head, body_class="tool",
+                 (HERE / "pages" / "home.html").read_text().replace("{{jump_signin}}", '<a href="#inv-sync">Sign in to sync</a> · ' if SYNC_ON else "") + scripts, head_extra=head, body_class="tool",
                  jsonld=ld(app_ld))]
 
     for path, title, desc, src in PAGES:

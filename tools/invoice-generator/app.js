@@ -618,5 +618,5 @@
   loadTemplates();loadHistory();renderTemplates();renderHistory();
   window.__invoice={state:()=>data,templates:()=>store,history:()=>history};   // test hook
   const start=/[?&]start=(visits|nogst|tax|ndis)\b/.exec(location.search);
-  data=start?startFrom(start[1]):blank();populate();status('No account and nothing uploaded. Your draft stays in this tab; templates stay in this browser.');
+  data=start?startFrom(start[1]):blank();populate();if(!$('region'))status('No account and nothing uploaded. Your draft stays in this tab; templates stay in this browser.');
 })();
