@@ -64,3 +64,4 @@ p{margin:0 0 1rem}
 .inv-pro{font-size:.82rem;color:var(--muted);margin:10px 0 0}.inv-pro a{font-weight:600}
 .inv-bulk-errors{color:var(--danger);font-size:.88rem;padding-left:20px;margin:8px 0}#inv-history-csv{margin-top:10px}#inv-bulk-make{margin-top:12px}
 .inv-sync-email{flex:1;min-width:200px;margin:0!important}
+.inv .hero.pi-hero p.pi-jump{font-size:.9rem;margin-top:8px}.pi-jump a{font-weight:600}.inv-history{scroll-margin-top:12px}

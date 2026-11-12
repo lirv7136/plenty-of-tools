@@ -86,7 +86,8 @@ def page(path, title, description, main, head_extra="", body_class="", jsonld=""
     out = fill((HERE / "shell" / "page.html").read_text(), redirect=redirect, title=html.escape(title),
                description=html.escape(description), canonical=BASE + path, robots="noindex,nofollow" if STAGING else robots, brand=SITE["brand"],
                sitev=ver(HERE / "shell" / "site.css"), jsonld=jsonld, head_extra=head_extra,
-               body_class=body_class, main=main, github=SITE["github"], analytics=analytics())
+               body_class=body_class, main=main,
+               signin='<a href="/#inv-sync">Sign in</a>' if SYNC_ON else '<a href="/privacy/">Privacy</a>', github=SITE["github"], analytics=analytics())
     dest = DIST / "index.html" if path == "/" else DIST / path.strip("/") / "index.html"
     dest.parent.mkdir(parents=True, exist_ok=True)
     dest.write_text(out)
@@ -121,7 +122,7 @@ def main():
               "isAccessibleForFree": True, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "AUD"}}
     urls = [page("/", f'Free invoice maker, no account · {SITE["brand"]}',
                  "Make an invoice or quote in your browser and download a PDF. Built for Australia (ABN, GST, PayID, NDIS), set up for NZ, UK, Europe, US and Canada. No account, no limits.",
-                 (HERE / "pages" / "home.html").read_text() + scripts, head_extra=head, body_class="tool",
+                 (HERE / "pages" / "home.html").read_text().replace("{{jump_signin}}", '<a href="#inv-sync">Sign in to sync your phone and laptop</a> · ' if SYNC_ON else "") + scripts, head_extra=head, body_class="tool",
                  jsonld=ld(app_ld))]
 
     for path, title, desc, src in PAGES:
