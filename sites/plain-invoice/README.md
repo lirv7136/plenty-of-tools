@@ -36,10 +36,17 @@ then build without PI_STAGING and deploy to `main`.
 
 ## Pages
 
-- `/` the invoice maker; `?start=visits` (Date column), `?start=nogst`, `?start=tax`
+- `/` the invoice maker; `?start=visits` (Date column), `?start=nogst`, `?start=tax`, `?start=ndis`
 - `/pricing/` Free, and Pro (not available yet, A$5 a month or A$48 a year)
 - `/privacy/`, `/terms/`
-- `/guides/` and four search pages: no GST, tax invoice, cleaning, tutoring
+- `/guides/` and five search pages: NDIS, no GST, tax invoice, cleaning, tutoring
 
-The NDIS layout is not built yet: the NDIS rules must be read on ndis.gov.au by hand first
-(the site refuses automated reading).
+## NDIS
+
+"Who is it for?" on the home page (and `?start=ndis`, `/ndis-invoice-template/`) makes an NDIS
+invoice: participant name and NDIS number, a Date and a Support item column with both required
+on every line, the provider's ABN required when plan managed, No GST lines by default, and a
+warning when a support is more than 90 days old (extra NDIS checks) or 2 years (the limit).
+Rules read on 12 Nov 2026 from ndis.gov.au "Guide to getting paid" (saved from a real browser,
+because the site refuses automated reading) and the ATO's NDIS GST page. Price limits are not
+checked: that needs the NDIS support catalogue as a data file, refreshed each year.

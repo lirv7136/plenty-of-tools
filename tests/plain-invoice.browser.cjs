@@ -34,7 +34,7 @@ const ok = m => console.log('  ok  ' + m);
 
   // Every page answers, has one h1, and fits a phone.
   await size(390, 844);
-  for (const p of ['', 'pricing/', 'privacy/', 'terms/', 'guides/', 'invoice-template-no-gst/', 'tax-invoice-template/', 'cleaning-invoice-template/', 'tutoring-invoice-template/']) {
+  for (const p of ['', 'pricing/', 'privacy/', 'terms/', 'guides/', 'invoice-template-no-gst/', 'tax-invoice-template/', 'cleaning-invoice-template/', 'tutoring-invoice-template/', 'ndis-invoice-template/']) {
     await open(ROOT + p);
     assert.equal(await ev("document.querySelectorAll('h1:not([aria-level])').length"), 1, p + ' has one h1');
     assert.ok(await ev('document.documentElement.scrollWidth<=390'), p + ' overflows at 390 px');
@@ -137,6 +137,31 @@ const ok = m => console.log('  ok  ' + m);
   assert.ok((await pdfText('OFF-001.pdf')).includes('Offline Co'), 'no PDF was made offline');
   await send('Network.emulateNetworkConditions', { offline: false, latency: 0, downloadThroughput: -1, uploadThroughput: -1 });
   ok('offline, the page opens and Download PDF still works');
+
+  // NDIS: plan managed, the participant on the invoice, a date and support item on each line.
+  await open(ROOT + '?start=ndis'); await ev('localStorage.clear()'); await open(ROOT + '?start=ndis');
+  assert.ok(await ev("!document.getElementById('inv-ndis-fields').hidden"));
+  assert.deepEqual(await ev('window.__invoice.state().columns'), ['Date', 'Support item']);
+  await setv('#inv-sellerName', 'Ali Support'); await setv('#inv-clientName', 'Plan Partners');
+  await setv('.inv-line textarea', 'Assistance with self care'); await setv('.inv-line [data-field="quantity"]', '2'); await setv('.inv-line [data-field="price"]', '70.23');
+  await setv('.inv-line [data-extra="0"]', '2026-11-10');
+  const missing = await ev("InvoiceCore.validate(window.__invoice.state()).join(' ')");
+  for (const m of ['participant’s name', 'NDIS number', 'Plan managers need your ABN', 'support item number for item 1']) assert.ok(missing.includes(m), m);
+  await setv('#inv-ndisName', 'Jane Citizen'); await setv('#inv-ndisNumber', '430000000'); await setv('#inv-sellerAbn', '51 824 753 556');
+  await setv('.inv-line [data-extra="1"]', '01_011_0107_1_1');
+  assert.equal(await text('#inv-validation'), 'Ready to print');
+  assert.match(await text('#inv-paper'), /NDIS participant: Jane Citizen\s*NDIS number: 430000000\s*Funding: plan managed/);
+  await setv('#inv-number', 'NDIS-001'); await click('#inv-pdf');
+  const t3 = await pdfText('NDIS-001.pdf');
+  for (const s of ['NDIS participant: Jane Citizen', 'NDIS number: 430000000', 'Support item', '01_011_0107_1_1', '10 Nov 2026', '$140.46']) assert.ok(t3.includes(s), s + ' missing from the NDIS PDF');
+  await setv('.inv-line [data-extra="0"]', '2026-01-05');
+  assert.match(await text('#inv-ndis-note'), /more than 90 days old/);
+  await setv('.inv-line [data-extra="0"]', '2026-11-10');
+  await until("!document.getElementById('inv-offer').hidden"); assert.equal(await text('#inv-offer-who'), 'Jane Citizen');
+  await click('#inv-offer-save'); await open();
+  assert.match(await text('[data-quick]'), /New invoice for Jane Citizen/);
+  await ev("document.getElementById('inv-preview').scrollIntoView()"); await size(1280, 900); await click('[data-quick]'); await ev("document.getElementById('inv-preview').scrollIntoView()"); await shot('laptop-ndis-invoice'); await size(390, 844);
+  ok('an NDIS invoice asks for the participant, NDIS number, ABN, date and support item, warns at 90 days, and "New invoice for" names the participant');
 
   // Delete everything saved here.
   await open(); await setv('#inv-sellerName', 'X'); await click('#inv-forget');

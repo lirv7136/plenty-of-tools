@@ -232,3 +232,34 @@ test('hand worked totals: prices include GST, with a part payment',()=>{
   const r=core.calculate(invoice({gstMode:'inclusive',paid:'100.00',items:[{description:'Items',quantity:'3',price:'19.99',tax:'gst'},{description:'Service',quantity:'1',price:'110.00',tax:'gst'},{description:'Exempt',quantity:'1',price:'20.00',tax:'none'}]}));
   assert.deepEqual([r.subtotal,r.gst,r.total,r.paid,r.due],[17452,1545,18997,10000,8997]);
 });
+
+// ---------- 12 Nov 2026: NDIS invoices (rules read on ndis.gov.au, Guide to getting paid) ----------
+function ndisInvoice(extra={}){return invoice({ndis:'plan',ndisName:'Jane Citizen',ndisNumber:'430000000',sellerAbn:'51 824 753 556',columns:['Date','Support item'],
+  items:[{description:'Assistance with self care',quantity:'2',price:'70.23',tax:'none',extra:['2026-11-10','01_011_0107_1_1']}],...extra});}
+test('an NDIS invoice needs the participant, NDIS number, ABN for plan managers, and a date and support item on every line',()=>{
+  assert.deepEqual(core.validate(ndisInvoice()),[]);
+  const e=x=>core.validate(ndisInvoice(x)).join(' ');
+  assert.match(e({ndisName:''}),/participant’s name/);
+  assert.match(e({ndisNumber:''}),/NDIS number/);
+  assert.match(e({sellerAbn:''}),/Plan managers need your ABN/);
+  assert.doesNotMatch(e({sellerAbn:'',ndis:'self'}),/ABN/,'self managed: the page only requires the ABN for plan managers');
+  assert.match(e({columns:['Date'],items:[{description:'x',quantity:'1',price:'1',tax:'none',extra:['2026-11-10']}]}),/Support item column/);
+  assert.match(e({items:[{description:'x',quantity:'1',price:'1',tax:'none',extra:['','01_011_0107_1_1']}]}),/date of support for item 1/);
+  assert.match(e({items:[{description:'x',quantity:'1',price:'1',tax:'none',extra:['2026-11-10','']}]}),/support item number for item 1/);
+});
+test('NDIS lines, the 90 day and 2 year warnings, and who it is for',()=>{
+  const d=ndisInvoice();
+  assert.deepEqual(core.ndisLines(d),['NDIS participant: Jane Citizen','NDIS number: 430000000','Funding: plan managed']);
+  assert.deepEqual(core.ndisWarnings(d,'2026-11-12'),[]);
+  assert.match(core.ndisWarnings(d,'2027-03-01').join(),/more than 90 days old/);
+  assert.match(core.ndisWarnings(d,'2029-01-01').join(),/more than 2 years old/);
+  assert.equal(core.whoFor({...d,clientName:'Plan Partners'}),'Jane Citizen','a plan manager bills for many participants');
+  assert.equal(core.whoFor(invoice({clientName:'Sue'})),'Sue');
+  assert.match(core.emailMessage(d,core.calculate(d)).subject,/for NDIS participant Jane Citizen \(430000000\)$/);
+  assert.equal(core.quickLabel(core.makeTemplate('Jane',d,{includeClient:true})),'New invoice for Jane Citizen');
+});
+test('a draft from before NDIS still opens, and an unknown NDIS setting is refused',()=>{
+  const old=invoice();for(const k of ['ndis','ndisName','ndisNumber'])delete old[k];
+  assert.equal(core.parseDraft(JSON.stringify({format:'plenty-of-tools-invoice',version:2,data:old})).ndis,'');
+  assert.throws(()=>core.parseDraft(JSON.stringify({format:'plenty-of-tools-invoice',version:2,data:{...old,ndis:'agency'}})),/unsupported/);
+});

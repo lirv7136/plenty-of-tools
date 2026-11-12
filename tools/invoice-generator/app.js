@@ -24,7 +24,7 @@
     $('price-hint').textContent=data.gstMode==='none'?'Unit prices in AUD. GST is not charged.':data.gstMode==='inclusive'?'Unit prices include GST where applicable. Choose the tax treatment for each line.':'Unit prices exclude GST. 10% is added to taxable lines.';
     for(const select of $('items').querySelectorAll('select'))select.disabled=data.gstMode==='none';
     $('add').disabled=data.items.length>=100;
-    syncQuoteButton();syncVisitButton();
+    syncQuoteButton();syncVisitButton();syncNdis();
   }
   function itemInputs(){
     $('items').replaceChildren();
@@ -62,10 +62,11 @@
     amount.append(node('h3',data.kind==='quote'?'Quote total (AUD)':'Amount due (AUD)'),node('h2',totals?money(data.kind==='quote'?totals.total:totals.due):'—'));
     if(data.kind==='quote')amount.append(node('p','This quote is not a tax invoice.','inv-doc-subtle'));
     parties.append(buyer,amount);paper.append(parties);
+    const ndis=core.ndisLines(data);if(ndis.length){const box=node('section',undefined,'inv-doc-ndis');box.append(node('h3','NDIS'),node('p',ndis.join('\n')));paper.append(box);}
     const tax=data.gstMode!=='none';
     const table=node('table',undefined,tax?'':'inv-table-no-gst'),thead=node('thead'),tr=node('tr');
     const cols=data.columns,heads=['Description',...cols.map((c,k)=>c.trim()||`Column ${k+1}`),'Qty',data.gstMode==='inclusive'?'Unit (incl.)':tax?'Unit (excl.)':'Unit price',...(tax?['GST']:[]),'Amount'];
-    const widths=cols.length?[null,...cols.map(()=>12),8,14,...(tax?[11]:[]),14]:[];if(widths.length)widths[0]=100-widths.slice(1).reduce((a,b)=>a+b,0);
+    const widths=cols.length?[null,...cols.map(c=>core.isItemHeading(c)?18:12),8,14,...(tax?[11]:[]),14]:[];if(widths.length)widths[0]=100-widths.slice(1).reduce((a,b)=>a+b,0);
     heads.forEach((text,k)=>{const th=node('th',text);th.scope='col';if(widths.length)th.style.width=widths[k]+'%';if(k>0&&k<=cols.length)th.style.textAlign='left';tr.append(th);});thead.append(tr);table.append(thead);
     const tbody=node('tbody');
     data.items.forEach((item,i)=>{
@@ -94,11 +95,12 @@
     const input=event.target;
     if(input.dataset.field){const index=Number(input.closest('.inv-line').dataset.index);data.items[index][input.dataset.field]=input.value;}
     else if(input.dataset.extra){const index=Number(input.closest('.inv-line').dataset.index);data.items[index].extra[Number(input.dataset.extra)]=input.value;}
+    else if(input.id==='inv-ndis'){data.ndis=input.value;if(data.ndis)setUpNdis();}
     else if(input.dataset.col){const k=Number(input.dataset.col),was=core.isDateHeading(data.columns[k]);data.columns[k]=input.value;if(was!==core.isDateHeading(input.value)){itemInputs();syncDateButton();}else relabelExtras();}
     else if(input.closest('.inv-templates'))return;
     else if(input.id.startsWith('inv-')&&Object.hasOwn(core.fields,input.id.slice(4)))data[input.id.slice(4)]=input.value;
     else return;
-    if(input.id==='inv-clientName')$('offer').hidden=true;
+    if(input.id==='inv-clientName'||input.id==='inv-ndisName')$('offer').hidden=true;
     revision++;render();status('Unsaved edits. Save a draft file to keep your work.');
   }
   $('form').addEventListener('submit',event=>event.preventDefault());
@@ -208,15 +210,15 @@
 
   // ---------- after the first download or email: offer to keep the details ----------
   const declined=new Set();
-  const saved=name=>store.templates.some(x=>x.includesClient&&(x.data.clientName||'').trim().toLowerCase()===name.toLowerCase());
+  const saved=name=>store.templates.some(x=>x.includesClient&&core.whoFor(x.data).toLowerCase()===name.toLowerCase());
   function offerSave(){
-    const who=data.clientName.trim();
+    const who=core.whoFor(data);
     if(!who||saved(who)||declined.has(who.toLowerCase())){$('offer').hidden=true;return;}
     $('offer-who').textContent=who.slice(0,60);const first=$('offer').hidden;$('offer').hidden=false;if(first&&$('mail').hidden)$('offer').scrollIntoView({block:'nearest'});
   }
-  $('offer-no').addEventListener('click',()=>{declined.add(data.clientName.trim().toLowerCase());$('offer').hidden=true;status('Not saved. You can save it later at the bottom of the form.');});
+  $('offer-no').addEventListener('click',()=>{declined.add(core.whoFor(data).toLowerCase());$('offer').hidden=true;status('Not saved. You can save it later at the bottom of the form.');});
   $('offer-save').addEventListener('click',()=>{
-    const who=data.clientName.trim().slice(0,60);if(!who)return;
+    const who=core.whoFor(data).slice(0,60);if(!who)return;
     const same=store.templates.find(x=>x.name.toLowerCase()===who.toLowerCase());
     if(same&&!same.includesClient&&!confirm(`Replace your template "${same.name}" with these details?`))return;
     if(!same&&store.templates.length>=core.MAX_TEMPLATES)return status(`Keep at most ${core.MAX_TEMPLATES} templates. Delete one at the bottom of the form first.`);
@@ -334,22 +336,22 @@
     // One entry per document number and customer. Sending the same invoice again updates it in
     // place and keeps its paid state; the same number for someone else is a separate entry, and
     // the person is told, because two invoices should never share a number.
-    const who=doc.clientName.trim().toLowerCase(),id=[doc.kind,n.toLowerCase(),who].join(':');
+    const who=core.whoFor(doc).toLowerCase(),id=[doc.kind,n.toLowerCase(),who].join(':');
     const old=history.find(h=>h.id===id);
     const clash=history.find(h=>h.id!==id&&h.doc.kind===doc.kind&&h.doc.number.trim().toLowerCase()===n.toLowerCase());
     const entry={id,savedAt:old?old.savedAt:new Date().toISOString(),paidAt:old?old.paidAt:'',doc};
     history=old?history.map(h=>h.id===id?entry:h):[entry,...history].slice(0,HMAX);
     if(saveHistory())renderHistory();
     // After the caller's own message ("Downloaded …"), so the warning is not overwritten.
-    if(clash)setTimeout(()=>status(`${$('status').textContent} Note: ${n} was already used for ${clash.doc.clientName||'another customer'}. Give each invoice its own number.`),0);
+    if(clash)setTimeout(()=>status(`${$('status').textContent} Note: ${n} was already used for ${core.whoFor(clash.doc)||'another customer'}. Give each invoice its own number.`),0);
   }
   const sameClient=(a,b)=>a.trim().toLowerCase()===b.trim().toLowerCase();
   // For "New invoice for Sue": the template, with the lines of Sue's newest invoice in place of
   // the lines saved with it. Dates in a Date column are cleared: they belong to last time.
   function lastLines(t){
-    const who=has('history')&&t.includesClient&&t.data.clientName;if(!who)return t;
+    const who=has('history')&&t.includesClient&&core.whoFor(t.data);if(!who)return t;
     // The newest invoice by its date, not the one most recently downloaded again.
-    const last=history.filter(h=>h.doc.kind===(t.data.kind||'invoice')&&sameClient(h.doc.clientName,who))
+    const last=history.filter(h=>h.doc.kind===(t.data.kind||'invoice')&&sameClient(core.whoFor(h.doc),who))
       .sort((a,b)=>b.doc.issueDate.localeCompare(a.doc.issueDate)||b.savedAt.localeCompare(a.savedAt))[0];if(!last)return t;
     const cols=last.doc.columns.slice(),dated=cols.map(core.isDateHeading);
     const items=last.doc.items.map(i=>({...i,extra:i.extra.map((v,k)=>dated[k]?'':v)}));
@@ -362,7 +364,7 @@
     for(const h of history.slice(0,50)){
       let total='—';try{const c=core.calculate(h.doc);total=money(h.doc.kind==='quote'?c.total:c.due);}catch(e){}
       const row=node('li',undefined,'inv-hrow');
-      const what=node('div',undefined,'inv-hwhat');what.append(node('strong',`${h.doc.number} · ${h.doc.clientName||'No customer'}`),node('span',`${total} · ${h.doc.kind==='quote'?'quote, valid until':'due'} ${date(h.doc.dueDate)}`));
+      const what=node('div',undefined,'inv-hwhat');what.append(node('strong',`${h.doc.number} · ${core.whoFor(h.doc)||'No customer'}`),node('span',`${total} · ${h.doc.kind==='quote'?'quote, valid until':'due'} ${date(h.doc.dueDate)}`));
       const state=h.doc.kind==='quote'?'Quote':h.paidAt?'Paid':h.doc.dueDate<today?'Overdue':'Unpaid';
       const tag=node('span',state,'inv-htag inv-htag-'+state.toLowerCase());
       const acts=node('div',undefined,'inv-hacts');
@@ -382,7 +384,7 @@
       if(o){const h=history.find(x=>x.id===o.dataset.hopen);if(!h)return;if(revision&&!confirm('Open this invoice? Unsaved edits to the current document will be lost.'))return;
         let doc;try{doc=core.cleanData(JSON.parse(JSON.stringify(h.doc)));}catch(e){return status('That invoice could not be opened.');}
         replace(doc,`Opened ${doc.number} as it was sent. Download it again, or change it and send a correction.`);
-        const t=store.templates.find(x=>x.includesClient&&sameClient(x.data.clientName||'',doc.clientName));fromTemplate=t?t.id:null;$('toolbar').scrollIntoView({block:'start'});}
+        const t=store.templates.find(x=>x.includesClient&&sameClient(core.whoFor(x.data),core.whoFor(doc)));fromTemplate=t?t.id:null;$('toolbar').scrollIntoView({block:'start'});}
     });
   }
 
@@ -411,6 +413,25 @@
   }
   function syncVisitButton(){if(has('visit'))$('visit').hidden=!data.columns.some(core.isDateHeading)||data.items.length>=100;}
 
+  // NDIS: the participant, a Date and a Support item column on every line, and GST free lines by
+  // default (an NDIS support is GST free only when all four ATO conditions hold, so the hint says so).
+  function setUpNdis(){
+    const cols=data.columns,hasDate=cols.some(core.isDateHeading),hasItem=cols.some(core.isItemHeading);
+    const want=[...(hasDate?[]:['Date']),...(hasItem?[]:['Support item'])];
+    for(const label of want){
+      if(cols.length>=core.MAX_COLUMNS){const k=cols.findIndex(c=>!core.isDateHeading(c)&&!core.isItemHeading(c));if(k<0)break;cols.splice(k,1);data.items.forEach(i=>i.extra.splice(k,1));}
+      cols.push(label);data.items.forEach(i=>i.extra.push(''));
+    }
+    if(data.gstMode!=='none')data.items.forEach(i=>{i.tax='none';});
+    renderColumns();itemInputs();
+    status('NDIS invoice: add the participant, then the date and support item number on each line.'+(data.gstMode!=='none'?' Lines are set to No GST: NDIS supports are GST free only when all four ATO conditions are met.':''));
+  }
+  function syncNdis(){
+    if(!has('ndis'))return;
+    $('ndis').value=data.ndis;$('ndis-fields').hidden=!data.ndis;
+    const w=core.ndisWarnings(data);$('ndis-note').textContent=w.join(' ');$('ndis-note').hidden=!w.length;
+  }
+
   // Forget everything this browser keeps for the invoice tool.
   if(has('forget')){
     $('forget').addEventListener('click',()=>{
@@ -426,11 +447,12 @@
     if(kind==='visits'){d.columns=['Date'];d.items=d.items.map(i=>({...i,extra:['']}));}
     if(kind==='nogst')d.gstMode='none';
     if(kind==='tax')d.gstMode='exclusive';
+    if(kind==='ndis'){d.ndis='plan';d.columns=['Date','Support item'];d.items=d.items.map(i=>({...i,extra:['','']}));}
     return d;
   }
 
   loadTemplates();loadHistory();renderTemplates();renderHistory();
   window.__invoice={state:()=>data,templates:()=>store,history:()=>history};   // test hook
-  const start=/[?&]start=(visits|nogst|tax)\b/.exec(location.search);
+  const start=/[?&]start=(visits|nogst|tax|ndis)\b/.exec(location.search);
   data=start?startFrom(start[1]):blank();populate();status('No account and nothing uploaded. Your draft stays in this tab; templates stay in this browser.');
 })();

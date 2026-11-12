@@ -95,15 +95,29 @@
     text(money(data.kind === 'quote' ? totals.total : totals.due), ax, ay, 20, bold, C.green); ay -= 18;
     if (data.kind === 'quote') { text('This quote is not a tax invoice.', ax, ay, 8.5, reg, C.grey); ay -= 12; }
     y = Math.min(py, ay) - 16;
+    // ---- NDIS participant, when the invoice is for one
+    const ndis = core.ndisLines ? core.ndisLines(data) : [];
+    if (ndis.length) {
+      text('NDIS', M.l, y - 8, 8, bold, C.grey); y -= 22;
+      for (const l of wrap(ndis.join('\n'), reg, 9.5, W)) { text(l, M.l, y, 9.5); y -= 13; }
+      y -= 8;
+    }
 
     // ---- line items
     const tax = data.gstMode !== 'none', cols = data.columns || [];
     const fixed = [['Qty', 42], [data.gstMode === 'inclusive' ? 'Unit (incl.)' : tax ? 'Unit (excl.)' : 'Unit price', 74], ...(tax ? [['GST', 60]] : []), ['Amount', 78]];
     const fixedW = fixed.reduce((s, f) => s + f[1], 0);
-    const extraW = cols.length ? Math.max(48, Math.min(84, (W - fixedW - 130) / cols.length)) : 0;
-    const columns = [{ label: 'Description', w: W - fixedW - extraW * cols.length, align: 'l' },
-      ...cols.map(label => ({ label: label.trim(), w: extraW, align: 'l' })), ...fixed.map(([label, w]) => ({ label, w, align: 'r' }))];
     const PAD = 5;
+    // Each extra column is as wide as its longest value or heading (so an NDIS support item number
+    // such as 01_011_0107_1_1 stays on one line), between 48 and 110 points, and together they
+    // leave the description at least 130.
+    const fit = cols.map((label, k) => Math.max(bold.widthOfTextAtSize(safe(label.trim()), 8.5),
+      ...data.items.map(i => reg.widthOfTextAtSize(safe(core.cellText(label, (i.extra || [])[k])), 9))) + PAD * 2 + 2);
+    let extraWs = fit.map(w => Math.max(48, Math.min(110, w)));
+    const room = W - fixedW - 130, used = extraWs.reduce((a, b) => a + b, 0);
+    if (used > room) extraWs = extraWs.map(w => w * room / used);
+    const columns = [{ label: 'Description', w: W - fixedW - extraWs.reduce((a, b) => a + b, 0), align: 'l' },
+      ...cols.map((label, k) => ({ label: label.trim(), w: extraWs[k], align: 'l' })), ...fixed.map(([label, w]) => ({ label, w, align: 'r' }))];
     function headerRow() {
       need(24);
       page.drawRectangle({ x: M.l, y: y - 20, width: W, height: 20, color: C.head });

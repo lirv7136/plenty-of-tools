@@ -1,13 +1,13 @@
 (function(root){
   'use strict';
   const LIMIT=99999999999n;
-  const fields={kind:20,gstMode:20,number:60,issueDate:10,dueDate:10,sellerName:160,sellerAbn:20,sellerAddress:600,sellerEmail:254,sellerPhone:60,clientName:160,clientAbn:20,clientAddress:600,clientEmail:254,paid:20,payment:1000,notes:2000,bankName:100,bankBsb:12,bankAccount:20,payId:100};
+  const fields={kind:20,gstMode:20,number:60,issueDate:10,dueDate:10,sellerName:160,sellerAbn:20,sellerAddress:600,sellerEmail:254,sellerPhone:60,clientName:160,clientAbn:20,clientAddress:600,clientEmail:254,paid:20,payment:1000,notes:2000,bankName:100,bankBsb:12,bankAccount:20,payId:100,ndis:10,ndisName:160,ndisNumber:30};
   // Added 11 Nov 2026. Drafts and templates saved before then lack them, so they default to empty.
-  const OPTIONAL=new Set(['bankName','bankBsb','bankAccount','payId']);
+  const OPTIONAL=new Set(['bankName','bankBsb','bankAccount','payId','ndis','ndisName','ndisNumber']);
   function today(){const d=new Date();return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-');}
   function validDate(value){if(!/^\d{4}-\d{2}-\d{2}$/.test(value))return false;const d=new Date(value+'T00:00:00Z');return Number.isFinite(d.getTime())&&d.toISOString().slice(0,10)===value&&value>='1900-01-01'&&value<='2100-12-31';}
   function addDays(date,days){const d=new Date(date+'T00:00:00Z');d.setUTCDate(d.getUTCDate()+days);return d.toISOString().slice(0,10);}
-  function defaults(date=today()){return {kind:'invoice',gstMode:'none',number:'INV-001',issueDate:date,dueDate:addDays(date,14),sellerName:'',sellerAbn:'',sellerAddress:'',sellerEmail:'',sellerPhone:'',clientName:'',clientAbn:'',clientAddress:'',clientEmail:'',paid:'0.00',payment:'',notes:'',bankName:'',bankBsb:'',bankAccount:'',payId:'',columns:[],items:[{description:'',quantity:'1',price:'0.00',tax:'gst',extra:[]}]};}
+  function defaults(date=today()){return {kind:'invoice',gstMode:'none',number:'INV-001',issueDate:date,dueDate:addDays(date,14),sellerName:'',sellerAbn:'',sellerAddress:'',sellerEmail:'',sellerPhone:'',clientName:'',clientAbn:'',clientAddress:'',clientEmail:'',paid:'0.00',payment:'',notes:'',bankName:'',bankBsb:'',bankAccount:'',payId:'',ndis:'',ndisName:'',ndisNumber:'',columns:[],items:[{description:'',quantity:'1',price:'0.00',tax:'gst',extra:[]}]};}
   function abnValid(value){const digits=String(value).replace(/\s/g,'');if(!/^[1-9]\d{10}$/.test(digits))return false;const weights=[10,1,3,5,7,9,11,13,15,17,19];return [...digits].reduce((sum,n,i)=>sum+(Number(n)-(i===0?1:0))*weights[i],0)%89===0;}
   function decimal(value,places,label){let text=String(value).trim();if(text.startsWith('.'))text='0'+text;if(!new RegExp('^\\d{1,12}(?:\\.\\d{0,'+places+'})?$').test(text))throw new Error(`${label}: enter a non-negative number with up to ${places} decimal places.`);const [whole,fraction='']=text.split('.');return BigInt(whole)*10n**BigInt(places)+BigInt(fraction.padEnd(places,'0'));}
   const round=(n,d)=>(n+d/2n)/d;
@@ -47,6 +47,15 @@
     if(acct&&!/^\d{4,10}$/.test(acct))errors.push('An account number has 4 to 10 digits.');
     if(bsb&&!acct)errors.push('Add the account number to go with the BSB, or clear the BSB.');
     if(acct&&!bsb)errors.push('Add the BSB to go with the account number, or clear it.');
+    if(data.ndis){
+      if(!String(data.ndisName||'').trim())errors.push('Enter the NDIS participant’s name.');
+      if(!String(data.ndisNumber||'').trim())errors.push('Enter the participant’s NDIS number (participant reference number).');
+      if(data.ndis==='plan'&&!data.sellerAbn.trim())errors.push('Plan managers need your ABN on the invoice. If you are exempt, attach the ATO statement by a supplier form instead and use a regular invoice.');
+      const cols=data.columns||[],d=cols.findIndex(isDateHeading),it=cols.findIndex(isItemHeading);
+      if(d<0)errors.push('Add a Date column: the NDIS needs the date of each support.');
+      if(it<0)errors.push('Add a Support item column: the NDIS needs the support item number on each line.');
+      data.items.forEach((item,i)=>{if(d>=0&&!String(item.extra[d]||'').trim())errors.push(`Enter the date of support for item ${i+1}.`);if(it>=0&&!String(item.extra[it]||'').trim())errors.push(`Enter the support item number for item ${i+1}.`);});
+    }
     data.items.forEach((item,i)=>{if(!item.description.trim())errors.push(`Enter a description for item ${i+1}.`);});
     (data.columns||[]).forEach((label,i)=>{if(!label.trim())errors.push(`Name extra column ${i+1}, or remove it.`);});
     try{calculate(data);}catch(e){errors.push(e.message);}
@@ -75,12 +84,13 @@
   // it (an old draft's "Tues 3rd") is kept and shown exactly as typed.
   const isDateHeading=label=>/^(dates?|(visit|service|support|work|job|session) dates?)$/i.test(String(label||'').trim());
   const shortDate=v=>new Intl.DateTimeFormat('en-AU',{day:'numeric',month:'short',year:'numeric',timeZone:'UTC'}).format(new Date(v+'T00:00:00Z'));
+  const isItemHeading=label=>/^(support item( (number|no\.?|ref(erence)?( number)?))?|ndis item( number)?|item (number|no\.?))$/i.test(String(label||'').trim());
   const cellText=(heading,value)=>isDateHeading(heading)&&validDate(value)?shortDate(value):String(value||'');
 
   function cleanData(input){
     const data={};
     for(const [key,max] of Object.entries(fields)){if(OPTIONAL.has(key)&&input[key]===undefined){data[key]='';continue;}if(typeof input[key]!=='string'||input[key].length>max)throw new Error(`The draft has an invalid ${key} field.`);data[key]=input[key];}
-    if(!['invoice','quote'].includes(data.kind)||!['none','exclusive','inclusive'].includes(data.gstMode))throw new Error('The draft contains unsupported settings.');
+    if(!['invoice','quote'].includes(data.kind)||!['none','exclusive','inclusive'].includes(data.gstMode)||!['','self','plan'].includes(data.ndis))throw new Error('The draft contains unsupported settings.');
     data.columns=cleanColumns(input.columns);
     if(!Array.isArray(input.items)||input.items.length<1||input.items.length>100)throw new Error('The draft must contain 1–100 items.');
     data.items=input.items.map(item=>{const clean={};for(const [key,max] of Object.entries({description:500,quantity:20,price:20,tax:10})){if(!item||typeof item[key]!=='string'||item[key].length>max)throw new Error('A draft line item is invalid.');clean[key]=item[key];}if(!['gst','none'].includes(clean.tax))throw new Error('Unsupported line-item tax setting.');clean.extra=cleanExtra(item.extra,data.columns.length);return clean;});
@@ -134,7 +144,7 @@
   // extra columns, the gap between issue and due dates, and the last number used so the next
   // document is numbered for you. Optionally the customer and the line items too.
   const SELLER=['kind','gstMode','sellerName','sellerAbn','sellerAddress','sellerEmail','sellerPhone','payment','notes','bankName','bankBsb','bankAccount','payId'];
-  const CLIENT=['clientName','clientAbn','clientAddress','clientEmail'];
+  const CLIENT=['clientName','clientAbn','clientAddress','clientEmail','ndis','ndisName','ndisNumber'];
   const MAX_TEMPLATES=50;
   function makeTemplate(name,data,opts={},id){
     const label=String(name||'').trim().slice(0,60);
@@ -201,14 +211,34 @@
     if(lines.length&&data.kind==='invoice'&&String(data.number||'').trim())lines.push('Reference: '+data.number.trim());
     return lines;
   }
+  // NDIS (read 12 Nov 2026 on ndis.gov.au, Guide to getting paid): a claim needs the participant's
+  // name, participant reference or NDIS number, dates of support, support item number and price.
+  // Plan managers need the provider's ABN. Claims more than 90 days after a support may be held
+  // for extra checks (up to 28 days); the limit itself is 2 years.
+  // Who an invoice is for, in the person's eyes: the NDIS participant, not their plan manager,
+  // who may bill for many participants.
+  const whoFor=d=>String((d.ndis&&d.ndisName)||d.clientName||'').trim();
+  function ndisLines(data){
+    if(!data.ndis)return [];
+    return ['NDIS participant: '+String(data.ndisName||'').trim(),'NDIS number: '+String(data.ndisNumber||'').trim(),
+      data.ndis==='plan'?'Funding: plan managed':'Funding: self managed'];
+  }
+  function ndisWarnings(data,on=today()){
+    if(!data.ndis)return [];
+    const d=(data.columns||[]).findIndex(isDateHeading);if(d<0)return [];
+    const dates=data.items.map(i=>i.extra[d]).filter(validDate),out=[];
+    if(dates.some(x=>x<addDays(on,-730)))out.push('A support on this invoice is more than 2 years old. NDIS payment requests must be made within 2 years of the support.');
+    else if(dates.some(x=>x<addDays(on,-90)))out.push('A support on this invoice is more than 90 days old. The NDIS may hold claims like that for extra checks, for up to 28 days.');
+    return out;
+  }
   // The words on a "start again" button: who it is for, if the template keeps the customer.
   function quickLabel(t){
-    const doc=t.data.kind==='quote'?'quote':'invoice',who=t.includesClient&&t.data.clientName&&t.data.clientName.trim();
+    const doc=t.data.kind==='quote'?'quote':'invoice',who=t.includesClient&&whoFor(t.data);
     return who?`New ${doc} for ${who.slice(0,60)}`:`New ${doc} from "${t.name}"`;
   }
   function emailMessage(data,totals){
     const doc=title(data).toLowerCase(),who=data.sellerName.trim()||'us';
-    const subject=`${title(data)} ${data.number.trim()} from ${who}`.slice(0,200);
+    const subject=(`${title(data)} ${data.number.trim()} from ${who}`+(data.ndis?` for NDIS participant ${String(data.ndisName||'').trim()} (${String(data.ndisNumber||'').trim()})`:'')).slice(0,200);
     const lines=[`Hi ${data.clientName.trim()||'there'},`,''];
     if(data.kind==='quote')lines.push(`Please find attached quote ${data.number.trim()} for ${aud(totals.total)}, valid until ${longDate(data.dueDate)}.`);
     else lines.push(`Please find attached ${doc} ${data.number.trim()} for ${aud(totals.due)}, due ${longDate(data.dueDate)}.`);
@@ -244,7 +274,7 @@
   }
 
   const api={defaults,today,validDate,addDays,abnValid,decimal,calculate,validate,parseDraft,serialize,title,fields,emailOk,buildMime,
-    MAX_COLUMNS,COLUMN_MAX,EXTRA_MAX,cleanColumns,cleanExtra,nextNumber,nextFrom,recordUsed,bankLines,cleanData,isDateHeading,cellText,quickLabel,makeTemplate,applyTemplate,validateTemplates,parseTemplates,
+    MAX_COLUMNS,COLUMN_MAX,EXTRA_MAX,cleanColumns,cleanExtra,nextNumber,nextFrom,recordUsed,bankLines,cleanData,ndisLines,ndisWarnings,isItemHeading,whoFor,isDateHeading,cellText,quickLabel,makeTemplate,applyTemplate,validateTemplates,parseTemplates,
     serializeTemplates,MAX_TEMPLATES,emailMessage,mailtoUrl,gmailUrl,outlookUrl,aud};
   if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.InvoiceCore=api;
 })(typeof globalThis!=='undefined'?globalThis:this);

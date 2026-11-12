@@ -92,30 +92,30 @@ template with bsb; ndis invoice template plan managed.
 
 ## 4. NDIS invoices: can the rules be met exactly?
 
-**Caveat:** ndis.gov.au refused every direct fetch (403), so the rules below were read from search
-excerpts of the official pages. **Read these pages by hand before building anything.**
+**Caveat:** ndis.gov.au refused every automated fetch. The Guide to getting paid was saved from a real browser on 12 Nov 2026 and confirms the fields and timing below; the other points are from search excerpts.
 
 - **Fields** ([Invoicing and record keeping](https://www.ndis.gov.au/providers/working-provider/getting-paid/invoicing-and-record-keeping)): provider name and ABN; participant name and NDIS number; support item number; date or dates of each support; quantity or hours and unit price; claim type (for example provider travel, short notice cancellation); total and any GST. One participant per invoice, many supports allowed. Plan managers need the provider's ABN.
 - **Price limits** ([PAPL 2025-26](https://ndis.gov.au/media/7739/download), [Pricing Schedule 2026-27](https://www.ndis.gov.au/media/8703/download), effective 24 Sep 2026): plan managers must not pay above the limits, whether the provider is registered or not. Self managed participants are not bound.
 - **GST** ([ATO](https://www.ato.gov.au/businesses-and-organisations/gst-excise-and-indirect-taxes/gst/in-detail/your-industry/gst-and-health/national-disability-insurance-scheme)): many supports are GST free, only when a plan is in effect, the support is in it, there is a written agreement and the item is in the Determination.
-- **Claim time:** 2 years since 3 Oct 2024, **dropping to 90 days from 1 Dec 2026** ([ndis.gov.au](https://www.ndis.gov.au/ndis-laws/securing-ndis-future-generations)). How the 90 days is counted, and any transition, is not verified.
+- **Claim time (corrected 12 Nov 2026):** the official [Guide to getting paid](https://www.ndis.gov.au/providers/pricing-and-payments/payments/guide-getting-paid), read in a real browser on 12 Nov, says payment requests must be made **within 2 years** of the support, and that claims made **more than 90 days** after a support get extra checks that can hold them for up to 28 days. The agents' report of a 90 day limit from 1 Dec 2026 came from search excerpts and is **not** what the official page says; it is left out of the site.
+- **Fields (confirmed 12 Nov on the same page):** participant name; participant reference number or NDIS number; dates of support; support item reference number; support item price. Plan managed invoices must include a valid ABN unless the provider is exempt (then the ATO statement by a supplier form). Self managed: the participant pays, then gets a receipt.
 
 **Answer:** yes, in the browser. The fields are static and the checks are arithmetic. It needs the
 2026-27 support catalogue (an XLSX of about 126 KB) as bundled JSON, refreshed when the NDIA
 republishes it (at least yearly); a plan managed or self managed switch; GST free by default; a
-date on each line; and a 90 day claim warning. It cannot check that a participant's number or
+date on each line; and a warning when a support is more than 90 days old (extra NDIS checks). It cannot check that a participant's number or
 plan is valid.
 
 ## 5. Three twists, ranked
 
 1. **Dated lines for people paid by the visit, with an NDIS layout.** Choose "NDIS" and the invoice
    gets participant name and number, a support item number and date on every line, GST free by
-   default, the price limit checked, and a warning before the 90 day claim limit.
+   default, and a warning when a support is more than 90 days old. (Price limit checks wait for the catalogue file.)
    *Why first:* the ndis searches return Word downloads and blog posts, not tools; the rules are
    fixed fields plus a catalogue file; the two NDIS apps found need an account. The same dated
    lines serve cleaners, tutors and gardeners on pages that already rank poorly in Australia.
    *Risks:* volume unknown; the catalogue must be refreshed each year; the rules must be read by
-   hand first (ndis.gov.au blocked the agents); the 90 day rule starts 1 Dec 2026.
+   hand first (done 12 Nov for the Guide to getting paid; built that day).
 2. **Same again.** Open the page, tap a customer, and last time's invoice is ready with today's date
    and the next number. *Mostly built in Stage 0* ("New invoice for …" at the top). What is left:
    carry the last invoice's lines, not just the saved ones, and a list of recent invoices per
@@ -151,7 +151,7 @@ rises. Test AUD 5 in Stage 3 before building.
 
 ## 7. To check by hand before any of this goes on the site
 
-- ndis.gov.au pages above (blocked to the agents), and how the 90 day limit is counted.
+- ndis.gov.au pricing arrangements, before any price limit check is built (the Guide to getting paid was read on 12 Nov).
 - Invoice Simple's pricing page and AU prices (blocked).
 - PayPal AU invoicing fees (blocked).
 - Whether Wave serves Australia (help article blocked).
