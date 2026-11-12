@@ -102,11 +102,11 @@ def main():
     shutil.copy(TOOL / "app.js", DIST / "assets" / "invoice.js")
     sv = lambda name: f'/assets/invoice-generator/{name}?v={ver(TOOL / "static" / name)}'
     pdflib = sv("pdf-lib.min.js")
-    tool_assets = [f'/assets/invoice.css?v={ver(TOOL / "tool.css")}', sv("core.js"), sv("pdf.js"),
+    tool_assets = [f'/assets/invoice.css?v={ver(TOOL / "tool.css")}', sv("core.js"), sv("pdf.js"), sv("bulk.js"),
                    f'/assets/invoice.js?v={ver(TOOL / "app.js")}', pdflib]
     head = (f'<link rel="stylesheet" href="{tool_assets[0]}">'
             f'<script>window.INV_PDFLIB={json.dumps(pdflib)};window.INV_COUNT_URL="/api/count";</script>')
-    scripts = "".join(f'\n<script src="{u}" defer></script>' for u in tool_assets[1:4])
+    scripts = "".join(f'\n<script src="{u}" defer></script>' for u in tool_assets[1:5])
     app_ld = {"@context": "https://schema.org", "@type": "WebApplication", "name": SITE["brand"], "url": BASE + "/",
               "description": SITE["tagline"], "applicationCategory": "BusinessApplication",
               "operatingSystem": "Any (runs in a web browser)", "browserRequirements": "Requires JavaScript",

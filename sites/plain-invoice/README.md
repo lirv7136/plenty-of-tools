@@ -52,6 +52,16 @@ npx wrangler d1 execute plain-invoice --remote --command "SELECT day,event,n FRO
 - `/privacy/`, `/terms/`
 - `/guides/` and five search pages: NDIS, no GST, tax invoice, cleaning, tutoring
 
+## Other countries, and spreadsheets (13 Nov 2026)
+
+"Where is your business?" sets the currency, the tax's name and a starting rate (regions in
+`core.js` REGIONS; all editable). Australia is the default and keeps ABN checks, Tax Invoice,
+BSB, PayID and NDIS; elsewhere those are put away. A first visit guesses from the time zone.
+
+`tools/invoice-generator/static/bulk.js` reads a CSV (one job per row; rows for one customer
+or NDIS participant become one invoice), and writes the PDFs into one ZIP with a CSV list. It
+also exports "Your invoices" as CSV. All in the browser. Tests: `tests/invoice-bulk.test.cjs`.
+
 ## NDIS
 
 "Who is it for?" on the home page (and `?start=ndis`, `/ndis-invoice-template/`) makes an NDIS

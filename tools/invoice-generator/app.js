@@ -340,9 +340,9 @@
   let history=[];
   function loadHistory(){try{const raw=localStorage.getItem(HKEY);history=raw?JSON.parse(raw).filter(h=>h&&h.doc&&typeof h.id==='string'):[];}catch(e){history=[];}}
   function saveHistory(){try{localStorage.setItem(HKEY,JSON.stringify(history));return true;}catch(e){status('This browser would not keep the invoice list (private windows and full storage do that).');return false;}}
-  function recordHistory(){
-    const n=data.number.trim();if(!has('history')||!n||!store.templates.length||isExample)return;
-    let doc;try{doc=core.cleanData(JSON.parse(JSON.stringify(data)));core.calculate(doc);}catch(e){return;}
+  function recordHistory(source=data){
+    const n=source.number.trim();if(!has('history')||!n||!store.templates.length||(source===data&&isExample))return;
+    let doc;try{doc=core.cleanData(JSON.parse(JSON.stringify(source)));core.calculate(doc);}catch(e){return;}
     // One entry per document number and customer. Sending the same invoice again updates it in
     // place and keeps its paid state; the same number for someone else is a separate entry, and
     // the person is told, because two invoices should never share a number.
@@ -478,6 +478,55 @@
     if(tz.startsWith('America/'))return /^(en|fr)-ca$/.test(lang)||/Toronto|Vancouver|Edmonton|Winnipeg|Halifax|Regina|St_Johns|Montreal/.test(tz)?'CA':'US';
     return 'XX';
   }
+
+  // ---------- many invoices from a spreadsheet, and the invoice list as a spreadsheet ----------
+  const bulk=window.InvoiceBulk;
+  if(bulk&&has('bulk')){
+    let ready=[];
+    const csvBlob=text=>new Blob(['﻿'+text],{type:'text/csv;charset=utf-8'});   // the BOM makes Excel read it as UTF-8
+    $('bulk-template').addEventListener('click',()=>{download('invoice-rows-template.csv',csvBlob(bulk.template('general')));status('Template saved. Put one job on each row, then upload it here.');});
+    $('bulk-template-ndis').addEventListener('click',()=>{download('ndis-shifts-template.csv',csvBlob(bulk.template('ndis')));status('NDIS template saved. Put one shift on each row, then upload it here.');});
+    $('bulk-pick').addEventListener('click',()=>$('bulk-file').click());
+    function show(result,name){
+      ready=result.invoices;
+      const sum=$('bulk-sum'),list=$('bulk-list'),errs=$('bulk-errors');list.replaceChildren();errs.replaceChildren();
+      let total=0;for(const d of ready){const row=node('li',undefined,'inv-hrow'),what=node('div',undefined,'inv-hwhat'),c=core.calculate(d);total+=c.total;
+        what.append(node('strong',`${d.number} · ${core.whoFor(d)}`),node('span',`${d.items.length} line${d.items.length===1?'':'s'} · ${money(c.total,d)}`));row.append(what);list.append(row);}
+      for(const e of result.errors)errs.append(node('li',e));
+      errs.hidden=!result.errors.length;
+      sum.textContent=ready.length?`${name}: ${ready.length} invoice${ready.length===1?'':'s'} ready, ${money(total,ready[0])} in all.`+(result.errors.length?` ${result.errors.length} problem${result.errors.length===1?'':'s'} below were left out.`:''):`${name}: nothing could be made yet.`;
+      $('bulk-make').hidden=!ready.length;$('bulk-result').hidden=false;
+      $('bulk-result').scrollIntoView({block:'nearest'});
+    }
+    $('bulk-file').addEventListener('change',async event=>{
+      const file=event.target.files[0];event.target.value='';if(!file)return;
+      try{
+        if(file.size>2000000)throw new Error('That file is larger than 2 MB.');
+        if(/\.xlsx?$/i.test(file.name))throw new Error('That is an Excel workbook. In Excel choose File, Save As, CSV (comma delimited), then upload the CSV.');
+        const t=store.templates.find(x=>x.id===fromTemplate);
+        show(bulk.toInvoices(bulk.parseCsv(await file.text()),data,{core,known:known(),lastInvoice:store.lastInvoice,termsDays:t?t.termsDays:(core.validDate(data.issueDate)&&core.validDate(data.dueDate)?Math.round((Date.parse(data.dueDate)-Date.parse(data.issueDate))/86400000):14)}),file.name);
+      }catch(e){show({invoices:[],errors:[e.message]},file.name);}
+    });
+    $('bulk-make').addEventListener('click',async()=>{
+      if(!ready.length)return;const button=$('bulk-make');button.disabled=true;
+      try{
+        let lib;try{lib=await pdfLib();}catch(e){status('The PDF maker could not load (are you offline?).');return;}
+        const files=[];
+        for(let i=0;i<ready.length;i++){const d=ready[i];$('bulk-sum').textContent=`Making PDF ${i+1} of ${ready.length}…`;
+          const r=await window.InvoicePdf.build(lib,core,d);files.push({name:`${d.number} ${core.whoFor(d)}.pdf`.replace(/[^\w .()-]+/g,'-'),bytes:r.bytes});
+          if(i%10===9)await new Promise(r=>setTimeout(r,0));}
+        files.push({name:'invoices.csv',bytes:new TextEncoder().encode('﻿'+bulk.historyCsv(ready.map(doc=>({doc,paidAt:''})),core))});
+        download(`invoices-${core.today()}.zip`,new Blob([bulk.zip(files)],{type:'application/zip'}));
+        // The same rule as one invoice: numbers and the list are kept only once something is saved here.
+        if(store.templates.length){for(const d of ready){store.used=core.recordUsed(store.used,d.number);store.lastInvoice=d.number;recordHistory(d);}if(saveTemplates())renderTemplates();}
+        count('bulk');
+        $('bulk-sum').textContent=`Downloaded ${ready.length} PDF${ready.length===1?'':'s'} in one ZIP file, with a CSV list of them.`+(store.templates.length?' They are in Your invoices too.':'');
+        status(`Made ${ready.length} invoices from the spreadsheet.`);
+      }catch(e){$('bulk-sum').textContent='That did not work: '+e.message;}
+      finally{button.disabled=false;}
+    });
+  }
+  if(bulk&&has('history-csv'))$('history-csv').addEventListener('click',()=>{download(`your-invoices-${core.today()}.csv`,new Blob(['﻿'+bulk.historyCsv(history,core)],{type:'text/csv;charset=utf-8'}));status('Your invoice list was saved as a CSV file.');});
 
   // Forget everything this browser keeps for the invoice tool.
   if(has('forget')){

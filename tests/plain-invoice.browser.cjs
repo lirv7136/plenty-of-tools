@@ -25,6 +25,7 @@ const text = sel => ev(`document.querySelector(${JSON.stringify(sel)}).textConte
 async function open(url = ROOT) { await send('Page.navigate', { url }); await until("document.readyState==='complete'&&(!document.getElementById('inv-form')||(!!window.__invoice&&!!window.InvoicePdf))"); await ev('window.confirm=()=>true'); }
 async function pdfText(name) { const f = path.join(dir, name); for (let i = 0; i < 200 && !fs.existsSync(f); i++) await wait(50); await wait(300); return execFileSync('pdftotext', ['-layout', f, '-'], { encoding: 'utf8' }); }
 const ok = m => console.log('  ok  ' + m);
+const bulk0 = require('../tools/invoice-generator/static/bulk.js');
 
 (async () => {
   const { targetId } = await send('Target.createTarget', { url: 'about:blank' });
@@ -89,7 +90,11 @@ const ok = m => console.log('  ok  ' + m);
   assert.match(await text('#inv-history-sum'), /1 unpaid, \$300\.00 owed to you/);
   await click('[data-hpaid]');
   assert.match(await text('#inv-history-list'), /Paid/); assert.match(await text('#inv-history-sum'), /Everything is paid/);
-  ok('after saving, the invoice is listed as unpaid, and Mark paid works');
+  await click('#inv-history-csv');
+  const listCsv = fs.readdirSync(dir).find(f => /^your-invoices-.*\.csv$/.test(f)) || (await wait(500), fs.readdirSync(dir).find(f => /^your-invoices-.*\.csv$/.test(f)));
+  const listRows = bulk0.parseCsv(fs.readFileSync(path.join(dir, listCsv), 'utf8'));
+  assert.deepEqual([listRows.length, listRows[1][0], listRows[1][4], listRows[1][7], listRows[1][14], listRows[1][16]], [3, 'INV-001', 'Sue Smith', '2026-11-04', '300.00', 'yes']);
+  ok('after saving, the invoice is listed as unpaid, and Mark paid works, and the list downloads as a CSV');
 
   // Next month: one tap, last invoice's lines, dates cleared, next number, bank details kept.
   await size(390, 844); await open(); await shot('phone-returning');
@@ -167,6 +172,34 @@ const ok = m => console.log('  ok  ' + m);
   assert.match(await text('[data-quick]'), /New invoice for Jane Citizen/);
   await ev("document.getElementById('inv-preview').scrollIntoView()"); await size(1280, 900); await click('[data-quick]'); await ev("document.getElementById('inv-preview').scrollIntoView()"); await shot('laptop-ndis-invoice'); await size(390, 844);
   ok('an NDIS invoice asks for the participant, NDIS number, ABN, date and support item, warns at 90 days, and "New invoice for" names the participant');
+
+  // Many invoices from a spreadsheet: the template goes in, a ZIP of PDFs comes out.
+  const bulk = require('../tools/invoice-generator/static/bulk.js');
+  await open(); await ev('localStorage.clear()'); await open();
+  const pick = async file => { const { root } = await send('DOM.getDocument'); const { nodeId } = await send('DOM.querySelector', { nodeId: root.nodeId, selector: '#inv-bulk-file' }); await send('DOM.setFileInputFiles', { nodeId, files: [file] }); };
+  const csv = path.join(dir, 'rows.csv'); fs.writeFileSync(csv, bulk.template('general'));
+  await pick(csv);
+  await until("!document.getElementById('inv-bulk-result').hidden");
+  assert.match(await text('#inv-bulk-errors'), /Fill in your own details in the form first.*business name/, 'your own details are asked for once');
+  await setv('#inv-sellerName', 'Sam Clean Co'); await setv('#inv-bankBsb', '062-000'); await setv('#inv-bankAccount', '12345678');
+  await pick(csv);
+  await until("/2 invoices ready, \\$380\\.00 in all/.test(document.getElementById('inv-bulk-sum').textContent)");
+  assert.deepEqual(await ev("[...document.querySelectorAll('#inv-bulk-list strong')].map(e=>e.textContent)"), ['INV-001 · Sue Smith', 'INV-002 · Bob Brown']);
+  await click('#inv-bulk-make');
+  await until("/Downloaded 2 PDFs in one ZIP/.test(document.getElementById('inv-bulk-sum').textContent)");
+  let zipName; for (let i = 0; i < 100 && !zipName; i++) { zipName = fs.readdirSync(dir).find(f => /^invoices-.*\.zip$/.test(f)); if (!zipName) await wait(100); }
+  assert.ok(zipName, 'the ZIP was downloaded');
+  await wait(300); const out = path.join(dir, 'unzipped'); execFileSync('unzip', ['-q', path.join(dir, zipName), '-d', out]);
+  assert.deepEqual(fs.readdirSync(out).sort(), ['INV-001 Sue Smith.pdf', 'INV-002 Bob Brown.pdf', 'invoices.csv']);
+  const sue = execFileSync('pdftotext', ['-layout', path.join(out, 'INV-001 Sue Smith.pdf'), '-'], { encoding: 'utf8' });
+  for (const s2 of ['Sam Clean Co', 'Sue Smith', '4 Nov 2026', '18 Nov 2026', '$300.00', 'BSB: 062-000', 'Reference: INV-001']) assert.ok(sue.includes(s2), s2 + ' missing from a bulk PDF');
+  const bad = path.join(dir, 'bad.csv'); fs.writeFileSync(bad, 'customer,date,description,unit_price\nSue,4/11/2026,Clean,60\n,5/11/2026,Clean,60\nBob,99/99/2026,Mow,80\n');
+  await pick(bad);
+  await until("/1 invoice ready/.test(document.getElementById('inv-bulk-sum').textContent)");
+  assert.match(await text('#inv-bulk-errors'), /Row 3: no customer.*Row 4: "99\/99\/2026" is not a date/);
+  const xl = path.join(dir, 'book.xlsx'); fs.writeFileSync(xl, 'PK'); await pick(xl);
+  await until("/Excel workbook/.test(document.getElementById('inv-bulk-errors').textContent)");
+  ok('a spreadsheet of jobs becomes one invoice per customer, downloaded as a ZIP of PDFs; bad rows are named and left out');
 
   // Other countries: a visitor in the UK gets pounds and VAT, and nothing Australian.
   await send('Emulation.setTimezoneOverride', { timezoneId: 'Europe/London' });
