@@ -154,11 +154,13 @@
     y -= 8;
 
     // ---- payment details and notes
-    for (const [key, heading] of [['payment', 'PAYMENT DETAILS / TERMS'], ['notes', 'NOTES']]) {
-      if (!data[key].trim()) continue;
+    const bank = data.kind === 'invoice' && core.bankLines ? core.bankLines(data) : [];
+    for (const [key, heading] of [['bank', 'HOW TO PAY'], ['payment', bank.length ? 'PAYMENT TERMS' : 'PAYMENT DETAILS / TERMS'], ['notes', 'NOTES']]) {
+      const body = key === 'bank' ? bank.join('\n') : data[key].trim();
+      if (!body) continue;
       need(40); rule(y); y -= 18;
       text(heading, M.l, y, 8, bold, C.grey); y -= 15;
-      for (const l of wrap(data[key].trim(), reg, 9.5, W)) { if (need(14)) { } text(l, M.l, y, 9.5); y -= 13; }
+      for (const l of wrap(body, reg, 9.5, W)) { if (need(14)) { } text(l, M.l, y, 9.5); y -= 13; }
       y -= 6;
     }
     const foot = tax ? 'All amounts in AUD. GST applies only to taxable lines and is rounded per line. Line amounts include any GST.'

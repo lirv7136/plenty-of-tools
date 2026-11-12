@@ -1,11 +1,13 @@
 (function(root){
   'use strict';
   const LIMIT=99999999999n;
-  const fields={kind:20,gstMode:20,number:60,issueDate:10,dueDate:10,sellerName:160,sellerAbn:20,sellerAddress:600,sellerEmail:254,sellerPhone:60,clientName:160,clientAbn:20,clientAddress:600,clientEmail:254,paid:20,payment:1000,notes:2000};
+  const fields={kind:20,gstMode:20,number:60,issueDate:10,dueDate:10,sellerName:160,sellerAbn:20,sellerAddress:600,sellerEmail:254,sellerPhone:60,clientName:160,clientAbn:20,clientAddress:600,clientEmail:254,paid:20,payment:1000,notes:2000,bankName:100,bankBsb:12,bankAccount:20,payId:100};
+  // Added 11 Nov 2026. Drafts and templates saved before then lack them, so they default to empty.
+  const OPTIONAL=new Set(['bankName','bankBsb','bankAccount','payId']);
   function today(){const d=new Date();return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-');}
   function validDate(value){if(!/^\d{4}-\d{2}-\d{2}$/.test(value))return false;const d=new Date(value+'T00:00:00Z');return Number.isFinite(d.getTime())&&d.toISOString().slice(0,10)===value&&value>='1900-01-01'&&value<='2100-12-31';}
   function addDays(date,days){const d=new Date(date+'T00:00:00Z');d.setUTCDate(d.getUTCDate()+days);return d.toISOString().slice(0,10);}
-  function defaults(date=today()){return {kind:'invoice',gstMode:'none',number:'INV-001',issueDate:date,dueDate:addDays(date,14),sellerName:'',sellerAbn:'',sellerAddress:'',sellerEmail:'',sellerPhone:'',clientName:'',clientAbn:'',clientAddress:'',clientEmail:'',paid:'0.00',payment:'',notes:'',columns:[],items:[{description:'',quantity:'1',price:'0.00',tax:'gst',extra:[]}]};}
+  function defaults(date=today()){return {kind:'invoice',gstMode:'none',number:'INV-001',issueDate:date,dueDate:addDays(date,14),sellerName:'',sellerAbn:'',sellerAddress:'',sellerEmail:'',sellerPhone:'',clientName:'',clientAbn:'',clientAddress:'',clientEmail:'',paid:'0.00',payment:'',notes:'',bankName:'',bankBsb:'',bankAccount:'',payId:'',columns:[],items:[{description:'',quantity:'1',price:'0.00',tax:'gst',extra:[]}]};}
   function abnValid(value){const digits=String(value).replace(/\s/g,'');if(!/^[1-9]\d{10}$/.test(digits))return false;const weights=[10,1,3,5,7,9,11,13,15,17,19];return [...digits].reduce((sum,n,i)=>sum+(Number(n)-(i===0?1:0))*weights[i],0)%89===0;}
   function decimal(value,places,label){let text=String(value).trim();if(text.startsWith('.'))text='0'+text;if(!new RegExp('^\\d{1,12}(?:\\.\\d{0,'+places+'})?$').test(text))throw new Error(`${label}: enter a non-negative number with up to ${places} decimal places.`);const [whole,fraction='']=text.split('.');return BigInt(whole)*10n**BigInt(places)+BigInt(fraction.padEnd(places,'0'));}
   const round=(n,d)=>(n+d/2n)/d;
@@ -40,6 +42,11 @@
     if(data.gstMode!=='none'&&!data.sellerAbn.trim())errors.push('Enter your ABN when using a GST-registered setting.');
     for(const [key,label] of [['sellerAbn','Your ABN'],['clientAbn','Customer ABN']])if(data[key].trim()&&!abnValid(data[key]))errors.push(`${label} has an invalid format or checksum.`);
     for(const [key,label] of [['sellerEmail','Your email'],['clientEmail','Customer email']])if(data[key].trim()&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data[key].trim()))errors.push(`${label} is not a valid email address.`);
+    const bsb=String(data.bankBsb||'').replace(/[\s-]/g,''),acct=String(data.bankAccount||'').replace(/\s/g,'');
+    if(bsb&&!/^\d{6}$/.test(bsb))errors.push('A BSB has 6 digits, like 062-000.');
+    if(acct&&!/^\d{4,10}$/.test(acct))errors.push('An account number has 4 to 10 digits.');
+    if(bsb&&!acct)errors.push('Add the account number to go with the BSB, or clear the BSB.');
+    if(acct&&!bsb)errors.push('Add the BSB to go with the account number, or clear it.');
     data.items.forEach((item,i)=>{if(!item.description.trim())errors.push(`Enter a description for item ${i+1}.`);});
     (data.columns||[]).forEach((label,i)=>{if(!label.trim())errors.push(`Name extra column ${i+1}, or remove it.`);});
     try{calculate(data);}catch(e){errors.push(e.message);}
@@ -72,7 +79,7 @@
 
   function cleanData(input){
     const data={};
-    for(const [key,max] of Object.entries(fields)){if(typeof input[key]!=='string'||input[key].length>max)throw new Error(`The draft has an invalid ${key} field.`);data[key]=input[key];}
+    for(const [key,max] of Object.entries(fields)){if(OPTIONAL.has(key)&&input[key]===undefined){data[key]='';continue;}if(typeof input[key]!=='string'||input[key].length>max)throw new Error(`The draft has an invalid ${key} field.`);data[key]=input[key];}
     if(!['invoice','quote'].includes(data.kind)||!['none','exclusive','inclusive'].includes(data.gstMode))throw new Error('The draft contains unsupported settings.');
     data.columns=cleanColumns(input.columns);
     if(!Array.isArray(input.items)||input.items.length<1||input.items.length>100)throw new Error('The draft must contain 1–100 items.');
@@ -126,7 +133,7 @@
   // A template keeps what repeats: your business details, GST setting, payment terms, notes and
   // extra columns, the gap between issue and due dates, and the last number used so the next
   // document is numbered for you. Optionally the customer and the line items too.
-  const SELLER=['kind','gstMode','sellerName','sellerAbn','sellerAddress','sellerEmail','sellerPhone','payment','notes'];
+  const SELLER=['kind','gstMode','sellerName','sellerAbn','sellerAddress','sellerEmail','sellerPhone','payment','notes','bankName','bankBsb','bankAccount','payId'];
   const CLIENT=['clientName','clientAbn','clientAddress','clientEmail'];
   const MAX_TEMPLATES=50;
   function makeTemplate(name,data,opts={},id){
@@ -185,6 +192,15 @@
   // webmail compose link plus the downloaded PDF to attach.
   const aud=cents=>new Intl.NumberFormat('en-AU',{style:'currency',currency:'AUD'}).format(cents/100);
   const longDate=v=>validDate(v)?new Intl.DateTimeFormat('en-AU',{day:'numeric',month:'long',year:'numeric',timeZone:'UTC'}).format(new Date(v+'T00:00:00Z')):v;
+  // How to pay, as lines for the invoice and the email: bank transfer and PayID, with the
+  // invoice number as the reference. Empty when no bank details or PayID are given.
+  function bankLines(data){
+    const bsb=String(data.bankBsb||'').replace(/[\s-]/g,''),acct=String(data.bankAccount||'').trim(),lines=[];
+    if(bsb&&acct){lines.push('Bank transfer');if(String(data.bankName||'').trim())lines.push('Account name: '+data.bankName.trim());lines.push(`BSB: ${bsb.slice(0,3)}-${bsb.slice(3)}`,'Account: '+acct);}
+    if(String(data.payId||'').trim())lines.push('PayID: '+data.payId.trim());
+    if(lines.length&&data.kind==='invoice'&&String(data.number||'').trim())lines.push('Reference: '+data.number.trim());
+    return lines;
+  }
   // The words on a "start again" button: who it is for, if the template keeps the customer.
   function quickLabel(t){
     const doc=t.data.kind==='quote'?'quote':'invoice',who=t.includesClient&&t.data.clientName&&t.data.clientName.trim();
@@ -196,7 +212,9 @@
     const lines=[`Hi ${data.clientName.trim()||'there'},`,''];
     if(data.kind==='quote')lines.push(`Please find attached quote ${data.number.trim()} for ${aud(totals.total)}, valid until ${longDate(data.dueDate)}.`);
     else lines.push(`Please find attached ${doc} ${data.number.trim()} for ${aud(totals.due)}, due ${longDate(data.dueDate)}.`);
-    if(data.kind==='invoice'&&data.payment.trim())lines.push('','Payment details:',data.payment.trim().slice(0,800));
+    const bank=data.kind==='invoice'?bankLines(data):[];
+    if(bank.length)lines.push('','How to pay:',...bank);
+    if(data.kind==='invoice'&&data.payment.trim())lines.push('',bank.length?'Payment terms:':'Payment details:',data.payment.trim().slice(0,800));
     lines.push('','Thank you,',data.sellerName.trim()||'');
     return {to:data.clientEmail.trim(),subject,body:lines.join('\n').trim()};
   }
@@ -226,7 +244,7 @@
   }
 
   const api={defaults,today,validDate,addDays,abnValid,decimal,calculate,validate,parseDraft,serialize,title,fields,emailOk,buildMime,
-    MAX_COLUMNS,COLUMN_MAX,EXTRA_MAX,cleanColumns,cleanExtra,nextNumber,nextFrom,recordUsed,isDateHeading,cellText,quickLabel,makeTemplate,applyTemplate,validateTemplates,parseTemplates,
+    MAX_COLUMNS,COLUMN_MAX,EXTRA_MAX,cleanColumns,cleanExtra,nextNumber,nextFrom,recordUsed,bankLines,cleanData,isDateHeading,cellText,quickLabel,makeTemplate,applyTemplate,validateTemplates,parseTemplates,
     serializeTemplates,MAX_TEMPLATES,emailMessage,mailtoUrl,gmailUrl,outlookUrl,aud};
   if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.InvoiceCore=api;
 })(typeof globalThis!=='undefined'?globalThis:this);

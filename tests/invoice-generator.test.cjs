@@ -189,3 +189,46 @@ test('stored numbers survive a reload, and a store without them still loads',()=
   assert.deepEqual([s.used,s.lastInvoice],[['INV-004'],'INV-004']);
   assert.deepEqual([core.validateTemplates({v:1,templates:[t]}).used,core.validateTemplates({v:1,used:'x',templates:[]}).used],[[],[]]);
 });
+
+// ---------- 12 Nov 2026: bank details and PayID ----------
+test('bank details go under How to pay with the invoice number as the reference',()=>{
+  const d=invoice({number:'INV-009',bankName:'Sam Clean Co',bankBsb:'062 000',bankAccount:'1234 5678',payId:'sam@example.com'});
+  assert.deepEqual(core.bankLines(d),['Bank transfer','Account name: Sam Clean Co','BSB: 062-000','Account: 1234 5678','PayID: sam@example.com','Reference: INV-009']);
+  assert.deepEqual(core.bankLines(invoice({payId:'0400 000 000'})),['PayID: 0400 000 000','Reference: INV-001']);
+  assert.deepEqual(core.bankLines(invoice({kind:'quote',bankBsb:'062000',bankAccount:'12345678'})),['Bank transfer','BSB: 062-000','Account: 12345678'],'a quote has no payment reference');
+  assert.deepEqual(core.bankLines(invoice()),[]);
+  assert.match(core.emailMessage(d,core.calculate(d)).body,/How to pay:\nBank transfer\nAccount name: Sam Clean Co\nBSB: 062-000/);
+});
+test('a BSB and account number are checked together',()=>{
+  const errs=x=>core.validate(invoice(x)).join(' ');
+  assert.match(errs({bankBsb:'06200',bankAccount:'12345678'}),/6 digits/);
+  assert.match(errs({bankBsb:'062000',bankAccount:'12'}),/4 to 10 digits/);
+  assert.match(errs({bankBsb:'062000'}),/Add the account number/);
+  assert.match(errs({bankAccount:'12345678'}),/Add the BSB/);
+  assert.equal(errs({bankBsb:'062-000',bankAccount:'1234 5678'}),'');
+});
+test('drafts and templates saved before bank details existed still open',()=>{
+  const old=invoice();for(const k of ['bankName','bankBsb','bankAccount','payId'])delete old[k];
+  const back=core.parseDraft(JSON.stringify({format:'plenty-of-tools-invoice',version:2,data:old}));
+  assert.deepEqual([back.bankBsb,back.payId],['','']);
+  assert.throws(()=>core.parseDraft(JSON.stringify({format:'plenty-of-tools-invoice',version:2,data:{...old,bankBsb:7}})),/invalid bankBsb/);
+});
+
+// ---------- 12 Nov 2026: totals worked by hand, one case per GST mode ----------
+test('hand worked totals: no GST, with a half cent that rounds up',()=>{
+  // 3 × $50.00 = $150.00; 1.5 × $33.33 = $49.995, which rounds to $50.00. Total $200.00.
+  const r=core.calculate(invoice({items:[{description:'Clean',quantity:'3',price:'50.00',tax:'gst'},{description:'Ironing',quantity:'1.5',price:'33.33',tax:'gst'}]}));
+  assert.deepEqual([r.items[1].total,r.subtotal,r.gst,r.total,r.due],[5000,20000,0,20000,20000]);
+});
+test('hand worked totals: prices exclude GST, with a GST free line and a half cent of GST',()=>{
+  // 2.5 × $125.00 = $312.50, GST $31.25. $50.00 GST free. $0.05, GST 0.5c rounds up to 1c.
+  // Subtotal $362.55, GST $31.26, total $393.81.
+  const r=core.calculate(invoice({gstMode:'exclusive',items:[{description:'Work',quantity:'2.5',price:'125.00',tax:'gst'},{description:'Fee',quantity:'1',price:'50.00',tax:'none'},{description:'Tiny',quantity:'1',price:'0.05',tax:'gst'}]}));
+  assert.deepEqual([r.subtotal,r.gst,r.total],[36255,3126,39381]);
+});
+test('hand worked totals: prices include GST, with a part payment',()=>{
+  // 3 × $19.99 = $59.97, GST 59.97/11 = $5.4518 → $5.45, net $54.52. $110.00: GST $10.00, net $100.00.
+  // $20.00 GST free. Subtotal $174.52, GST $15.45, total $189.97; $100.00 paid leaves $89.97 due.
+  const r=core.calculate(invoice({gstMode:'inclusive',paid:'100.00',items:[{description:'Items',quantity:'3',price:'19.99',tax:'gst'},{description:'Service',quantity:'1',price:'110.00',tax:'gst'},{description:'Exempt',quantity:'1',price:'20.00',tax:'none'}]}));
+  assert.deepEqual([r.subtotal,r.gst,r.total,r.paid,r.due],[17452,1545,18997,10000,8997]);
+});

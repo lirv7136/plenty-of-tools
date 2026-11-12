@@ -22,7 +22,8 @@ const os = require('node:os');
 const path = require('node:path');
 const assert = require('node:assert/strict');
 
-const DIST = path.join(__dirname, '..', 'dist');
+// A11Y_DIST and A11Y_PAGES (comma separated paths) check another build, such as sites/plain-invoice/dist.
+const DIST = process.env.A11Y_DIST ? path.resolve(process.env.A11Y_DIST) : path.join(__dirname, '..', 'dist');
 const PORT = 8770;
 const BASE = `http://127.0.0.1:${PORT}`;
 const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'application/javascript', '.css': 'text/css', '.json': 'application/json', '.webmanifest': 'application/manifest+json', '.png': 'image/png', '.ico': 'image/vnd.microsoft.icon', '.svg': 'image/svg+xml', '.txt': 'text/plain; charset=utf-8', '.xml': 'application/xml', '.wasm': 'application/wasm' };
@@ -165,7 +166,7 @@ const AUDIT = `(() => {
   assert.ok(fs.existsSync(path.join(DIST, 'index.html')), 'run python3 build.py first');
   const tools = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'tools.json'), 'utf8'));
   const vs = fs.readdirSync(path.join(__dirname, '..', 'vs')).filter(f => f.endsWith('.json')).map(f => '/vs/' + f.replace(/\.json$/, '') + '/');
-  const pages = ['/', '/about/', '/privacy/', '/terms/']
+  const pages = process.env.A11Y_PAGES ? process.env.A11Y_PAGES.split(',') : ['/', '/about/', '/privacy/', '/terms/']
     .concat(tools.filter(t => t.status === 'live' || t.status === 'hidden').map(t => `/tools/${t.slug}/`))
     .concat(vs);
 
@@ -187,7 +188,7 @@ const AUDIT = `(() => {
     if (r.mains !== 1) issues.push({ kind: 'main landmarks', el: 'document', detail: String(r.mains) });
     if (r.h1s !== 1) issues.push({ kind: 'h1 count', el: 'document', detail: String(r.h1s) });
     if (r.skipped) issues.push({ kind: 'heading level skipped', el: 'document', detail: r.skipped });
-    if (r.lang !== 'en') issues.push({ kind: 'lang', el: 'html', detail: String(r.lang) });
+    if (!/^en(-AU)?$/.test(r.lang || '')) issues.push({ kind: 'lang', el: 'html', detail: String(r.lang) });
     if (!r.title) issues.push({ kind: 'no title', el: 'document', detail: '' });
     if (issues.length) {
       failures.push({ page, issues });

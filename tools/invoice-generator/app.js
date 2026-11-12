@@ -24,6 +24,7 @@
     $('price-hint').textContent=data.gstMode==='none'?'Unit prices in AUD. GST is not charged.':data.gstMode==='inclusive'?'Unit prices include GST where applicable. Choose the tax treatment for each line.':'Unit prices exclude GST. 10% is added to taxable lines.';
     for(const select of $('items').querySelectorAll('select'))select.disabled=data.gstMode==='none';
     $('add').disabled=data.items.length>=100;
+    syncQuoteButton();syncVisitButton();
   }
   function itemInputs(){
     $('items').replaceChildren();
@@ -81,12 +82,13 @@
       if(totals?.paid)totalRow(summary,'Already paid','−'+money(totals.paid));
       totalRow(summary,'Amount due',totals?money(totals.due):'—','strong balance');
     }paper.append(summary);
-    for(const [key,title] of [['payment','Payment details / terms'],['notes','Notes']])if(data[key].trim()){const section=node('section',undefined,'inv-doc-notes');section.append(node('h3',title),node('p',data[key]));paper.append(section);}
+    const bank=data.kind==='invoice'?core.bankLines(data):[];
+    for(const [key,title] of [['bank','How to pay'],['payment',bank.length?'Payment terms':'Payment details / terms'],['notes','Notes']]){const body=key==='bank'?bank.join('\n'):data[key];if(!body.trim())continue;const section=node('section',undefined,'inv-doc-notes');section.append(node('h3',title),node('p',body));paper.append(section);}
     paper.append(node('p',tax?'All amounts in AUD. GST applies only to taxable lines and is rounded per line. Line amounts include any GST.':'All amounts in AUD. No GST charged — supplier not registered for GST.','inv-doc-footer'));
     relevelPreview(paper);
     settings();return errors;
   }
-  function populate(){for(const key of Object.keys(core.fields))$(key).value=data[key];renderColumns();itemInputs();render();}
+  function populate(){for(const key of Object.keys(core.fields))if($(key))$(key).value=data[key];renderColumns();itemInputs();render();}
   function replace(next,message){revision++;data=next;fromTemplate=null;isExample=false;$('offer').hidden=true;showErrors=false;displayErrors([]);populate();status(message);}
   function update(event){
     const input=event.target;
@@ -144,7 +146,7 @@
   let store={v:1,used:[],lastInvoice:'',templates:[]},fromTemplate=null,isExample=false;
   // Every number this device knows was used: the high water list and each template's last number.
   const known=()=>[...store.used,...store.templates.map(t=>t.lastNumber)];
-  function loadTemplates(){try{const raw=localStorage.getItem(TKEY);if(raw)store=core.validateTemplates(JSON.parse(raw));}catch(e){status('Saved templates could not be read, so they were left alone.');}}
+  function loadTemplates(){try{const raw=localStorage.getItem(TKEY);store=raw?core.validateTemplates(JSON.parse(raw)):{v:1,used:[],lastInvoice:'',templates:[]};}catch(e){status('Saved templates could not be read, so they were left alone.');}}
   function saveTemplates(){try{localStorage.setItem(TKEY,JSON.stringify(store));return true;}catch(e){status('This browser would not save templates (private windows and full storage do that). Export them to keep a copy.');return false;}}
   function renderTemplates(selected){
     const sel=$('tpl'),keep=selected!==undefined?selected:sel.value;
@@ -175,7 +177,7 @@
   function useTemplate(t){
     if(!t)return false;
     if(revision&&!confirm('Start a new document from this template? Unsaved edits to the current document will be lost.'))return false;
-    let next;try{next=core.applyTemplate(t,undefined,known());}catch(e){status('That template could not be used: '+e.message);return false;}
+    let next;try{next=core.applyTemplate(lastLines(t),undefined,known());}catch(e){status('That template could not be used: '+e.message);return false;}
     replace(next,`New ${core.title(next).toLowerCase()} ${next.number} from "${t.name}", dated today. Check the customer and items, then download or email it.`);fromTemplate=t.id;
     return true;
   }
@@ -197,12 +199,12 @@
   function markUsed(){
     if(isExample)return;   // the fictional example never counts as a number used, and is never offered for saving
     const n=data.number.trim().slice(0,60),t=store.templates.find(x=>x.id===fromTemplate);
-    if(n&&store.templates.length){recordNumber(n);if(t)t.lastNumber=n;if(saveTemplates())renderTemplates();}
+    if(n&&store.templates.length){recordNumber(n);if(t&&(t.data.kind||'invoice')===data.kind)t.lastNumber=n;if(saveTemplates())renderTemplates();recordHistory();}
     offerSave();
   }
   function recordNumber(n){store.used=core.recordUsed(store.used,n);if(data.kind==='invoice')store.lastInvoice=n;}
   // Another tab saved: take its templates and numbers, so two tabs never hand out the same number.
-  window.addEventListener('storage',event=>{if(event.key===TKEY){loadTemplates();renderTemplates();}});
+  window.addEventListener('storage',event=>{if(event.key===TKEY){loadTemplates();renderTemplates();}if(event.key===HKEY){loadHistory();renderHistory();}});
 
   // ---------- after the first download or email: offer to keep the details ----------
   const declined=new Set();
@@ -222,7 +224,7 @@
     store.templates=same?store.templates.map(x=>x.id===t.id?t:x):store.templates.concat(t);
     const before={used:store.used,lastInvoice:store.lastInvoice};if(data.number.trim())recordNumber(data.number.trim().slice(0,60));
     if(!saveTemplates()){Object.assign(store,before);return;}
-    fromTemplate=t.id;$('offer').hidden=true;renderTemplates(t.id);
+    fromTemplate=t.id;$('offer').hidden=true;renderTemplates(t.id);recordHistory();
     status(`Saved. Next time, open this page and tap "${core.quickLabel(t)}": it fills in everything with that day's date and number ${core.nextFrom(t.lastNumber,known())}.`);
   });
 
@@ -247,7 +249,7 @@
   let libPromise=null;
   function pdfLib(){
     if(window.PDFLib)return Promise.resolve(window.PDFLib);
-    if(!libPromise)libPromise=new Promise((resolve,reject)=>{const s=document.createElement('script');s.src='/assets/invoice-generator/pdf-lib.min.js';s.onload=()=>window.PDFLib?resolve(window.PDFLib):reject(new Error('missing'));s.onerror=()=>{libPromise=null;reject(new Error('offline'));};document.head.append(s);});
+    if(!libPromise)libPromise=new Promise((resolve,reject)=>{const s=document.createElement('script');s.src=window.INV_PDFLIB||'/assets/invoice-generator/pdf-lib.min.js';s.onload=()=>window.PDFLib?resolve(window.PDFLib):reject(new Error('missing'));s.onerror=()=>{libPromise=null;reject(new Error('offline'));};document.head.append(s);});
     return libPromise;
   }
   async function makePdf(){
@@ -314,7 +316,121 @@
   $('mail-outlook').addEventListener('click',()=>openWith(core.outlookUrl(mail),true));
   $('mail-copy').addEventListener('click',async()=>{try{await navigator.clipboard.writeText(`Subject: ${mail.subject}\n\n${mail.body}`);status('Message copied.');}catch(e){status('Copying was blocked. Select the message text and copy it instead.');}});
 
-  loadTemplates();renderTemplates();
-  window.__invoice={state:()=>data,templates:()=>store};   // test hook
-  data=blank();populate();status('No account and nothing uploaded. Your draft stays in this tab; templates stay in this browser.');
+  // ---------- added 11 Nov 2026: history, same again, quote to invoice, another visit ----------
+  // Every element below may be missing (the older Plenty of Tools page has none of them), so each
+  // is looked up once and every use is guarded.
+  const has=id=>!!$(id);
+
+  // Your invoices: kept in this browser only, and only once the person has saved something here,
+  // the same rule as the running number. Each entry is the whole document, so it can be opened
+  // again exactly, or used for "same again".
+  const HKEY='pot:invoice-generator:history:v1',HMAX=200;
+  let history=[];
+  function loadHistory(){try{const raw=localStorage.getItem(HKEY);history=raw?JSON.parse(raw).filter(h=>h&&h.doc&&typeof h.id==='string'):[];}catch(e){history=[];}}
+  function saveHistory(){try{localStorage.setItem(HKEY,JSON.stringify(history));return true;}catch(e){status('This browser would not keep the invoice list (private windows and full storage do that).');return false;}}
+  function recordHistory(){
+    const n=data.number.trim();if(!has('history')||!n||!store.templates.length||isExample)return;
+    let doc;try{doc=core.cleanData(JSON.parse(JSON.stringify(data)));core.calculate(doc);}catch(e){return;}
+    // One entry per document number and customer. Sending the same invoice again updates it in
+    // place and keeps its paid state; the same number for someone else is a separate entry, and
+    // the person is told, because two invoices should never share a number.
+    const who=doc.clientName.trim().toLowerCase(),id=[doc.kind,n.toLowerCase(),who].join(':');
+    const old=history.find(h=>h.id===id);
+    const clash=history.find(h=>h.id!==id&&h.doc.kind===doc.kind&&h.doc.number.trim().toLowerCase()===n.toLowerCase());
+    const entry={id,savedAt:old?old.savedAt:new Date().toISOString(),paidAt:old?old.paidAt:'',doc};
+    history=old?history.map(h=>h.id===id?entry:h):[entry,...history].slice(0,HMAX);
+    if(saveHistory())renderHistory();
+    // After the caller's own message ("Downloaded …"), so the warning is not overwritten.
+    if(clash)setTimeout(()=>status(`${$('status').textContent} Note: ${n} was already used for ${clash.doc.clientName||'another customer'}. Give each invoice its own number.`),0);
+  }
+  const sameClient=(a,b)=>a.trim().toLowerCase()===b.trim().toLowerCase();
+  // For "New invoice for Sue": the template, with the lines of Sue's newest invoice in place of
+  // the lines saved with it. Dates in a Date column are cleared: they belong to last time.
+  function lastLines(t){
+    const who=has('history')&&t.includesClient&&t.data.clientName;if(!who)return t;
+    // The newest invoice by its date, not the one most recently downloaded again.
+    const last=history.filter(h=>h.doc.kind===(t.data.kind||'invoice')&&sameClient(h.doc.clientName,who))
+      .sort((a,b)=>b.doc.issueDate.localeCompare(a.doc.issueDate)||b.savedAt.localeCompare(a.savedAt))[0];if(!last)return t;
+    const cols=last.doc.columns.slice(),dated=cols.map(core.isDateHeading);
+    const items=last.doc.items.map(i=>({...i,extra:i.extra.map((v,k)=>dated[k]?'':v)}));
+    return {...t,includesItems:true,data:{...t.data,columns:cols,items}};
+  }
+  function renderHistory(){
+    if(!has('history'))return;
+    const list=$('history-list');list.replaceChildren();
+    const today=core.today();
+    for(const h of history.slice(0,50)){
+      let total='—';try{const c=core.calculate(h.doc);total=money(h.doc.kind==='quote'?c.total:c.due);}catch(e){}
+      const row=node('li',undefined,'inv-hrow');
+      const what=node('div',undefined,'inv-hwhat');what.append(node('strong',`${h.doc.number} · ${h.doc.clientName||'No customer'}`),node('span',`${total} · ${h.doc.kind==='quote'?'quote, valid until':'due'} ${date(h.doc.dueDate)}`));
+      const state=h.doc.kind==='quote'?'Quote':h.paidAt?'Paid':h.doc.dueDate<today?'Overdue':'Unpaid';
+      const tag=node('span',state,'inv-htag inv-htag-'+state.toLowerCase());
+      const acts=node('div',undefined,'inv-hacts');
+      if(h.doc.kind==='invoice'){const b=node('button',h.paidAt?'Mark unpaid':'Mark paid','btn small');b.type='button';b.dataset.hpaid=h.id;b.setAttribute('aria-label',`${h.paidAt?'Mark unpaid':'Mark paid'}: ${h.doc.number}`);acts.append(b);}
+      const o=node('button','Open','btn small');o.type='button';o.dataset.hopen=h.id;o.setAttribute('aria-label',`Open ${h.doc.number}`);acts.append(o);
+      row.append(what,tag,acts);list.append(row);
+    }
+    const unpaid=history.filter(h=>h.doc.kind==='invoice'&&!h.paidAt);
+    let owed=0;for(const h of unpaid){try{owed+=core.calculate(h.doc).due;}catch(e){}}
+    $('history-sum').textContent=history.length?(unpaid.length?`${unpaid.length} unpaid, ${money(owed)} owed to you.`:'Everything is paid.'):'';
+    $('history').hidden=!history.length;
+  }
+  if(has('history')){
+    $('history-list').addEventListener('click',event=>{
+      const p=event.target.closest('[data-hpaid]'),o=event.target.closest('[data-hopen]');
+      if(p){const h=history.find(x=>x.id===p.dataset.hpaid);if(!h)return;h.paidAt=h.paidAt?'':new Date().toISOString();if(saveHistory()){renderHistory();status(`${h.doc.number} marked ${h.paidAt?'paid':'unpaid'}.`);}}
+      if(o){const h=history.find(x=>x.id===o.dataset.hopen);if(!h)return;if(revision&&!confirm('Open this invoice? Unsaved edits to the current document will be lost.'))return;
+        let doc;try{doc=core.cleanData(JSON.parse(JSON.stringify(h.doc)));}catch(e){return status('That invoice could not be opened.');}
+        replace(doc,`Opened ${doc.number} as it was sent. Download it again, or change it and send a correction.`);
+        const t=store.templates.find(x=>x.includesClient&&sameClient(x.data.clientName||'',doc.clientName));fromTemplate=t?t.id:null;$('toolbar').scrollIntoView({block:'start'});}
+    });
+  }
+
+  // A quote the customer accepted becomes the invoice: same customer and lines, today's date,
+  // the next invoice number and the usual payment terms.
+  if(has('to-invoice')){
+    $('to-invoice').addEventListener('click',()=>{
+      if(data.kind!=='quote')return;
+      const t=store.templates.find(x=>x.id===fromTemplate&&(x.data.kind||'invoice')==='invoice');
+      const next={...JSON.parse(JSON.stringify(data)),kind:'invoice',number:core.nextFrom(store.lastInvoice,known()),issueDate:core.today(),paid:'0.00'};
+      next.dueDate=core.addDays(next.issueDate,t?t.termsDays:14);
+      const quote=data.number.trim();replace(next,`Invoice ${next.number} made from quote ${quote}. Check it, then download or email.`);if(t)fromTemplate=t.id;
+    });
+  }
+  function syncQuoteButton(){if(has('to-invoice'))$('to-invoice').hidden=data.kind!=='quote';}
+
+  // People paid by the visit: copy the last line, with the date left for the new visit.
+  if(has('visit')){
+    $('visit').addEventListener('click',()=>{
+      if(data.items.length>=100)return;
+      const last=data.items[data.items.length-1],dated=data.columns.map(core.isDateHeading);
+      data.items.push({...last,extra:last.extra.map((v,k)=>dated[k]?'':v)});revision++;itemInputs();render();
+      const k=dated.indexOf(true),line=$('items').lastElementChild;(k>=0?line.querySelector(`[data-extra="${k}"]`):line.querySelector('textarea')).focus();
+      status('Another visit added. Pick its date.');
+    });
+  }
+  function syncVisitButton(){if(has('visit'))$('visit').hidden=!data.columns.some(core.isDateHeading)||data.items.length>=100;}
+
+  // Forget everything this browser keeps for the invoice tool.
+  if(has('forget')){
+    $('forget').addEventListener('click',()=>{
+      if(!confirm('Delete every saved customer, template and invoice in this browser? This cannot be undone.'))return;
+      try{localStorage.removeItem(TKEY);localStorage.removeItem(HKEY);}catch(e){}
+      store={v:1,used:[],lastInvoice:'',templates:[]};history=[];fromTemplate=null;renderTemplates('');renderHistory();status('Everything saved in this browser for invoices has been deleted.');
+    });
+  }
+
+  // Search pages link here with ?start=… to open the tool ready for that kind of work.
+  function startFrom(kind){
+    const d=blank();
+    if(kind==='visits'){d.columns=['Date'];d.items=d.items.map(i=>({...i,extra:['']}));}
+    if(kind==='nogst')d.gstMode='none';
+    if(kind==='tax')d.gstMode='exclusive';
+    return d;
+  }
+
+  loadTemplates();loadHistory();renderTemplates();renderHistory();
+  window.__invoice={state:()=>data,templates:()=>store,history:()=>history};   // test hook
+  const start=/[?&]start=(visits|nogst|tax)\b/.exec(location.search);
+  data=start?startFrom(start[1]):blank();populate();status('No account and nothing uploaded. Your draft stays in this tab; templates stay in this browser.');
 })();

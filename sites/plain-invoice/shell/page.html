@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+{{redirect}}
+<title>{{title}}</title>
+<meta name="description" content="{{description}}">
+<link rel="canonical" href="{{canonical}}">
+<meta property="og:title" content="{{title}}">
+<meta property="og:description" content="{{description}}">
+<meta property="og:url" content="{{canonical}}">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="{{brand}}">
+<meta name="robots" content="{{robots}}">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32.png">
+<link rel="apple-touch-icon" href="/icons/icon-192.png">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#0b7a5a">
+<link rel="stylesheet" href="/assets/site.css?v={{sitev}}">
+{{jsonld}}
+{{head_extra}}
+<script>if("serviceWorker" in navigator){addEventListener("load",function(){navigator.serviceWorker.register("/sw.js").catch(function(){})})}</script>
+</head>
+<body class="{{body_class}}">
+<header class="site-header"><div class="wrap">
+  <a class="brand" href="/"><span class="dot"></span>{{brand}}</a>
+  <nav class="nav" aria-label="Main"><a href="/guides/">Templates</a><a href="/pricing/">Pricing</a><a href="/privacy/">Privacy</a></nav>
+</div></header>
+{{main}}
+<footer class="site-footer"><div class="wrap">
+  <span>{{brand}} · free invoices for Australian sole traders · nothing you type is uploaded</span>
+  <span><a href="/guides/">Invoice templates</a> · <a href="/pricing/">Pricing</a> · <a href="/privacy/">Privacy</a> · <a href="/terms/">Terms</a> · <a href="{{github}}" rel="noopener">Open source</a></span>
+</div></footer>
+{{analytics}}
+</body>
+</html>
