@@ -3,8 +3,8 @@
   "tagline": "Free Australian invoices with ABN, GST or no GST, and a date on each line. No account, nothing uploaded.",
   "domain": "https://plaininvoice.com.au",
   "github": "https://github.com/lirv7136/plenty-of-tools",
-  "cf_analytics_token": "",
-  "redirect_pages_dev": false,
+  "cf_analytics_token": "6ed43d34957a49fcb90ec8e43f7db523",
+  "redirect_pages_dev": true,
   "pro_price_month": "5",
   "pro_price_year": "48"
 }

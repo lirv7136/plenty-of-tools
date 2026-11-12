@@ -73,7 +73,7 @@ PAGES = [
 
 def page(path, title, description, main, head_extra="", body_class="", jsonld="", robots="index,follow"):
     redirect = ('<script>if(/\\.pages\\.dev$/.test(location.hostname)){location.replace("' + BASE +
-                '"+location.pathname+location.search+location.hash)}</script>') if SITE.get("redirect_pages_dev") else ""
+                '"+location.pathname+location.search+location.hash)}</script>') if SITE.get("redirect_pages_dev") and not STAGING else ""
     out = fill((HERE / "shell" / "page.html").read_text(), redirect=redirect, title=html.escape(title),
                description=html.escape(description), canonical=BASE + path, robots="noindex,nofollow" if STAGING else robots, brand=SITE["brand"],
                sitev=ver(HERE / "shell" / "site.css"), jsonld=jsonld, head_extra=head_extra,

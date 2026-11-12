@@ -30,6 +30,8 @@ const ok = m => console.log('  ok  ' + m);
   const { targetId } = await send('Target.createTarget', { url: 'about:blank' });
   session = (await send('Target.attachToTarget', { targetId, flatten: true })).sessionId;
   await send('Runtime.enable'); await send('Page.enable'); await send('Network.enable');
+  // Test visits must not count as real ones in the site's analytics.
+  await send('Network.setBlockedURLs', { urls: ['*cloudflareinsights.com*'] });
   await send('Browser.setDownloadBehavior', { behavior: 'allow', downloadPath: dir });
 
   // Every page answers, has one h1, and fits a phone.
