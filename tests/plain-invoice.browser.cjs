@@ -228,12 +228,12 @@ const bulk0 = require('../tools/invoice-generator/static/bulk.js');
   if (api === 204) {
     await open(ROOT + 'pro/?f=reminders');
     assert.equal(await ev("document.getElementById('pro-feature').value"), 'reminders');
-    assert.match(await text('main'), /Nothing can be bought yet/);
+    assert.match(await text('main'), /Cancel any time/);
     await setv('#pro-email', 'nope'); await click('#pro-form button[type=submit]');
     assert.match(await text('#pro-result'), /Enter your email address first/);
     const addr = `test+${Date.now()}@example.com`;
     await setv('#pro-email', addr); await click('#pro-form button[type=submit]');
-    await until("/You will get one email when Pro opens/.test(document.getElementById('pro-result').textContent)");
+    await until("/You will get one email when it opens/.test(document.getElementById('pro-result').textContent)");
     assert.deepEqual(await ev("fetch('/api/waitlist',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:'x@y.co',website:'spam'})}).then(r=>r.json())"), { ok: true }, 'the honeypot is ignored quietly');
     assert.equal(await ev("fetch('/api/count',{method:'POST',body:'not-an-event'}).then(r=>r.status)"), 400);
     await click('#pro-remove');

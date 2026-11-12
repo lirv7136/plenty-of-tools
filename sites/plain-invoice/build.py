@@ -50,10 +50,10 @@ SYNC_NOTE = ("""<h2>If you sign in (Pro beta)</h2>
 # Each page: path, title, description, source file under pages/.
 PAGES = [
     ("/pricing/", f'Pricing · {SITE["brand"]}',
-     "Free forever: invoices, quotes, PDF, email, saved customers and a date on each line. Pro, not open yet, adds sync, sending and reminders.",
+     "Free forever: invoices, quotes, PDF, email, saved customers and sync. Pro, A$5 a month, makes many invoices at once from a spreadsheet.",
      "pricing.html"),
-    ("/pro/", f'Pro, not open yet · {SITE["brand"]}',
-     "Plain Invoice Pro would send invoices on a schedule, chase overdue ones and sync your phone and laptop. Not open yet: leave your email to hear when it is.",
+    ("/pro/", f'Pro: many invoices from a spreadsheet · {SITE["brand"]}',
+     "Plain Invoice Pro makes many invoices at once from a spreadsheet, for A$5 a month or A$48 a year. Cancel any time. Single invoices stay free.",
      "pro.html"),
     ("/privacy/", f'Privacy · {SITE["brand"]}',
      "Nothing you type into the invoice maker is uploaded. What is kept in your browser, and what the site collects.",
@@ -117,7 +117,8 @@ def main():
             # Pro sign in and sync: on only when site.json says so (or PI_SYNC=1 for local tests).
             + ('window.INV_SYNC_URL="/account/api";' if SYNC_ON else "")
             # The paywall on the spreadsheet import: on only when site.json says so (PI_PAYWALL=1 for tests).
-            + ('window.INV_PAYWALL=1;' if SITE.get("paywall") is True or os.environ.get("PI_PAYWALL") == "1"
+            + ("" if os.environ.get("PI_PAYWALL") == "0"      # PI_PAYWALL=0: off, for tests without the Pro server
+               else 'window.INV_PAYWALL=1;' if SITE.get("paywall") is True or os.environ.get("PI_PAYWALL") == "1"
                else 'window.INV_PAYWALL="preview";' if SITE.get("paywall") == "preview" else "") + '</script>')
     scripts = "".join(f'\n<script src="{u}" defer></script>' for u in tool_assets[1:5])
     app_ld = {"@context": "https://schema.org", "@type": "WebApplication", "name": SITE["brand"], "url": BASE + "/",

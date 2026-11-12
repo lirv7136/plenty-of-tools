@@ -1,24 +1,24 @@
 <main class="wrap prose pi-page">
 <h1>Plain Invoice Pro</h1>
-<p class="pi-lede"><strong>Pro is in beta: syncing your phone and laptop is open and free for now. Nothing can be bought yet.</strong> If enough people want it, it will cost A${{pro_month}} a month or A${{pro_year}} a year. Leave your email and you will hear once, when it opens.</p>
+<p class="pi-lede"><strong>A${{pro_month}} a month or A${{pro_year}} a year. Cancel any time.</strong> Pro makes many invoices at once from a spreadsheet. Making single invoices stays free, and so does syncing your phone and laptop.</p>
 <ul class="pi-guides" id="pro-features">
 <li id="pro-recurring"><strong>Send an invoice automatically every month</strong><p>Set it once: the invoice goes out on the day you choose, with the next number and the new date.</p></li>
 <li id="pro-reminders"><strong>Polite reminders when an invoice is overdue</strong><p>A short reminder goes to the customer a few days after the due date, until you mark it paid.</p></li>
 <li id="pro-send"><strong>Send from here, and see when it was opened</strong><p>No mail app needed. You see when the customer opened the invoice.</p></li>
-<li id="pro-sync"><strong>Your customers and invoices on your phone and laptop</strong><p><strong>Open now in beta, and free for now.</strong> Sign in from <a href="/#inv-sync">the invoice maker</a> and your saved customers and invoices stay in step everywhere.</p></li>
+<li id="pro-sync"><strong>Your customers and invoices on your phone and laptop</strong><p><strong>Open now, and free.</strong> Sign in from <a href="/#inv-sync">the invoice maker</a>.</p></li>
 </ul>
-<h2>Many invoices from one spreadsheet</h2><img class="pi-shot" src="/img/bulk-from-spreadsheet.webp" width="1200" height="520" loading="lazy" alt="A spreadsheet with five rows of jobs for three customers becomes three invoices, downloaded as PDFs in one ZIP file."><p>Put one job, visit or shift on each row and upload the sheet. Rows for the same customer become one invoice, and every PDF comes back in one ZIP. There is an NDIS shifts template too.</p>
-<p>These need a server, which costs money to run, so they will cost money to use. Everything you can do today stays free, with no account and no limits.</p>
+<h2>What you get now: many invoices from one spreadsheet</h2><img class="pi-shot" src="/img/bulk-from-spreadsheet.webp" width="1200" height="520" loading="lazy" alt="A spreadsheet with five rows of jobs for three customers becomes three invoices, downloaded as PDFs in one ZIP file."><p>Put one job, visit or shift on each row and upload the sheet. Rows for the same customer become one invoice, and every PDF comes back in one ZIP. There is an NDIS shifts template too.</p>
+<p><a class="btn primary" href="/#inv-bulk">Try it: upload a spreadsheet</a></p><p>The preview is free. To download the invoices, sign in and choose a plan; payment is by card through Stripe.</p><h2>Coming to Pro</h2>
 <form id="pro-form" class="pi-plan pi-soon" novalidate>
-<h2 id="pro-form-title">Tell me when Pro opens</h2>
+<h2 id="pro-form-title">Tell me when these open</h2>
 <label for="pro-email">Email</label>
 <input id="pro-email" name="email" type="email" maxlength="254" autocomplete="email" required>
 <label for="pro-feature">What would you use most?</label>
 <select id="pro-feature" name="feature"><option value="any">All of it</option><option value="recurring">Sending automatically every month</option><option value="reminders">Overdue reminders</option><option value="send">Sending from here, with opened receipts</option><option value="sync">Phone and laptop</option></select>
 <div class="pi-hp" aria-hidden="true"><label for="pro-website">Leave this empty</label><input id="pro-website" name="website" tabindex="-1" autocomplete="off"></div>
-<p><button class="btn primary" type="submit">Tell me when it opens</button></p>
+<p><button class="btn primary" type="submit">Tell me</button></p>
 <p id="pro-result" role="status" aria-live="polite"></p>
-<p class="muted">We keep only this address, the feature you chose and the date. It is used once, to say Pro is open, and is never shared. <button id="pro-remove" class="pi-link" type="button">Take my email off the list</button>.</p>
+<p class="muted">We keep only this address, the feature you chose and the date. It is used once, and is never shared. <button id="pro-remove" class="pi-link" type="button">Take my email off the list</button>.</p>
 </form>
 <p><a href="/">Back to the free invoice maker</a></p>
 </main>
@@ -32,7 +32,7 @@
     var v=email.value.trim();if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)){out.textContent='Enter your email address first.';email.focus();return;}
     out.textContent='Sending…';
     fetch('/api/waitlist',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:v,feature:document.getElementById('pro-feature').value,website:document.getElementById('pro-website').value,remove:!!remove})})
-      .then(function(r){return r.json();}).then(function(r){out.textContent=r.ok?(remove?'Done. That address is no longer on the list.':'Thanks. You will get one email when Pro opens, and nothing else.'):(r.error||'That did not work. Try again.');})
+      .then(function(r){return r.json();}).then(function(r){out.textContent=r.ok?(remove?'Done. That address is no longer on the list.':'Thanks. You will get one email when it opens, and nothing else.'):(r.error||'That did not work. Try again.');})
       .catch(function(){out.textContent='That did not send. Check your connection and try again.';});
   }
   document.getElementById('pro-form').addEventListener('submit',function(e){e.preventDefault();send(false);});
