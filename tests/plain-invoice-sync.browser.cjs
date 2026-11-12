@@ -1,5 +1,5 @@
 // Pro sign in and sync, with two browser profiles as two devices.
-// Needs: PI_SYNC=1 python3 sites/plain-invoice/build.py, and the private Pro Worker running locally
+// Needs: PI_SYNC=1 PI_PAYWALL=1 python3 sites/plain-invoice/build.py, and the private Pro Worker running locally
 // (in ~/dev/plain-invoice-pro: npx wrangler dev --port 8799, with DEV="1" in .dev.vars).
 // This file serves the built site and forwards /account/api to that Worker, so both share an origin.
 const { spawn } = require('node:child_process');
@@ -7,6 +7,18 @@ const http = require('node:http'), fs = require('node:fs'), os = require('node:o
 const assert = require('node:assert/strict');
 const DIST = path.join(__dirname, '..', 'sites', 'plain-invoice', 'dist'), PORT = 8771, API = process.env.PRO_API || 'http://127.0.0.1:8799';
 const ROOT = `http://127.0.0.1:${PORT}/`;
+// A stand in for Stripe (the Worker's .dev.vars points STRIPE_API here). Checkout "succeeds" by
+// sending the browser straight back, and the test then delivers the signed notification itself.
+const crypto = require('node:crypto');
+const stripeCalls = [], later = Math.floor(Date.now() / 1000) + 30 * 86400;
+const fakeStripe = http.createServer((req, res) => { let b = ''; req.on('data', d => b += d); req.on('end', () => {
+  stripeCalls.push(`${req.method} ${req.url} ${b}`); res.setHeader('Content-Type', 'application/json');
+  if (req.url === '/v1/checkout/sessions') return res.end(JSON.stringify({ url: ROOT + '?pro=1#inv-bulk' }));
+  if (req.url === '/v1/billing_portal/sessions') return res.end(JSON.stringify({ url: ROOT + '#inv-sync' }));
+  if (req.url.startsWith('/v1/subscriptions/')) return res.end(JSON.stringify({ id: 'sub_t', customer: 'cus_t', status: req.method === 'DELETE' ? 'canceled' : 'active', current_period_end: later }));
+  res.statusCode = 404; res.end('{}'); }); });
+function stripeHook(event) { const payload = JSON.stringify(event), t = Math.floor(Date.now() / 1000);
+  return fetch(API + '/account/api/stripe-webhook', { method: 'POST', headers: { 'Stripe-Signature': `t=${t},v1=${crypto.createHmac('sha256', 'whsec_test_fake').update(`${t}.${payload}`).digest('hex')}` }, body: payload }); }
 const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'application/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.ico': 'image/x-icon', '.webmanifest': 'application/manifest+json' };
 const server = http.createServer(async (req, res) => {
   if (req.url.startsWith('/account/api/')) {
@@ -59,11 +71,13 @@ async function device() {
     await until(`document.getElementById('inv-sync-who').textContent===${JSON.stringify(email)}`);
     await inStep();
   }
-  return { ev, until, open, setv, click, text, inStep, signIn };
+  const pick = async (sel, file) => { const { root } = await send('DOM.getDocument'); const { nodeId } = await send('DOM.querySelector', { nodeId: root.nodeId, selector: sel }); await send('DOM.setFileInputFiles', { nodeId, files: [file] }); };
+  return { ev, until, open, setv, click, text, inStep, signIn, pick };
 }
 
 (async () => {
   await new Promise(r => server.listen(PORT, '127.0.0.1', r));
+  await new Promise(r => fakeStripe.listen(8798, '127.0.0.1', r));
   const email = `sync${Date.now()}@example.com`;
   const phone = await device(), laptop = await device();
 
@@ -105,14 +119,43 @@ async function device() {
   }
   ok('changes made on both devices at once are merged: the deletion sticks and both invoices are paid');
 
+  // The paywall: the preview is free, downloading many invoices from a spreadsheet needs Pro.
+  const bulk = require('../tools/invoice-generator/static/bulk.js');
+  const csv = path.join(dir, 'rows.csv'); fs.writeFileSync(csv, bulk.template('general'));
+  const zips = () => fs.readdirSync(dir).filter(f => /^invoices-.*\.zip$/.test(f)).length;
+  const guest = await device(); await guest.open(); await guest.setv('#inv-sellerName', 'Sam Clean Co'); await guest.pick('#inv-bulk-file', csv);
+  await guest.until("/2 invoices ready/.test(document.getElementById('inv-bulk-sum').textContent)");
+  assert.equal(await guest.text('#inv-bulk-make'), '3. Download all the PDFs (Pro)');
+  await guest.click('#inv-bulk-make');
+  assert.ok(await guest.ev("!document.getElementById('inv-pay').hidden&&!document.getElementById('inv-pay-signin').hidden&&document.getElementById('inv-pay-month').hidden"), 'signed out: asked to sign in first');
+  await phone.pick('#inv-bulk-file', csv); await phone.until("/2 invoices ready/.test(document.getElementById('inv-bulk-sum').textContent)");
+  await phone.click('#inv-bulk-make');
+  assert.ok(await phone.ev("!document.getElementById('inv-pay').hidden&&document.getElementById('inv-pay-signin').hidden&&!document.getElementById('inv-pay-month').hidden"), 'signed in, not Pro: offered Pro');
+  await wait(800); assert.equal(zips(), 0, 'nothing downloads without Pro');
+  ok('without Pro the spreadsheet preview is free and the download asks for Pro');
+  // Pay: the page goes to checkout and comes back; Stripe's signed notification makes the account Pro.
+  await phone.click('#inv-pay-year');
+  await phone.until("/[?&]pro=1/.test(location.search)&&document.readyState==='complete'&&!!window.__invoice");
+  const sent = stripeCalls.find(c => c.startsWith('POST /v1/checkout/sessions')); assert.match(sent, /price_year_test/);
+  await stripeHook({ id: 'evt_' + Date.now(), type: 'checkout.session.completed', data: { object: { client_reference_id: /client_reference_id=([0-9a-f-]+)/.exec(sent)[1], customer: 'cus_t', subscription: 'sub_t' } } });
+  await phone.until("/· Pro$/.test(document.getElementById('inv-sync-who').textContent)", 300);
+  assert.ok(await phone.ev("!document.getElementById('inv-sync-billing').hidden"));
+  await phone.ev('window.confirm=()=>true'); await phone.setv('#inv-sellerName', 'Sam Clean Co');
+  await phone.pick('#inv-bulk-file', csv); await phone.until("/2 invoices ready/.test(document.getElementById('inv-bulk-sum').textContent)");
+  assert.equal(await phone.text('#inv-bulk-make'), '3. Download all the PDFs');
+  await phone.click('#inv-bulk-make'); await phone.until("/Downloaded 2 PDFs/.test(document.getElementById('inv-bulk-sum').textContent)");
+  for (let i = 0; i < 50 && !zips(); i++) await wait(100); assert.equal(zips(), 1);
+  ok('after paying, the account is Pro within seconds and the download works');
+
   // Sign out keeps the device's own copy; delete my account ends it everywhere.
   await phone.click('#inv-sync-signout'); await phone.until("!document.getElementById('inv-sync-out').hidden");
   assert.equal(await phone.ev("window.__invoice.templates().templates.length"), 1);
   await laptop.click('#inv-sync-delete'); await laptop.until("/have been deleted/.test(document.getElementById('inv-sync-note').textContent)");
   assert.equal(await laptop.ev("fetch('/account/api/me').then(r=>r.status)"), 401);
+  assert.ok(stripeCalls.some(c => c.startsWith('DELETE /v1/subscriptions/sub_t')), 'deleting the account cancelled the subscription');
   assert.equal(await laptop.ev("window.__invoice.templates().templates.length"), 1, 'what is on the device stays');
   ok('sign out keeps this device\'s copy; delete my account removes the server copy and signs out');
 
   assert.deepEqual(errors, [], JSON.stringify(errors));
-  console.log('PASS: Pro sign in by emailed link, sync both ways, merge of simultaneous changes, sign out and delete account.');
-})().catch(e => { console.error(e); process.exitCode = 1; }).finally(() => { chrome.kill(); server.close(); for (const p of pending.values()) clearTimeout(p.t); });
+  console.log('PASS: Pro sign in by emailed link, sync both ways, merge of simultaneous changes, the paywall and payment, sign out and delete account.');
+})().catch(e => { console.error(e); process.exitCode = 1; }).finally(() => { chrome.kill(); server.close(); fakeStripe.close(); for (const p of pending.values()) clearTimeout(p.t); });

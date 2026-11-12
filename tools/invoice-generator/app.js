@@ -508,7 +508,9 @@
       }catch(e){show({invoices:[],errors:[e.message]},file.name);}
     });
     $('bulk-make').addEventListener('click',async()=>{
-      if(!ready.length)return;const button=$('bulk-make');button.disabled=true;
+      if(!ready.length)return;
+      if(PAYWALL&&!sync.pro){$('pay').hidden=false;renderPay();$('pay').scrollIntoView({block:'nearest'});return;}
+      const button=$('bulk-make');button.disabled=true;
       try{
         let lib;try{lib=await pdfLib();}catch(e){status('The PDF maker could not load (are you offline?).');return;}
         const files=[];
@@ -532,14 +534,29 @@
   // Only where the site provides it (INV_SYNC_URL) and the page has the box. Signed out, nothing
   // here talks to the network. Signed in, the saved customers, numbers and invoice list are
   // merged with the copy on the server after each save; the server keeps them encrypted.
-  const SYNC=window.INV_SYNC_URL||'',sync={email:'',version:0,busy:false,again:false,timer:0,applying:false};
+  const SYNC=window.INV_SYNC_URL||'',sync={email:'',pro:false,version:0,busy:false,again:false,timer:0,applying:false};
+  // The paywall, where the site turns it on: making many invoices from a spreadsheet needs Pro.
+  const PAYWALL=!!window.INV_PAYWALL&&!!SYNC;
   const syncFetch=(path,opts={})=>fetch(SYNC+path,{credentials:'same-origin',...opts,headers:{'X-PI':'1',...(opts.body?{'Content-Type':'application/json'}:{}),...(opts.headers||{})}});
   function queueSync(){if(!sync.email||sync.applying)return;clearTimeout(sync.timer);sync.timer=setTimeout(syncNow,1500);}
   function syncNote(text){if(has('sync-note'))$('sync-note').textContent=text;}
   function renderSync(){
     if(!has('sync'))return;
     $('sync-out').hidden=!!sync.email;$('sync-in').hidden=!sync.email;
-    if(sync.email)$('sync-who').textContent=sync.email;
+    if(sync.email)$('sync-who').textContent=sync.email+(sync.pro?' · Pro':'');
+    if(has('sync-billing'))$('sync-billing').hidden=!sync.pro;
+    renderPay();
+  }
+  function renderPay(){
+    if(!has('pay'))return;
+    if(has('bulk-make'))$('bulk-make').textContent=PAYWALL&&!sync.pro?'3. Download all the PDFs (Pro)':'3. Download all the PDFs';
+    if(!PAYWALL||sync.pro){$('pay').hidden=true;return;}
+    $('pay-signin').hidden=!!sync.email;$('pay-month').hidden=!sync.email;$('pay-year').hidden=!sync.email;
+  }
+  async function buy(plan){
+    $('pay-note').textContent='Opening the secure payment page…';
+    try{const r=await syncFetch('/checkout',{method:'POST',body:JSON.stringify({plan})});const j=await r.json();if(j.ok&&j.url){location.href=j.url;return;}$('pay-note').textContent=j.error||'That did not work. Try again.';}
+    catch(e){$('pay-note').textContent='That did not work. Check your connection and try again.';}
   }
   function takeMerged(remote){
     // Fold the server's copy into this device's, then show it. Saving here must not start another sync.
@@ -586,6 +603,8 @@
       catch(e){syncNote('That did not send. Check your connection and try again.');}
       finally{$('sync-send').disabled=false;}
     });
+    if(has('pay')){$('pay-month').addEventListener('click',()=>buy('month'));$('pay-year').addEventListener('click',()=>buy('year'));}
+    if(has('sync-billing'))$('sync-billing').addEventListener('click',async()=>{try{const j=await (await syncFetch('/portal',{method:'POST'})).json();if(j.ok&&j.url)location.href=j.url;else syncNote(j.error||'Billing could not be opened.');}catch(e){syncNote('Billing could not be opened just now.');}});
     $('sync-now').addEventListener('click',syncNow);
     $('sync-signout').addEventListener('click',()=>signOut(false));
     $('sync-delete').addEventListener('click',async()=>{
@@ -593,7 +612,16 @@
       try{const r=await syncFetch('/account',{method:'DELETE'});if(!r.ok)throw new Error();sync.email='';sync.version=0;renderSync();syncNote('Your account and everything stored for it on the server have been deleted.');}
       catch(e){syncNote('The account could not be deleted just now. Try again.');}
     });
-    syncFetch('/me').then(r=>r.ok?r.json():null).then(me=>{if(me&&me.email){sync.email=me.email;renderSync();syncNow();if(/[?&]signed-in=1\b/.test(location.search))syncNote('Signed in. Syncing…');}else renderSync();}).catch(()=>renderSync());
+    const paid=/[?&]pro=1\b/.test(location.search);
+    // After paying, Stripe tells the server within a few seconds: ask again a few times.
+    const whoAmI=async tries=>{const r=await syncFetch('/me'),me=r.ok?await r.json():null;
+      if(me&&me.email){sync.email=me.email;sync.pro=!!me.pro;renderSync();
+        if(paid&&!sync.pro&&tries>0){syncNote('Confirming your payment…');setTimeout(()=>whoAmI(tries-1).catch(()=>{}),2000);return;}
+        if(paid&&sync.pro)syncNote('Thank you. Pro is on.');
+        if(tries===6||!paid)syncNow();
+        if(/[?&]signed-in=1\b/.test(location.search))syncNote('Signed in. Syncing…');
+      }else renderSync();};
+    whoAmI(6).catch(()=>renderSync());
   }
 
   // Forget everything this browser keeps for the invoice tool.

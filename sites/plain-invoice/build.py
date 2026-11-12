@@ -115,7 +115,9 @@ def main():
     head = (f'<link rel="stylesheet" href="{tool_assets[0]}">'
             f'<script>window.INV_PDFLIB={json.dumps(pdflib)};window.INV_COUNT_URL="/api/count";'
             # Pro sign in and sync: on only when site.json says so (or PI_SYNC=1 for local tests).
-            + ('window.INV_SYNC_URL="/account/api";' if SYNC_ON else "") + '</script>')
+            + ('window.INV_SYNC_URL="/account/api";' if SYNC_ON else "")
+            # The paywall on the spreadsheet import: on only when site.json says so (PI_PAYWALL=1 for tests).
+            + ('window.INV_PAYWALL=1;' if SITE.get("paywall") or os.environ.get("PI_PAYWALL") == "1" else "") + '</script>')
     scripts = "".join(f'\n<script src="{u}" defer></script>' for u in tool_assets[1:5])
     app_ld = {"@context": "https://schema.org", "@type": "WebApplication", "name": SITE["brand"], "url": BASE + "/",
               "description": SITE["tagline"], "applicationCategory": "BusinessApplication",
@@ -123,7 +125,7 @@ def main():
               "isAccessibleForFree": True, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "AUD"}}
     urls = [page("/", f'Free invoice maker, no account · {SITE["brand"]}',
                  "Make an invoice or quote in your browser and download a PDF. Built for Australia (ABN, GST, PayID, NDIS), set up for NZ, UK, Europe, US and Canada. No account, no limits.",
-                 (HERE / "pages" / "home.html").read_text().replace("{{jump_signin}}", '<a href="#inv-sync">Sign in to sync</a> · ' if SYNC_ON else "") + scripts, head_extra=head, body_class="tool",
+                 (HERE / "pages" / "home.html").read_text().replace("{{pro_month}}", SITE["pro_price_month"]).replace("{{pro_year}}", SITE["pro_price_year"]).replace("{{jump_signin}}", '<a href="#inv-sync">Sign in to sync</a> · ' if SYNC_ON else "") + scripts, head_extra=head, body_class="tool",
                  jsonld=ld(app_ld))]
 
     for path, title, desc, src in PAGES:
