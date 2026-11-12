@@ -149,3 +149,15 @@ Plain Invoice (https://plaininvoice.com.au): a free invoice maker that runs in y
 ### Your own community
 
 Create r/PlainInvoice at https://www.reddit.com/subreddits/create (name: PlainInvoice; public; description: "Free invoice maker that runs in your browser. Updates, tips and feedback."). First post: the r/SideProject text above.
+
+### What happened on 13 Nov 2026
+
+The r/SideProject post was submitted from u/MarketingAltruistic6 (created 2021, 1 karma) and was
+removed by Reddit's own filters within seconds ("Sorry, this post was removed by Reddit's
+filters"). The community's rules allow the post; the account has no history. Do not post the
+other two from this account until it has some: more removed posts only make it look like spam.
+
+What would work:
+- Message the r/SideProject moderators (modmail) and ask them to approve the removed post.
+- Spend a week or two commenting helpfully in the communities above, with no links, then post.
+- Or post from a Reddit account that already has history.
