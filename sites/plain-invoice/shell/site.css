@@ -66,3 +66,4 @@ p{margin:0 0 1rem}
 .inv-sync-email{flex:1;min-width:200px;margin:0!important}
 .inv .hero.pi-hero p.pi-jump{font-size:.9rem;margin-top:8px}.pi-jump a{font-weight:600}.inv-history{scroll-margin-top:12px}
 .inv-more{position:relative}.inv-more>summary{list-style:none;cursor:pointer}.inv-more>summary::-webkit-details-marker{display:none}.inv-more-list{position:absolute;z-index:5;top:calc(100% + 6px);left:0;display:flex;flex-direction:column;gap:6px;padding:8px;background:var(--bg);border:1px solid var(--line);border-radius:10px;box-shadow:0 6px 24px rgba(0,0,0,.12);min-width:180px}.inv-more-list .btn{width:100%;justify-content:flex-start}
+.pi-shot{display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:10px;margin:10px 0 12px;background:#f4f6f8}

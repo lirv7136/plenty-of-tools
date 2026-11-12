@@ -99,6 +99,7 @@ def main():
     (DIST / "assets").mkdir(parents=True)
     shutil.copy(HERE / "shell" / "site.css", DIST / "assets" / "site.css")
     shutil.copytree(HERE / "shell" / "icons", DIST / "icons")
+    shutil.copytree(HERE / "shell" / "img", DIST / "img")
     shutil.copy(HERE / "shell" / "icons" / "favicon.ico", DIST / "favicon.ico")
     for f in ("manifest.webmanifest", "offline.html"):
         shutil.copy(HERE / "shell" / f, DIST / f)
