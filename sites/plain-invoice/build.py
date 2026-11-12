@@ -117,7 +117,8 @@ def main():
             # Pro sign in and sync: on only when site.json says so (or PI_SYNC=1 for local tests).
             + ('window.INV_SYNC_URL="/account/api";' if SYNC_ON else "")
             # The paywall on the spreadsheet import: on only when site.json says so (PI_PAYWALL=1 for tests).
-            + ('window.INV_PAYWALL=1;' if SITE.get("paywall") or os.environ.get("PI_PAYWALL") == "1" else "") + '</script>')
+            + ('window.INV_PAYWALL=1;' if SITE.get("paywall") is True or os.environ.get("PI_PAYWALL") == "1"
+               else 'window.INV_PAYWALL="preview";' if SITE.get("paywall") == "preview" else "") + '</script>')
     scripts = "".join(f'\n<script src="{u}" defer></script>' for u in tool_assets[1:5])
     app_ld = {"@context": "https://schema.org", "@type": "WebApplication", "name": SITE["brand"], "url": BASE + "/",
               "description": SITE["tagline"], "applicationCategory": "BusinessApplication",

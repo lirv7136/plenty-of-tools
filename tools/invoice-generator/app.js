@@ -536,7 +536,10 @@
   // merged with the copy on the server after each save; the server keeps them encrypted.
   const SYNC=window.INV_SYNC_URL||'',sync={email:'',pro:false,version:0,busy:false,again:false,timer:0,applying:false};
   // The paywall, where the site turns it on: making many invoices from a spreadsheet needs Pro.
-  const PAYWALL=!!window.INV_PAYWALL&&!!SYNC;
+  // "preview" shows it only to a tab opened with ?paywall=1 (kept for that tab, so it survives
+  // the trip to the payment page and back): for testing on the live site before it is on for all.
+  const payFlag=(()=>{try{if(/[?&]paywall=1\b/.test(location.search))sessionStorage.setItem('pi:paywall','1');return sessionStorage.getItem('pi:paywall')==='1';}catch(e){return /[?&]paywall=1\b/.test(location.search);}})();
+  const PAYWALL=!!SYNC&&(window.INV_PAYWALL===1||(window.INV_PAYWALL==='preview'&&payFlag));
   const syncFetch=(path,opts={})=>fetch(SYNC+path,{credentials:'same-origin',...opts,headers:{'X-PI':'1',...(opts.body?{'Content-Type':'application/json'}:{}),...(opts.headers||{})}});
   function queueSync(){if(!sync.email||sync.applying)return;clearTimeout(sync.timer);sync.timer=setTimeout(syncNow,1500);}
   function syncNote(text){if(has('sync-note'))$('sync-note').textContent=text;}
