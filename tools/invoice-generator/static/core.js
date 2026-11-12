@@ -198,7 +198,9 @@
     const ids=new Set();
     const used=(Array.isArray(store.used)?store.used:[]).filter(x=>typeof x==='string'&&x.trim()&&x.length<=60).slice(0,20);
     const lastInvoice=typeof store.lastInvoice==='string'?store.lastInvoice.slice(0,60):'';
-    return {v:1,used,lastInvoice,templates:store.templates.map(t=>{
+    // Ids of templates deleted on some device, with when: so a sync does not bring them back.
+    const deleted={};if(store.deleted&&typeof store.deleted==='object')for(const [k,v] of Object.entries(store.deleted).slice(0,300))if(/^[A-Za-z0-9_-]{1,40}$/.test(k)&&typeof v==='string')deleted[k]=v.slice(0,40);
+    return {v:1,used,lastInvoice,deleted,templates:store.templates.map(t=>{
       if(!t||typeof t.id!=='string'||!/^[A-Za-z0-9_-]{1,40}$/.test(t.id)||ids.has(t.id))throw new Error('A template has an invalid id.');ids.add(t.id);
       if(typeof t.name!=='string'||!t.name.trim()||t.name.length>60)throw new Error('A template has an invalid name.');
       if(typeof t.lastNumber!=='string'||t.lastNumber.length>60)throw new Error(`Template "${t.name}" has an invalid number.`);
@@ -213,6 +215,32 @@
       return {id:t.id,name:t.name,savedAt:typeof t.savedAt==='string'?t.savedAt.slice(0,40):'',lastNumber:t.lastNumber,termsDays:t.termsDays,
         includesClient:!!t.includesClient,includesItems:!!t.includesItems,data};
     })};
+  }
+  // ---------- sync: merging what two devices each have ----------
+  // Templates: the copy saved most recently wins, and one deleted anywhere after its last save
+  // stays deleted. Numbers used only ever go up. Nothing is dropped just because the other device
+  // has not seen it.
+  function mergeStores(a,b){
+    const A=validateTemplates(a),B=validateTemplates(b),deleted={...B.deleted};
+    for(const [k,v] of Object.entries(A.deleted))if(!deleted[k]||v>deleted[k])deleted[k]=v;
+    const byId=new Map();
+    for(const t of [...A.templates,...B.templates]){const have=byId.get(t.id);if(!have||String(t.savedAt)>String(have.savedAt)||(String(t.savedAt)===String(have.savedAt)&&pattern(t.lastNumber)&&pattern(have.lastNumber)&&pattern(t.lastNumber).n>pattern(have.lastNumber).n))byId.set(t.id,t);}
+    const templates=[...byId.values()].filter(t=>!(deleted[t.id]&&deleted[t.id]>=String(t.savedAt))).slice(0,MAX_TEMPLATES);
+    let used=A.used.slice();for(const n of B.used.slice().reverse())used=recordUsed(used,n);
+    const pa=pattern(A.lastInvoice),pb=pattern(B.lastInvoice);
+    const lastInvoice=!A.lastInvoice?B.lastInvoice:!B.lastInvoice?A.lastInvoice:pa&&pb&&pa.key===pb.key&&pb.n>pa.n?B.lastInvoice:A.lastInvoice;
+    return {v:1,used,lastInvoice,deleted,templates};
+  }
+  // Invoices: one entry per id; the copy changed most recently wins (marking paid counts as a change).
+  function mergeHistory(a,b,max=200){
+    const stamp=h=>String(h.updatedAt||h.savedAt||''),byId=new Map();
+    for(const h of [...(Array.isArray(a)?a:[]),...(Array.isArray(b)?b:[])]){
+      if(!h||typeof h.id!=='string'||!h.doc)continue;
+      let doc;try{doc=cleanData(h.doc);}catch(e){continue;}
+      const clean={id:h.id.slice(0,300),savedAt:String(h.savedAt||'').slice(0,40),paidAt:String(h.paidAt||'').slice(0,40),doc,...(h.updatedAt?{updatedAt:String(h.updatedAt).slice(0,40)}:{})};
+      const have=byId.get(clean.id);if(!have||stamp(clean)>stamp(have))byId.set(clean.id,clean);
+    }
+    return [...byId.values()].sort((x,y)=>String(y.savedAt).localeCompare(String(x.savedAt))).slice(0,max);
   }
   function parseTemplates(text){
     if(text.length>2000000)throw new Error('Template files must be smaller than 2 MB.');
@@ -301,7 +329,7 @@
   }
 
   const api={REGIONS,CURRENCIES,regionOf,isAU,taxName,idLabel,idPrefix,money,defaults,today,validDate,addDays,abnValid,decimal,calculate,validate,parseDraft,serialize,title,fields,emailOk,buildMime,
-    MAX_COLUMNS,COLUMN_MAX,EXTRA_MAX,cleanColumns,cleanExtra,nextNumber,nextFrom,recordUsed,bankLines,cleanData,ndisLines,ndisWarnings,isItemHeading,whoFor,isDateHeading,cellText,quickLabel,makeTemplate,applyTemplate,validateTemplates,parseTemplates,
+    MAX_COLUMNS,COLUMN_MAX,EXTRA_MAX,cleanColumns,cleanExtra,nextNumber,nextFrom,recordUsed,mergeStores,mergeHistory,bankLines,cleanData,ndisLines,ndisWarnings,isItemHeading,whoFor,isDateHeading,cellText,quickLabel,makeTemplate,applyTemplate,validateTemplates,parseTemplates,
     serializeTemplates,MAX_TEMPLATES,emailMessage,mailtoUrl,gmailUrl,outlookUrl,aud};
   if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.InvoiceCore=api;
 })(typeof globalThis!=='undefined'?globalThis:this);

@@ -41,6 +41,12 @@ ANALYTICS_NOTE = (
     if SITE.get("cf_analytics_token") else
     "Nothing. This site does not run any analytics script.")
 
+SYNC_ON = bool(SITE.get("sync")) or os.environ.get("PI_SYNC") == "1"
+SYNC_NOTE = ("""<h2>If you sign in (Pro beta)</h2>
+<p>Signing in is optional. If you do, we keep your email address, and a copy of your saved customers, templates, invoice numbers and invoice list, so they stay in step on your devices. That copy is stored encrypted in a database on Cloudflare. We do not use it for anything else, and it is never shared or sold.</p>
+<p>We email you a sign in link; there is no password. A cookie keeps you signed in on that device for up to 60 days. We do not store your IP address.</p>
+<p><strong>Delete my account</strong>, beside the sign in box, removes your email address and everything stored for it on the server straight away. What is saved in your browser stays until you delete it there.</p>""" if SYNC_ON else "")
+
 # Each page: path, title, description, source file under pages/.
 PAGES = [
     ("/pricing/", f'Pricing · {SITE["brand"]}',
@@ -105,7 +111,9 @@ def main():
     tool_assets = [f'/assets/invoice.css?v={ver(TOOL / "tool.css")}', sv("core.js"), sv("pdf.js"), sv("bulk.js"),
                    f'/assets/invoice.js?v={ver(TOOL / "app.js")}', pdflib]
     head = (f'<link rel="stylesheet" href="{tool_assets[0]}">'
-            f'<script>window.INV_PDFLIB={json.dumps(pdflib)};window.INV_COUNT_URL="/api/count";</script>')
+            f'<script>window.INV_PDFLIB={json.dumps(pdflib)};window.INV_COUNT_URL="/api/count";'
+            # Pro sign in and sync: on only when site.json says so (or PI_SYNC=1 for local tests).
+            + ('window.INV_SYNC_URL="/account/api";' if SYNC_ON else "") + '</script>')
     scripts = "".join(f'\n<script src="{u}" defer></script>' for u in tool_assets[1:5])
     app_ld = {"@context": "https://schema.org", "@type": "WebApplication", "name": SITE["brand"], "url": BASE + "/",
               "description": SITE["tagline"], "applicationCategory": "BusinessApplication",
@@ -118,7 +126,7 @@ def main():
 
     for path, title, desc, src in PAGES:
         main_html = fill((HERE / "pages" / src).read_text(), brand=SITE["brand"], github=SITE["github"],
-                         analytics_note=ANALYTICS_NOTE, pro_month=SITE["pro_price_month"], pro_year=SITE["pro_price_year"])
+                         analytics_note=ANALYTICS_NOTE, sync_note=SYNC_NOTE, pro_month=SITE["pro_price_month"], pro_year=SITE["pro_price_year"])
         urls.append(page(path, title, desc, main_html))
 
     nf = ('<main class="wrap prose pi-page"><h1>Page not found</h1><p>That address does not exist here. '

@@ -155,7 +155,7 @@
   // Every number this device knows was used: the high water list and each template's last number.
   const known=()=>[...store.used,...store.templates.map(t=>t.lastNumber)];
   function loadTemplates(){try{const raw=localStorage.getItem(TKEY);store=raw?core.validateTemplates(JSON.parse(raw)):{v:1,used:[],lastInvoice:'',templates:[]};}catch(e){status('Saved templates could not be read, so they were left alone.');}}
-  function saveTemplates(){try{localStorage.setItem(TKEY,JSON.stringify(store));return true;}catch(e){status('This browser would not save templates (private windows and full storage do that). Export them to keep a copy.');return false;}}
+  function saveTemplates(){try{localStorage.setItem(TKEY,JSON.stringify(store));queueSync();return true;}catch(e){status('This browser would not save templates (private windows and full storage do that). Export them to keep a copy.');return false;}}
   function renderTemplates(selected){
     const sel=$('tpl'),keep=selected!==undefined?selected:sel.value;
     sel.replaceChildren(store.templates.length?new Option('Choose a template',''):new Option('No templates yet',''),...store.templates.map(t=>new Option(`${t.name} (last ${t.lastNumber||'none'})`,t.id)));
@@ -190,7 +190,7 @@
     return true;
   }
   $('tpl-use').addEventListener('click',()=>useTemplate(chosen()));
-  $('tpl-delete').addEventListener('click',()=>{const t=chosen();if(!t||!confirm(`Delete the template "${t.name}"?`))return;store.templates=store.templates.filter(x=>x.id!==t.id);if(fromTemplate===t.id)fromTemplate=null;if(saveTemplates()){renderTemplates('');status('Template deleted.');}});
+  $('tpl-delete').addEventListener('click',()=>{const t=chosen();if(!t||!confirm(`Delete the template "${t.name}"?`))return;store.templates=store.templates.filter(x=>x.id!==t.id);store.deleted={...(store.deleted||{}),[t.id]:new Date().toISOString()};if(fromTemplate===t.id)fromTemplate=null;if(saveTemplates()){renderTemplates('');status('Template deleted.');}});
   $('tpl-export').addEventListener('click',()=>{download('invoice-templates.json',new Blob([core.serializeTemplates(store)],{type:'application/json'}));status('Templates file saved. Import it in another browser to use them there.');});
   $('tpl-import').addEventListener('click',()=>$('tpl-load').click());
   $('tpl-load').addEventListener('change',async event=>{
@@ -339,7 +339,7 @@
   const HKEY='pot:invoice-generator:history:v1',HMAX=200;
   let history=[];
   function loadHistory(){try{const raw=localStorage.getItem(HKEY);history=raw?JSON.parse(raw).filter(h=>h&&h.doc&&typeof h.id==='string'):[];}catch(e){history=[];}}
-  function saveHistory(){try{localStorage.setItem(HKEY,JSON.stringify(history));return true;}catch(e){status('This browser would not keep the invoice list (private windows and full storage do that).');return false;}}
+  function saveHistory(){try{localStorage.setItem(HKEY,JSON.stringify(history));queueSync();return true;}catch(e){status('This browser would not keep the invoice list (private windows and full storage do that).');return false;}}
   function recordHistory(source=data){
     const n=source.number.trim();if(!has('history')||!n||!store.templates.length||(source===data&&isExample))return;
     let doc;try{doc=core.cleanData(JSON.parse(JSON.stringify(source)));core.calculate(doc);}catch(e){return;}
@@ -390,7 +390,7 @@
   if(has('history')){
     $('history-list').addEventListener('click',event=>{
       const p=event.target.closest('[data-hpaid]'),o=event.target.closest('[data-hopen]');
-      if(p){const h=history.find(x=>x.id===p.dataset.hpaid);if(!h)return;h.paidAt=h.paidAt?'':new Date().toISOString();if(saveHistory()){renderHistory();status(`${h.doc.number} marked ${h.paidAt?'paid':'unpaid'}.`);}}
+      if(p){const h=history.find(x=>x.id===p.dataset.hpaid);if(!h)return;h.paidAt=h.paidAt?'':new Date().toISOString();h.updatedAt=new Date().toISOString();if(saveHistory()){renderHistory();status(`${h.doc.number} marked ${h.paidAt?'paid':'unpaid'}.`);}}
       if(o){const h=history.find(x=>x.id===o.dataset.hopen);if(!h)return;if(revision&&!confirm('Open this invoice? Unsaved edits to the current document will be lost.'))return;
         let doc;try{doc=core.cleanData(JSON.parse(JSON.stringify(h.doc)));}catch(e){return status('That invoice could not be opened.');}
         replace(doc,`Opened ${doc.number} as it was sent. Download it again, or change it and send a correction.`);
@@ -528,12 +528,80 @@
   }
   if(bulk&&has('history-csv'))$('history-csv').addEventListener('click',()=>{download(`your-invoices-${core.today()}.csv`,new Blob(['﻿'+bulk.historyCsv(history,core)],{type:'text/csv;charset=utf-8'}));status('Your invoice list was saved as a CSV file.');});
 
+  // ---------- Pro: sign in by emailed link, and keep devices in step ----------
+  // Only where the site provides it (INV_SYNC_URL) and the page has the box. Signed out, nothing
+  // here talks to the network. Signed in, the saved customers, numbers and invoice list are
+  // merged with the copy on the server after each save; the server keeps them encrypted.
+  const SYNC=window.INV_SYNC_URL||'',sync={email:'',version:0,busy:false,again:false,timer:0,applying:false};
+  const syncFetch=(path,opts={})=>fetch(SYNC+path,{credentials:'same-origin',...opts,headers:{'X-PI':'1',...(opts.body?{'Content-Type':'application/json'}:{}),...(opts.headers||{})}});
+  function queueSync(){if(!sync.email||sync.applying)return;clearTimeout(sync.timer);sync.timer=setTimeout(syncNow,1500);}
+  function syncNote(text){if(has('sync-note'))$('sync-note').textContent=text;}
+  function renderSync(){
+    if(!has('sync'))return;
+    $('sync-out').hidden=!!sync.email;$('sync-in').hidden=!sync.email;
+    if(sync.email)$('sync-who').textContent=sync.email;
+  }
+  function takeMerged(remote){
+    // Fold the server's copy into this device's, then show it. Saving here must not start another sync.
+    sync.applying=true;
+    try{
+      if(remote&&remote.store)store=core.mergeStores(store,remote.store);
+      if(remote&&Array.isArray(remote.history))history=core.mergeHistory(history,remote.history,HMAX);
+      localStorage.setItem(TKEY,JSON.stringify(store));localStorage.setItem(HKEY,JSON.stringify(history));
+      renderTemplates();renderHistory();
+    }catch(e){}finally{sync.applying=false;}
+  }
+  async function syncNow(){
+    if(!SYNC||!sync.email)return;
+    if(sync.busy){sync.again=true;return;}
+    sync.busy=true;syncNote('Syncing…');
+    try{
+      const got=await syncFetch('/data');
+      if(got.status===401){sync.email='';renderSync();syncNote('Signed out. Sign in again to sync.');return;}
+      const cur=await got.json();takeMerged(cur.data);sync.version=cur.version;
+      for(let tries=0;tries<4;tries++){
+        const put=await syncFetch('/data',{method:'PUT',body:JSON.stringify({version:sync.version,data:{store,history}})});
+        const r=await put.json();
+        if(put.ok){sync.version=r.version;syncNote(`In step. Last synced ${new Date().toLocaleTimeString([], {hour:'numeric',minute:'2-digit'})}.`);return;}
+        if(put.status!==409)throw new Error(r.error||'The sync was refused.');
+        takeMerged(r.data);sync.version=r.version;   // another device saved first: merge and try again
+      }
+      throw new Error('Another device keeps saving. Try again in a moment.');
+    }catch(e){syncNote('Not synced: '+(e.message||'no connection')+' Your work is safe on this device.');}
+    finally{sync.busy=false;if(sync.again){sync.again=false;queueSync();}}
+  }
+  async function signOut(quiet){
+    try{await syncFetch('/logout',{method:'POST'});}catch(e){}
+    sync.email='';sync.version=0;renderSync();if(!quiet)syncNote('Signed out. What is saved on this device stays here.');
+  }
+  if(SYNC&&has('sync')){
+    $('sync').hidden=false;
+    $('sync-send').addEventListener('click',async()=>{
+      const email=$('sync-email').value.trim();
+      if(!core.emailOk(email)){syncNote('Enter your email address first.');$('sync-email').focus();return;}
+      $('sync-send').disabled=true;syncNote('Sending…');
+      try{const r=await syncFetch('/login',{method:'POST',body:JSON.stringify({email})});const j=await r.json();
+        syncNote(j.ok?`Check ${email} for a sign in link. It works once and lasts 15 minutes.`:(j.error||'That did not work. Try again.'));
+        if(j.devLink)window.__devLink=j.devLink;}
+      catch(e){syncNote('That did not send. Check your connection and try again.');}
+      finally{$('sync-send').disabled=false;}
+    });
+    $('sync-now').addEventListener('click',syncNow);
+    $('sync-signout').addEventListener('click',()=>signOut(false));
+    $('sync-delete').addEventListener('click',async()=>{
+      if(!confirm('Delete your Plain Invoice account and everything stored on the server? What is saved on this device stays. This cannot be undone.'))return;
+      try{const r=await syncFetch('/account',{method:'DELETE'});if(!r.ok)throw new Error();sync.email='';sync.version=0;renderSync();syncNote('Your account and everything stored for it on the server have been deleted.');}
+      catch(e){syncNote('The account could not be deleted just now. Try again.');}
+    });
+    syncFetch('/me').then(r=>r.ok?r.json():null).then(me=>{if(me&&me.email){sync.email=me.email;renderSync();syncNow();if(/[?&]signed-in=1\b/.test(location.search))syncNote('Signed in. Syncing…');}else renderSync();}).catch(()=>renderSync());
+  }
+
   // Forget everything this browser keeps for the invoice tool.
   if(has('forget')){
     $('forget').addEventListener('click',()=>{
       if(!confirm('Delete every saved customer, template and invoice in this browser? This cannot be undone.'))return;
       try{localStorage.removeItem(TKEY);localStorage.removeItem(HKEY);}catch(e){}
-      store={v:1,used:[],lastInvoice:'',templates:[]};history=[];fromTemplate=null;renderTemplates('');renderHistory();status('Everything saved in this browser for invoices has been deleted.');
+      store={v:1,used:[],lastInvoice:'',templates:[]};history=[];fromTemplate=null;if(sync.email)signOut(true);renderTemplates('');renderHistory();status('Everything saved in this browser for invoices has been deleted.');
     });
   }
 

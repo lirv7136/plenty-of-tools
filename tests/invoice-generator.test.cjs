@@ -298,3 +298,24 @@ test('a document from before regions is Australian, and an unknown region or cur
   for(const bad of [{region:'ZZ'},{currency:'BTC'}])assert.throws(()=>core.parseDraft(JSON.stringify({format:'plenty-of-tools-invoice',version:2,data:{...invoice(),...bad}})),/unsupported/);
   assert.equal(core.parseDraft(JSON.stringify({format:'plenty-of-tools-invoice',version:2,data:{...invoice(),region:'NZ',currency:'NZD',ndis:'plan'}})).ndis,'','NDIS is dropped outside Australia');
 });
+
+// ---------- 13 Nov 2026: sync between devices ----------
+test('merging two devices: newest template wins, deletions stick, numbers only go up',()=>{
+  const mk=(name,when,num)=>({...core.makeTemplate(name,invoice({number:num,clientName:name}),{includeClient:true},'t-'+name.toLowerCase()),savedAt:when});
+  const phone={v:1,used:['INV-010'],lastInvoice:'INV-010',deleted:{},templates:[mk('Sue','2026-11-10T00:00:00Z','INV-010'),mk('Bob','2026-11-01T00:00:00Z','INV-003')]};
+  const laptop={v:1,used:['INV-007','Q-002'],lastInvoice:'INV-007',deleted:{'t-bob':'2026-11-05T00:00:00Z'},templates:[mk('Sue','2026-11-02T00:00:00Z','INV-004'),mk('Ann','2026-11-08T00:00:00Z','INV-007')]};
+  const m=core.mergeStores(phone,laptop);
+  assert.deepEqual(m.templates.map(t=>[t.name,t.lastNumber]).sort(),[['Ann','INV-007'],['Sue','INV-010']],'Bob was deleted on the laptop after his last save, and stays deleted');
+  assert.deepEqual([m.lastInvoice,m.used.slice().sort()],['INV-010',['INV-010','Q-002']]);
+  assert.deepEqual(core.mergeStores(laptop,phone).templates.map(t=>t.name).sort(),['Ann','Sue'],'the same either way round');
+  const resaved={...phone,templates:[mk('Bob','2026-11-09T00:00:00Z','INV-003')]};
+  assert.deepEqual(core.mergeStores(resaved,laptop).templates.map(t=>t.name).sort(),['Ann','Bob','Sue'],'saved again after the deletion: it comes back');
+  assert.equal(core.nextFrom('',[...m.used,...m.templates.map(t=>t.lastNumber)]),'INV-011');
+});
+test('merging invoice lists: one entry per invoice, and a later Mark paid wins',()=>{
+  const e=(id,saved,paid,updated)=>({id,savedAt:saved,paidAt:paid||'',doc:invoice({number:id}),...(updated?{updatedAt:updated}:{})});
+  const m=core.mergeHistory([e('a','2026-11-01'),e('b','2026-11-03')],[e('a','2026-11-01','2026-11-06','2026-11-06'),e('c','2026-11-02'),{id:'junk'}]);
+  assert.deepEqual(m.map(h=>[h.id,!!h.paidAt]),[['b',false],['c',false],['a',true]]);
+  assert.equal(core.mergeHistory([e('a','2026-11-01','2026-11-06','2026-11-06')],[e('a','2026-11-01')])[0].paidAt,'2026-11-06','the same either way round');
+  assert.equal(core.mergeHistory(Array.from({length:150},(_,i)=>e('x'+i,'2026-01-01')),Array.from({length:150},(_,i)=>e('y'+i,'2026-01-02'))).length,200);
+});

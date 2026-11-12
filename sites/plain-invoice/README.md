@@ -62,6 +62,18 @@ BSB, PayID and NDIS; elsewhere those are put away. A first visit guesses from th
 or NDIS participant become one invoice), and writes the PDFs into one ZIP with a CSV list. It
 also exports "Your invoices" as CSV. All in the browser. Tests: `tests/invoice-bulk.test.cjs`.
 
+## Pro: sign in and sync (built 13 Nov 2026, off until `"sync": true` in site.json)
+
+The server is the private repo `plain-invoice-pro` (a Worker on `/account/api/*`). The browser
+side is here: the sign in box on the home page, `core.mergeStores` and `core.mergeHistory`, and
+the sync code in `app.js`. With sync off the box is hidden and nothing calls the server.
+
+```sh
+PI_SYNC=1 python3 sites/plain-invoice/build.py     # build with the sign in box
+(cd ~/dev/plain-invoice-pro && npx wrangler dev --port 8799) &
+node tests/plain-invoice-sync.browser.cjs          # two browser profiles as two devices
+```
+
 ## NDIS
 
 "Who is it for?" on the home page (and `?start=ndis`, `/ndis-invoice-template/`) makes an NDIS
