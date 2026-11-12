@@ -35,6 +35,7 @@ const ok = m => console.log('  ok  ' + m);
   const local = /^https?:\/\/(127\.0\.0\.1|localhost)[:/]/.test(ROOT);
   await send('Network.setBlockedURLs', { urls: ['*cloudflareinsights.com*', ...(local ? [] : ['*/api/*'])] });
   await send('Browser.setDownloadBehavior', { behavior: 'allow', downloadPath: dir });
+  await send('Emulation.setTimezoneOverride', { timezoneId: 'Australia/Sydney' });   // the region is guessed from the time zone
 
   // Every page answers, has one h1, and fits a phone.
   await size(390, 844);
@@ -166,6 +167,28 @@ const ok = m => console.log('  ok  ' + m);
   assert.match(await text('[data-quick]'), /New invoice for Jane Citizen/);
   await ev("document.getElementById('inv-preview').scrollIntoView()"); await size(1280, 900); await click('[data-quick]'); await ev("document.getElementById('inv-preview').scrollIntoView()"); await shot('laptop-ndis-invoice'); await size(390, 844);
   ok('an NDIS invoice asks for the participant, NDIS number, ABN, date and support item, warns at 90 days, and "New invoice for" names the participant');
+
+  // Other countries: a visitor in the UK gets pounds and VAT, and nothing Australian.
+  await send('Emulation.setTimezoneOverride', { timezoneId: 'Europe/London' });
+  await open(); await ev('localStorage.clear()'); await open();
+  assert.deepEqual(await ev("(()=>{const d=window.__invoice.state();return [d.region,d.currency,d.taxName,d.taxRate]})()"), ['GB', 'GBP', 'VAT', '20']);
+  assert.ok(await ev("document.getElementById('inv-ndis').closest('label').hidden&&document.querySelector('.inv-bank').hidden&&!document.getElementById('inv-region-more').hidden"), 'NDIS and BSB are put away, the rate is shown');
+  assert.equal(await ev("document.getElementById('inv-sellerAbn').parentElement.firstChild.textContent"), 'VAT number');
+  await setv('#inv-sellerName', 'Thames Tutors'); await setv('#inv-sellerAbn', 'GB123456789'); await setv('#inv-clientName', 'Mrs Patel');
+  await setv('#inv-gstMode', 'exclusive'); await setv('.inv-line textarea', 'Maths tuition'); await setv('.inv-line [data-field="quantity"]', '3'); await setv('.inv-line [data-field="price"]', '45.50');
+  await setv('#inv-payment', 'Sort code 12-34-56, account 12345678'); await setv('#inv-number', 'UK-001');
+  assert.equal(await text('#inv-validation'), 'Ready to print');
+  const ukPaper = await text('#inv-paper');
+  for (const s of ['£163.80', 'VAT number: GB123456789', 'Subtotal (excl. VAT)', 'All amounts in GBP']) assert.ok(ukPaper.includes(s), s + ' missing from the UK preview');
+  assert.ok(!/ABN|GST|AUD|Tax Invoice/.test(ukPaper), 'nothing Australian on a UK invoice');
+  await click('#inv-pdf');
+  const tuk = await pdfText('UK-001.pdf');
+  for (const s of ['£163.80', '£27.30', 'VAT number: GB123456789', 'Sort code 12-34-56']) assert.ok(tuk.includes(s), s + ' missing from the UK PDF');
+  await setv('#inv-region', 'AU');
+  assert.deepEqual(await ev("(()=>{const d=window.__invoice.state();return [d.currency,d.taxName,d.taxRate]})()"), ['AUD', 'GST', '10']);
+  assert.ok(await ev("!document.querySelector('.inv-bank').hidden"));
+  await send('Emulation.setTimezoneOverride', { timezoneId: 'Australia/Sydney' });
+  ok('a UK visitor gets pounds, VAT at 20% and a VAT number, with no ABN, BSB or NDIS; switching back to Australia restores them');
 
   // Pro: shown beside the moments people want it, never sold. Only where the site has its endpoints.
   const api = await ev("fetch('/api/count',{method:'POST',body:'pro_page'}).then(r=>r.status).catch(()=>0)");

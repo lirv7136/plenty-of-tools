@@ -11,7 +11,9 @@
   // technology instead, under the "Live preview" heading, and changes nothing visual. The
   // seller name sits above the document title in the paper, so both sit at the same level.
   const relevelPreview=root=>{for(const h of root.querySelectorAll('h1,h2,h3,h4,h5,h6')){h.setAttribute('role','heading');h.setAttribute('aria-level',/^H[12]$/.test(h.tagName)?'3':'4');}};
-  const money=cents=>new Intl.NumberFormat('en-AU',{style:'currency',currency:'AUD'}).format(cents/100);
+  const money=(cents,d=data)=>core.money(cents,d);
+  // What the tax is called here (GST, VAT, Sales tax…), its rate as text, and the currency code.
+  const T=()=>core.taxName(data),R=()=>String(data.taxRate||'0').trim(),C=()=>data.currency||'AUD';
   const date=value=>core.validDate(value)?new Intl.DateTimeFormat('en-AU',{day:'numeric',month:'short',year:'numeric',timeZone:'UTC'}).format(new Date(value+'T00:00:00Z')):'—';
   function block(parent,tag,text,className){if(text)parent.append(node(tag,text,className));}
   function status(text){$('status').textContent=text;}
@@ -21,10 +23,10 @@
   }
   function settings(){
     $('due-label').textContent=data.kind==='quote'?'Valid until':'Due date';$('paid').disabled=data.kind==='quote';
-    $('price-hint').textContent=data.gstMode==='none'?'Unit prices in AUD. GST is not charged.':data.gstMode==='inclusive'?'Unit prices include GST where applicable. Choose the tax treatment for each line.':'Unit prices exclude GST. 10% is added to taxable lines.';
+    $('price-hint').textContent=data.gstMode==='none'?`Unit prices in ${C()}. ${T()} is not charged.`:data.gstMode==='inclusive'?`Unit prices include ${T()} where applicable. Choose the tax treatment for each line.`:`Unit prices exclude ${T()}. ${R()}% is added to taxable lines.`;
     for(const select of $('items').querySelectorAll('select'))select.disabled=data.gstMode==='none';
     $('add').disabled=data.items.length>=100;
-    syncQuoteButton();syncVisitButton();syncNdis();
+    syncQuoteButton();syncVisitButton();syncNdis();syncRegion();
   }
   function itemInputs(){
     $('items').replaceChildren();
@@ -34,13 +36,13 @@
       const remove=node('button','Remove','btn small');remove.type='button';remove.dataset.remove=String(index);remove.disabled=data.items.length===1;remove.setAttribute('aria-label',`Remove item ${index+1}`);head.append(remove);panel.append(head);
       function field(key,label,type='text'){
         const wrap=node('label',label),input=node(type==='textarea'?'textarea':type==='select'?'select':'input');input.dataset.field=key;input.setAttribute('aria-label',`Item ${index+1} ${label.toLowerCase()}`);
-        if(type==='select'){input.append(new Option('GST (10%)','gst'),new Option('No GST (0%)','none'));}
+        if(type==='select'){input.append(new Option(`${T()} (${R()}%)`,'gst'),new Option(`No ${T()} (0%)`,'none'));}
         else if(type==='textarea'){input.rows=2;input.maxLength=500;}else{input.type='text';input.inputMode='decimal';input.maxLength=20;}
         input.value=item[key];wrap.append(input);return wrap;
       }
       panel.append(field('description','Description','textarea'));
       data.columns.forEach((label,k)=>{const wrap=node('label',label.trim()||`Column ${k+1}`),input=node('input');input.type='text';input.maxLength=core.EXTRA_MAX;input.dataset.extra=String(k);if(core.isDateHeading(label)&&(!item.extra[k]||core.validDate(item.extra[k])))input.type='date';input.setAttribute('aria-label',`Item ${index+1} ${(label.trim()||`column ${k+1}`).toLowerCase()}`);input.value=item.extra[k]||'';wrap.append(input);panel.append(wrap);});
-      const row=node('div',undefined,'inv-row');row.append(field('quantity','Quantity'),field('price','Unit price'));panel.append(row,field('tax','GST treatment','select'));$('items').append(panel);
+      const row=node('div',undefined,'inv-row');row.append(field('quantity','Quantity'),field('price','Unit price'));panel.append(row,field('tax',`${T()} treatment`,'select'));$('items').append(panel);
     });settings();
   }
   function totalRow(parent,label,value,className=''){const row=node('div',undefined,'inv-total-row '+className);row.append(node('span',label),node('span',value));parent.append(row);}
@@ -52,32 +54,32 @@
     const paper=$('paper');paper.replaceChildren();
     const head=node('div',undefined,'inv-doc-head'),seller=node('div'),meta=node('div',undefined,'inv-doc-meta');
     seller.append(node('h2',data.sellerName||'Your business'));
-    if(data.sellerAbn.trim())block(seller,'p','ABN '+data.sellerAbn.trim());
+    if(data.sellerAbn.trim())block(seller,'p',core.idPrefix(data)+data.sellerAbn.trim());
     for(const key of ['sellerAddress','sellerEmail','sellerPhone'])block(seller,'p',data[key]);
     meta.append(node('h1',core.title(data)),node('p',data.number||'Document number'),node('p','Date: '+date(data.issueDate)),node('p',(data.kind==='quote'?'Valid until: ':'Due: ')+date(data.dueDate)));
     head.append(seller,meta);paper.append(head);
     const parties=node('div',undefined,'inv-parties'),buyer=node('div'),amount=node('div');buyer.append(node('h3',data.kind==='quote'?'Prepared for':'Bill to'),node('p',data.clientName||'Customer name'));
-    if(data.clientAbn.trim())block(buyer,'p','ABN '+data.clientAbn.trim());
+    if(data.clientAbn.trim())block(buyer,'p',core.idPrefix(data)+data.clientAbn.trim());
     block(buyer,'p',data.clientAddress);block(buyer,'p',data.clientEmail);
-    amount.append(node('h3',data.kind==='quote'?'Quote total (AUD)':'Amount due (AUD)'),node('h2',totals?money(data.kind==='quote'?totals.total:totals.due):'—'));
+    amount.append(node('h3',data.kind==='quote'?`Quote total (${C()})`:`Amount due (${C()})`),node('h2',totals?money(data.kind==='quote'?totals.total:totals.due):'—'));
     if(data.kind==='quote')amount.append(node('p','This quote is not a tax invoice.','inv-doc-subtle'));
     parties.append(buyer,amount);paper.append(parties);
     const ndis=core.ndisLines(data);if(ndis.length){const box=node('section',undefined,'inv-doc-ndis');box.append(node('h3','NDIS'),node('p',ndis.join('\n')));paper.append(box);}
     const tax=data.gstMode!=='none';
     const table=node('table',undefined,tax?'':'inv-table-no-gst'),thead=node('thead'),tr=node('tr');
-    const cols=data.columns,heads=['Description',...cols.map((c,k)=>c.trim()||`Column ${k+1}`),'Qty',data.gstMode==='inclusive'?'Unit (incl.)':tax?'Unit (excl.)':'Unit price',...(tax?['GST']:[]),'Amount'];
+    const cols=data.columns,heads=['Description',...cols.map((c,k)=>c.trim()||`Column ${k+1}`),'Qty',data.gstMode==='inclusive'?'Unit (incl.)':tax?'Unit (excl.)':'Unit price',...(tax?[T()]:[]),'Amount'];
     const widths=cols.length?[null,...cols.map(c=>core.isItemHeading(c)?18:12),8,14,...(tax?[11]:[]),14]:[];if(widths.length)widths[0]=100-widths.slice(1).reduce((a,b)=>a+b,0);
     heads.forEach((text,k)=>{const th=node('th',text);th.scope='col';if(widths.length)th.style.width=widths[k]+'%';if(k>0&&k<=cols.length)th.style.textAlign='left';tr.append(th);});thead.append(tr);table.append(thead);
     const tbody=node('tbody');
     data.items.forEach((item,i)=>{
       const row=node('tr'),computed=totals?.items[i];
-      const values=[item.description||'Item description',...data.columns.map((c,k)=>core.cellText(c,item.extra[k])),item.quantity||'—',computed?money(computed.price):'—',...(tax?[computed?(computed.taxable?money(computed.gst):'No GST'):'—']:[]),computed?money(computed.total):'—'];
+      const values=[item.description||'Item description',...data.columns.map((c,k)=>core.cellText(c,item.extra[k])),item.quantity||'—',computed?money(computed.price):'—',...(tax?[computed?(computed.taxable?money(computed.gst):`No ${T()}`):'—']:[]),computed?money(computed.total):'—'];
       values.forEach((value,k)=>{const td=node('td',value);if(k>0&&k<=data.columns.length)td.style.textAlign='left';row.append(td);});tbody.append(row);
     });table.append(tbody);paper.append(table);
     if(calculationError)paper.append(node('p','Draft: '+calculationError,'inv-doc-subtle'));
     const summary=node('div',undefined,'inv-totals');
-    totalRow(summary,tax?'Subtotal (excl. GST)':'Subtotal',totals?money(totals.subtotal):'—');
-    if(tax)totalRow(summary,'GST',totals?money(totals.gst):'—');
+    totalRow(summary,tax?`Subtotal (excl. ${T()})`:'Subtotal',totals?money(totals.subtotal):'—');
+    if(tax)totalRow(summary,T(),totals?money(totals.gst):'—');
     totalRow(summary,data.kind==='quote'?'Quote total':'Total',totals?money(totals.total):'—','strong');
     if(data.kind==='invoice'){
       if(totals?.paid)totalRow(summary,'Already paid','−'+money(totals.paid));
@@ -85,7 +87,7 @@
     }paper.append(summary);
     const bank=data.kind==='invoice'?core.bankLines(data):[];
     for(const [key,title] of [['bank','How to pay'],['payment',bank.length?'Payment terms':'Payment details / terms'],['notes','Notes']]){const body=key==='bank'?bank.join('\n'):data[key];if(!body.trim())continue;const section=node('section',undefined,'inv-doc-notes');section.append(node('h3',title),node('p',body));paper.append(section);}
-    paper.append(node('p',tax?'All amounts in AUD. GST applies only to taxable lines and is rounded per line. Line amounts include any GST.':'All amounts in AUD. No GST charged — supplier not registered for GST.','inv-doc-footer'));
+    paper.append(node('p',tax?`All amounts in ${C()}. ${T()} applies only to taxable lines and is rounded per line. Line amounts include any ${T()}.`:core.isAU(data)?'All amounts in AUD. No GST charged — supplier not registered for GST.':`All amounts in ${C()}. No ${T()} charged.`,'inv-doc-footer'));
     relevelPreview(paper);
     settings();return errors;
   }
@@ -96,6 +98,8 @@
     if(input.dataset.field){const index=Number(input.closest('.inv-line').dataset.index);data.items[index][input.dataset.field]=input.value;}
     else if(input.dataset.extra){const index=Number(input.closest('.inv-line').dataset.index);data.items[index].extra[Number(input.dataset.extra)]=input.value;}
     else if(input.id==='inv-ndis'){data.ndis=input.value;if(data.ndis)setUpNdis();}
+    else if(input.id==='inv-region'){setRegion(input.value);}
+    else if(input.id==='inv-taxName'||input.id==='inv-taxRate'||input.id==='inv-currency'){data[input.id.slice(4)]=input.value;itemInputs();}
     else if(input.dataset.col){const k=Number(input.dataset.col),was=core.isDateHeading(data.columns[k]);data.columns[k]=input.value;if(was!==core.isDateHeading(input.value)){itemInputs();syncDateButton();}else relabelExtras();}
     else if(input.closest('.inv-templates'))return;
     else if(input.id.startsWith('inv-')&&Object.hasOwn(core.fields,input.id.slice(4)))data[input.id.slice(4)]=input.value;
@@ -107,7 +111,9 @@
   $('form').addEventListener('input',update);$('form').addEventListener('change',update);
   $('items').addEventListener('click',event=>{const button=event.target.closest('[data-remove]');if(!button||data.items.length===1)return;data.items.splice(Number(button.dataset.remove),1);revision++;itemInputs();render();status('Item removed.');});
   $('add').addEventListener('click',()=>{if(data.items.length>=100)return;data.items.push({description:'',quantity:'1',price:'0.00',tax:'gst',extra:data.columns.map(()=>'')});revision++;itemInputs();render();$('items').lastElementChild.querySelector('textarea').focus();});
-  const blank=()=>{const d=core.defaults();d.number=core.nextFrom(store.lastInvoice,known());return d;};
+  const blank=()=>{const d=core.defaults();d.number=core.nextFrom(store.lastInvoice,known());const newest=store.templates.slice().sort((a,b)=>String(b.savedAt).localeCompare(String(a.savedAt)))[0];
+    const g=$('region')?(homeRegion||(homeRegion=(newest&&newest.data.region)||guessRegion())):'AU',r=core.REGIONS[g]||core.REGIONS.AU;if(g!=='AU')Object.assign(d,{region:g,currency:r.currency,taxName:r.taxName,taxRate:r.taxRate});return d;};
+  let homeRegion='';
   $('clear').addEventListener('click',()=>replace(blank(),'New document. Nothing has been saved automatically.'));
   $('example').addEventListener('click',()=>{
     const example=core.defaults();Object.assign(example,{number:'EXAMPLE-001',sellerName:'Example Studio (sample)',sellerAddress:'Sydney NSW\nAustralia',sellerEmail:'studio@example.com',clientName:'Example Customer',clientAddress:'Melbourne VIC\nAustralia',paid:'200.00',payment:'Example only — replace with your own payment details.\nUse the invoice number as your payment reference.',notes:'Fictional example. Replace all details before use.',items:[{description:'Website design services',quantity:'8',price:'125.00',tax:'gst',extra:[]},{description:'Project setup',quantity:'1',price:'150.00',tax:'gst',extra:[]}]});
@@ -366,7 +372,7 @@
     const list=$('history-list');list.replaceChildren();
     const today=core.today();
     for(const h of history.slice(0,50)){
-      let total='—';try{const c=core.calculate(h.doc);total=money(h.doc.kind==='quote'?c.total:c.due);}catch(e){}
+      let total='—';try{const c=core.calculate(h.doc);total=money(h.doc.kind==='quote'?c.total:c.due,h.doc);}catch(e){}
       const row=node('li',undefined,'inv-hrow');
       const what=node('div',undefined,'inv-hwhat');what.append(node('strong',`${h.doc.number} · ${core.whoFor(h.doc)||'No customer'}`),node('span',`${total} · ${h.doc.kind==='quote'?'quote, valid until':'due'} ${date(h.doc.dueDate)}`));
       const state=h.doc.kind==='quote'?'Quote':h.paidAt?'Paid':h.doc.dueDate<today?'Overdue':'Unpaid';
@@ -378,7 +384,7 @@
     }
     const unpaid=history.filter(h=>h.doc.kind==='invoice'&&!h.paidAt);
     let owed=0;for(const h of unpaid){try{owed+=core.calculate(h.doc).due;}catch(e){}}
-    $('history-sum').textContent=history.length?(unpaid.length?`${unpaid.length} unpaid, ${money(owed)} owed to you.`:'Everything is paid.'):'';
+    $('history-sum').textContent=history.length?(unpaid.length?`${unpaid.length} unpaid, ${money(owed,unpaid[0].doc)} owed to you.`:'Everything is paid.'):'';
     $('history').hidden=!history.length;
   }
   if(has('history')){
@@ -434,6 +440,43 @@
     if(!has('ndis'))return;
     $('ndis').value=data.ndis;$('ndis-fields').hidden=!data.ndis;
     const w=core.ndisWarnings(data);$('ndis-note').textContent=w.join(' ');$('ndis-note').hidden=!w.length;
+  }
+
+  // Where the business is. Australia is the default; another region swaps the currency, the tax's
+  // name and starting rate, and the business number's label, and puts away what is Australian
+  // only (BSB and PayID, NDIS). The person can still change the currency, tax name and rate.
+  function setRegion(code){
+    const r=core.REGIONS[code];if(!r)return;
+    Object.assign(data,{region:code,currency:r.currency,taxName:r.taxName,taxRate:r.taxRate});
+    if(code!=='AU')data.ndis='';
+    homeRegion=code;
+    for(const k of ['currency','taxName','taxRate'])if(has(k))$(k).value=data[k];
+    itemInputs();
+    status(code==='AU'?'Set up for Australia: AUD, GST, ABN, BSB and PayID.':`Set up for ${r.name}: ${r.currency}, ${r.taxName} at ${r.taxRate}%. Change the rate or currency if yours differs.`);
+  }
+  let regionReady=false;
+  function syncRegion(){
+    if(!has('region'))return;
+    if(!regionReady){regionReady=true;$('region').replaceChildren(...Object.entries(core.REGIONS).map(([k,r])=>new Option(r.name,k)));$('currency').replaceChildren(...core.CURRENCIES.map(c=>new Option(c,c)));}
+    const au=core.isAU(data),t=T();
+    $('region').value=data.region||'AU';$('currency').value=C();
+    $('region-more').hidden=au;
+    for(const el of document.querySelectorAll('.inv-au-only'))el.hidden=!au;
+    for(const el of document.querySelectorAll('.inv-not-au'))el.hidden=au;
+    for(const id of ['sellerAbn','clientAbn']){const label=$(id).parentElement.firstChild;label.textContent=(au?'ABN':core.idLabel(data))+(id==='clientAbn'?' (optional)':'');$(id).placeholder=au&&id==='sellerAbn'?'11-digit ABN':'';$(id).inputMode=au?'numeric':'text';}
+    const g=$('gstMode').options;g[0].textContent=`Not ${t} registered — no ${t}`;g[1].textContent=`${t} registered — prices exclude ${t}`;g[2].textContent=`${t} registered — prices include ${t}`;
+    $('gstMode').parentElement.firstChild.textContent=`${t} registration and pricing`;
+  }
+  // A first guess at the region from the device's time zone, for someone with nothing saved.
+  function guessRegion(){
+    let tz='';try{tz=Intl.DateTimeFormat().resolvedOptions().timeZone||'';}catch(e){}
+    const lang=(navigator.language||'').toLowerCase();
+    if(!tz||tz.startsWith('Australia/'))return 'AU';
+    if(tz==='Pacific/Auckland'||tz==='Pacific/Chatham')return 'NZ';
+    if(tz==='Europe/London'||tz==='Europe/Belfast')return 'GB';
+    if(tz.startsWith('Europe/'))return 'EU';
+    if(tz.startsWith('America/'))return /^(en|fr)-ca$/.test(lang)||/Toronto|Vancouver|Edmonton|Winnipeg|Halifax|Regina|St_Johns|Montreal/.test(tz)?'CA':'US';
+    return 'XX';
   }
 
   // Forget everything this browser keeps for the invoice tool.

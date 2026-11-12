@@ -263,3 +263,38 @@ test('a draft from before NDIS still opens, and an unknown NDIS setting is refus
   assert.equal(core.parseDraft(JSON.stringify({format:'plenty-of-tools-invoice',version:2,data:old})).ndis,'');
   assert.throws(()=>core.parseDraft(JSON.stringify({format:'plenty-of-tools-invoice',version:2,data:{...old,ndis:'agency'}})),/unsupported/);
 });
+
+// ---------- 13 Nov 2026: other countries ----------
+test('hand worked tax at other rates: UK VAT 20% added, NZ GST 15% included, and 12.5%',()=>{
+  // UK: 3 × £45.50 = £136.50, VAT 20% = £27.30, total £163.80.
+  const uk=core.calculate(invoice({region:'GB',currency:'GBP',taxName:'VAT',taxRate:'20',gstMode:'exclusive',items:[{description:'Work',quantity:'3',price:'45.50',tax:'gst'}]}));
+  assert.deepEqual([uk.subtotal,uk.gst,uk.total],[13650,2730,16380]);
+  // NZ: $115.00 including 15% GST: GST = 115 × 15/115 = $15.00, net $100.00.
+  const nz=core.calculate(invoice({region:'NZ',currency:'NZD',taxRate:'15',gstMode:'inclusive',items:[{description:'Work',quantity:'1',price:'115.00',tax:'gst'}]}));
+  assert.deepEqual([nz.subtotal,nz.gst,nz.total],[10000,1500,11500]);
+  // 12.5% on $19.99 = $2.49875, which rounds to $2.50.
+  const odd=core.calculate(invoice({region:'XX',taxRate:'12.5',gstMode:'exclusive',items:[{description:'Work',quantity:'1',price:'19.99',tax:'gst'}]}));
+  assert.deepEqual([odd.gst,odd.total],[250,2249]);
+  // A 0% rate (US default) charges nothing even on a taxable line.
+  assert.equal(core.calculate(invoice({region:'US',currency:'USD',taxName:'Sales tax',taxRate:'0',gstMode:'exclusive'})).gst,0);
+  assert.throws(()=>core.calculate(invoice({taxRate:'abc',gstMode:'exclusive'})),/rate as a percentage/);
+});
+test('outside Australia: no ABN checks, no Tax Invoice heading, no BSB or NDIS, local money and labels',()=>{
+  const d=invoice({region:'GB',currency:'GBP',taxName:'VAT',taxRate:'20',gstMode:'exclusive',sellerAbn:'GB123456789',bankBsb:'12',ndis:'plan'});
+  assert.deepEqual(core.validate(d),[]);
+  assert.equal(core.title(d),'Invoice');
+  assert.equal(core.money(16380,d),'£163.80');
+  assert.equal(core.money(123456,{region:'AU',currency:'AUD'}),'$1,234.56');
+  assert.equal(core.aud(123456),'$1,234.56');
+  assert.equal(core.idPrefix(d),'VAT number: ');assert.equal(core.idPrefix(invoice()),'ABN ');
+  assert.deepEqual(core.bankLines({...d,bankBsb:'062000',bankAccount:'12345678'}),[]);
+  assert.deepEqual(core.ndisLines(d),[]);
+  assert.match(core.validate(invoice({gstMode:'exclusive'})).join(),/Enter your ABN/,'Australia still asks for the ABN');
+});
+test('a document from before regions is Australian, and an unknown region or currency is refused',()=>{
+  const old=invoice();for(const k of ['region','currency','taxName','taxRate'])delete old[k];
+  const back=core.parseDraft(JSON.stringify({format:'plenty-of-tools-invoice',version:2,data:old}));
+  assert.deepEqual([back.region,back.currency,back.taxName,back.taxRate],['AU','AUD','GST','10']);
+  for(const bad of [{region:'ZZ'},{currency:'BTC'}])assert.throws(()=>core.parseDraft(JSON.stringify({format:'plenty-of-tools-invoice',version:2,data:{...invoice(),...bad}})),/unsupported/);
+  assert.equal(core.parseDraft(JSON.stringify({format:'plenty-of-tools-invoice',version:2,data:{...invoice(),region:'NZ',currency:'NZD',ndis:'plan'}})).ndis,'','NDIS is dropped outside Australia');
+});

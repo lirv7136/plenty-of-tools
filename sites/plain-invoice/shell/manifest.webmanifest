@@ -1,7 +1,7 @@
 {
   "name": "Plain Invoice",
   "short_name": "Invoice",
-  "description": "Free invoices for Australian businesses: ABN, GST or no GST, NDIS, and a date on each line. No account, nothing uploaded.",
+  "description": "Free invoices in your browser. Built for Australia (ABN, GST, NDIS), set up for other countries. No account, nothing uploaded.",
   "id": "/",
   "start_url": "/",
   "scope": "/",

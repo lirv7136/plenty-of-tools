@@ -111,8 +111,8 @@ def main():
               "description": SITE["tagline"], "applicationCategory": "BusinessApplication",
               "operatingSystem": "Any (runs in a web browser)", "browserRequirements": "Requires JavaScript",
               "isAccessibleForFree": True, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "AUD"}}
-    urls = [page("/", f'Free invoice maker for Australian businesses · {SITE["brand"]}',
-                 "Make an Australian invoice or quote with ABN, GST or no GST and a date on each line. Download a PDF or email it. No account, nothing uploaded, no limits.",
+    urls = [page("/", f'Free invoice maker, no account · {SITE["brand"]}',
+                 "Make an invoice or quote in your browser and download a PDF. Built for Australia (ABN, GST, PayID, NDIS), set up for NZ, UK, Europe, US and Canada. No account, no limits.",
                  (HERE / "pages" / "home.html").read_text() + scripts, head_extra=head, body_class="tool",
                  jsonld=ld(app_ld))]
 

@@ -59,7 +59,14 @@
     const right = (s, xr, yy, size, font = reg, color = C.ink) => text(s, xr - font.widthOfTextAtSize(s, size), yy, size, font, color);
     const rule = (yy, color = C.line, thickness = 0.6, x1 = M.l, x2 = A4[0] - M.r) => page.drawLine({ start: { x: x1, y: yy }, end: { x: x2, y: yy }, thickness, color });
     function need(h) { if (y - h < M.b) { newPage(); return true; } return false; }
-    const money = c => safe(core.aud(c));
+    const TAX = core.taxName ? core.taxName(data) : 'GST', CUR = data.currency || 'AUD';
+    // The currency as the reader's locale writes it; if this font cannot draw the symbol (the
+    // rupee sign, for one), the three letter code and the number instead.
+    const money = c => {
+      const m = core.money ? core.money(c, data) : core.aud(c);
+      try { reg.encodeText(m.replace(/[\u00a0\u202f]/g, ' ')); return safe(m); }
+      catch (e) { return safe(CUR + ' ' + (c / 100).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })); }
+    };
     const date = v => core.validDate(v) ? new Intl.DateTimeFormat('en-AU', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' }).format(new Date(v + 'T00:00:00Z')) : '';
 
     newPage();
@@ -69,7 +76,7 @@
     for (const l of wrap(data.sellerName || 'Your business', bold, 16, leftW)) { text(l, M.l, ly - 14, 16, bold); ly -= 19; }
     ly -= 4;
     const sellerLines = [];
-    if (data.sellerAbn.trim()) sellerLines.push('ABN ' + data.sellerAbn.trim());
+    if (data.sellerAbn.trim()) sellerLines.push((core.idPrefix ? core.idPrefix(data) : 'ABN ') + data.sellerAbn.trim());
     for (const k of ['sellerAddress', 'sellerEmail', 'sellerPhone']) if (data[k].trim()) sellerLines.push(data[k].trim());
     for (const l of wrap(sellerLines.join('\n'), reg, 9.5, leftW)) { text(l, M.l, ly - 10, 9.5, reg, C.grey); ly -= 13; }
     let ry = y;
@@ -86,12 +93,12 @@
     text(data.kind === 'quote' ? 'PREPARED FOR' : 'BILL TO', M.l, py - 8, 8, bold, C.grey); py -= 22;
     for (const l of wrap(data.clientName || 'Customer', bold, 11, half - 12)) { text(l, M.l, py, 11, bold); py -= 14; }
     const clientLines = [];
-    if (data.clientAbn.trim()) clientLines.push('ABN ' + data.clientAbn.trim());
+    if (data.clientAbn.trim()) clientLines.push((core.idPrefix ? core.idPrefix(data) : 'ABN ') + data.clientAbn.trim());
     for (const k of ['clientAddress', 'clientEmail']) if (data[k].trim()) clientLines.push(data[k].trim());
     for (const l of wrap(clientLines.join('\n'), reg, 9.5, half - 12)) { text(l, M.l, py, 9.5, reg, C.grey); py -= 13; }
     let ay = y;
     const ax = M.l + half + 12;
-    text(data.kind === 'quote' ? 'QUOTE TOTAL (AUD)' : 'AMOUNT DUE (AUD)', ax, ay - 8, 8, bold, C.grey); ay -= 30;
+    text(data.kind === 'quote' ? `QUOTE TOTAL (${CUR})` : `AMOUNT DUE (${CUR})`, ax, ay - 8, 8, bold, C.grey); ay -= 30;
     text(money(data.kind === 'quote' ? totals.total : totals.due), ax, ay, 20, bold, C.green); ay -= 18;
     if (data.kind === 'quote') { text('This quote is not a tax invoice.', ax, ay, 8.5, reg, C.grey); ay -= 12; }
     y = Math.min(py, ay) - 16;
@@ -105,7 +112,7 @@
 
     // ---- line items
     const tax = data.gstMode !== 'none', cols = data.columns || [];
-    const fixed = [['Qty', 42], [data.gstMode === 'inclusive' ? 'Unit (incl.)' : tax ? 'Unit (excl.)' : 'Unit price', 74], ...(tax ? [['GST', 60]] : []), ['Amount', 78]];
+    const fixed = [['Qty', 42], [data.gstMode === 'inclusive' ? 'Unit (incl.)' : tax ? 'Unit (excl.)' : 'Unit price', 74], ...(tax ? [[TAX, 60]] : []), ['Amount', 78]];
     const fixedW = fixed.reduce((s, f) => s + f[1], 0);
     const PAD = 5;
     // Each extra column is as wide as its longest value or heading (so an NDIS support item number
@@ -133,7 +140,7 @@
     data.items.forEach((item, i) => {
       const t = totals.items[i];
       const values = [item.description, ...cols.map((c, k) => core.cellText(c, (item.extra || [])[k])), item.quantity, money(t.price),
-        ...(tax ? [t.taxable ? money(t.gst) : 'No GST'] : []), money(t.total)];
+        ...(tax ? [t.taxable ? money(t.gst) : 'No ' + TAX] : []), money(t.total)];
       const cells = values.map((v, k) => wrap(v, reg, 9, columns[k].w - PAD * 2));
       const h = Math.max(...cells.map(l => l.length)) * 11.5 + 10;
       if (need(h)) headerRow();
@@ -150,8 +157,8 @@
     y -= 14;
 
     // ---- totals
-    const rows = [[tax ? 'Subtotal (excl. GST)' : 'Subtotal', money(totals.subtotal)]];
-    if (tax) rows.push(['GST', money(totals.gst)]);
+    const rows = [[tax ? `Subtotal (excl. ${TAX})` : 'Subtotal', money(totals.subtotal)]];
+    if (tax) rows.push([TAX, money(totals.gst)]);
     rows.push([data.kind === 'quote' ? 'Quote total' : 'Total', money(totals.total), 'strong']);
     if (data.kind === 'invoice') {
       if (totals.paid) rows.push(['Already paid', '-' + money(totals.paid)]);
@@ -177,8 +184,8 @@
       for (const l of wrap(body, reg, 9.5, W)) { if (need(14)) { } text(l, M.l, y, 9.5); y -= 13; }
       y -= 6;
     }
-    const foot = tax ? 'All amounts in AUD. GST applies only to taxable lines and is rounded per line. Line amounts include any GST.'
-      : 'All amounts in AUD. No GST charged - supplier not registered for GST.';
+    const foot = tax ? `All amounts in ${CUR}. ${TAX} applies only to taxable lines and is rounded per line. Line amounts include any ${TAX}.`
+      : !core.isAU || core.isAU(data) ? 'All amounts in AUD. No GST charged - supplier not registered for GST.' : `All amounts in ${CUR}. No ${TAX} charged.`;
     need(30); rule(y); y -= 14;
     for (const l of wrap(foot, reg, 7.5, W)) { text(l, M.l, y, 7.5, reg, C.grey); y -= 10; }
 
