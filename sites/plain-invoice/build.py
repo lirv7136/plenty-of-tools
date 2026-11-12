@@ -140,6 +140,9 @@ def main():
     page("/404/", f'Page not found · {SITE["brand"]}', "This page does not exist.", nf, robots="noindex,nofollow")
     (DIST / "404" / "index.html").rename(DIST / "404.html"); (DIST / "404").rmdir()
 
+    # Google Search Console ownership file. It must stay for the site to remain verified.
+    if SITE.get("google_verification_file") and not STAGING:
+        (DIST / SITE["google_verification_file"]).write_text("google-site-verification: " + SITE["google_verification_file"])
     # IndexNow key file, so Bing and others accept URL submissions without an account.
     if SITE.get("indexnow_key") and not STAGING:
         (DIST / f'{SITE["indexnow_key"]}.txt').write_text(SITE["indexnow_key"])
