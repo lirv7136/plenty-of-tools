@@ -69,5 +69,5 @@ Done without an account: IndexNow accepted all 11 URLs on 13 Nov 2026, twice (af
 after Pro went on sale).
 
 Google Search Console: the property https://plaininvoice.com.au/ was added on 13 Nov 2026 with
-the HTML file method (`googlebcd32425e8ccd751.html`, written by the site build). Verify and
-submit the sitemap once that file is deployed.
+the HTML file method (`googlebcd32425e8ccd751.html`, written by the site build). Verified the same
+day, and the sitemap was submitted: status Success, 11 pages discovered.
