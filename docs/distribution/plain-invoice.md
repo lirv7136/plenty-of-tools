@@ -161,3 +161,27 @@ What would work:
 - Message the r/SideProject moderators (modmail) and ask them to approve the removed post.
 - Spend a week or two commenting helpfully in the communities above, with no links, then post.
 - Or post from a Reddit account that already has history.
+
+## Plan manager outreach (sent 13 Nov 2026)
+
+Ten emails went from lachieirving@gmail.com (Gmail cannot send as hello@ yet), signed Lachlan
+Irving, Plain Invoice, hello@plaininvoice.com.au, each with a "no thanks" opt out line. Subject:
+"A free tool so providers send you invoices you can pay first time". Each mentioned something
+from that company's own provider page, asked what the tool gets wrong, and asked them to mention
+it to providers. The paid option was disclosed. Do not email these again unless they reply.
+
+| Plan manager | Sent to | Reply |
+|---|---|---|
+| Plan Partners | info@planpartners.com.au | |
+| NDSP Plan Managers | info@ndsp.com.au | |
+| Leap in! | crew@leapin.com.au | |
+| nib Thrive | enquiries@nibthrive.com.au | |
+| Provider Choice | planmanagement@providerchoice.com.au | |
+| MyIntegra | choiceandcontrol@myintegra.com.au | |
+| Plan Tracker | hello@plantracker.com.au | |
+| Sky Plan Management | info@skyplanmanagement.com.au | |
+| Purple Leopard | office@purpleleopard.com.au | |
+| First2Care | support@first2care.com.au | |
+
+Not contacted: My Plan Manager (their site said email was down that day; enquiries@myplanmanager.com.au)
+and Lotus Assist (no provider invoicing page; hello@lotusassist.com.au).
