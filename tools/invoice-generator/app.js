@@ -642,12 +642,13 @@
     if(kind==='visits'){d.columns=['Date'];d.items=d.items.map(i=>({...i,extra:['']}));}
     if(kind==='nogst')d.gstMode='none';
     if(kind==='tax')d.gstMode='exclusive';
+    if(kind==='quote'){d.kind='quote';d.number=core.nextFrom('Q-000',known());}
     if(kind==='ndis'){d.ndis='plan';d.columns=['Date','Support item'];d.items=d.items.map(i=>({...i,extra:['','']}));}
     return d;
   }
 
   loadTemplates();loadHistory();renderTemplates();renderHistory();
   window.__invoice={state:()=>data,templates:()=>store,history:()=>history};   // test hook
-  const start=/[?&]start=(visits|nogst|tax|ndis)\b/.exec(location.search);
+  const start=/[?&]start=(visits|nogst|tax|ndis|quote)\b/.exec(location.search);
   data=start?startFrom(start[1]):blank();populate();if(!$('region'))status('No account and nothing uploaded. Your draft stays in this tab; templates stay in this browser.');
 })();

@@ -72,6 +72,12 @@ PAGES = [
     ("/ndis-invoice-template/", "NDIS invoice template for support workers, free (Australia)",
      "A free NDIS invoice: participant name and NDIS number, date and support item number on every line, your ABN, plan or self managed. Make it in your browser.",
      "guides/ndis-invoice-template.html"),
+    ("/quote-template/", "Quote template Australia, free, turns into an invoice",
+     "A free quote template for Australian businesses: ABN, GST or no GST, a valid until date, and one tap to turn the accepted quote into an invoice.",
+     "guides/quote-template.html"),
+    ("/invoice-without-abn/", "Can you invoice without an ABN? (Australia)",
+     "You can invoice without an ABN, but a business paying you may have to withhold 47%. What that means, the statement by a supplier form, and what to do.",
+     "guides/invoice-without-abn.html"),
     ("/cleaning-invoice-template/", "Cleaning invoice template Australia, with the date of each clean",
      "A free invoice for Australian cleaners: one line per clean with its date, your ABN, GST only if registered, and the next invoice one tap away.",
      "guides/cleaning-invoice-template.html"),
@@ -79,6 +85,41 @@ PAGES = [
      "A free invoice for Australian tutors and coaches: one line per lesson with its date, paid or unpaid at a glance, no account.",
      "guides/tutoring-invoice-template.html"),
 ]
+
+# Pages for one kind of work: the same shape each time, so a new trade is one entry here.
+# slug, search title, h1, who it is for, start preset, example heading, example lines (description, qty text, amount), total.
+TRADES = [
+    ("lawn-mowing-invoice-template", "Lawn mowing and gardening invoice template (Australia)", "Lawn mowing and gardening invoice template",
+     "For lawn mowing, gardening and yard work in Australia: one line per visit with its date, your ABN, and GST only if you are registered.", "visits",
+     "a fortnightly mow, not registered for GST", [("6 Nov · Lawn mow and edges", "1 at $70", "$70.00"), ("20 Nov · Lawn mow and edges", "1 at $70", "$70.00"), ("20 Nov · Green waste removal", "1 load at $40", "$40.00")], "$180.00"),
+    ("handyman-invoice-template", "Handyman invoice template (Australia), labour and materials", "Handyman invoice template",
+     "For handymen and small repair jobs in Australia: labour by the hour, materials as their own lines, your ABN, and GST only if you are registered.", "visits",
+     "a half day of repairs, not registered for GST", [("12 Nov · Labour", "4 hours at $65", "$260.00"), ("12 Nov · Tap washers and silicone", "1 at $28.50", "$28.50"), ("12 Nov · Door hinge set", "2 at $14", "$28.00")], "$316.50"),
+    ("support-worker-invoice-template", "Support worker invoice template (Australia), with or without NDIS", "Support worker invoice template",
+     "For independent support workers in Australia: one line per shift with its date. For NDIS participants, switch on the NDIS layout for the participant's NDIS number and a support item number on every line.", "ndis",
+     "two shifts in a week, not registered for GST", [("10 Nov · Assistance with self care", "2 hours at $70.23", "$140.46"), ("12 Nov · Assistance with self care", "3 hours at $70.23", "$210.69")], "$351.15"),
+    ("photography-invoice-template", "Photography invoice template (Australia)", "Photography invoice template",
+     "For photographers in Australia: the shoot, editing and extras as separate lines, a deposit taken off the total, your ABN, and GST only if you are registered.", "nogst",
+     "a family shoot with a deposit paid, not registered for GST", [("Family portrait session", "1 at $350", "$350.00"), ("Extra edited images", "10 at $12", "$120.00"), ("Deposit already paid", "", "−$100.00")], "$370.00 due"),
+    ("dog-walking-invoice-template", "Dog walking and pet sitting invoice template (Australia)", "Dog walking and pet sitting invoice template",
+     "For dog walkers and pet sitters in Australia: one line per walk or visit with its date, sent weekly or monthly, your ABN, and GST only if you are registered.", "visits",
+     "a week of walks, not registered for GST", [("9 Nov · 45 minute walk", "1 at $28", "$28.00"), ("11 Nov · 45 minute walk", "1 at $28", "$28.00"), ("13 Nov · 45 minute walk", "1 at $28", "$28.00")], "$84.00"),
+]
+
+def trade_page(slug, title, h1, lede, start, eg, lines, total):
+    rows = "".join(f"<li>{html.escape(d)}{': ' + html.escape(q) if q else ''}: {html.escape(a)}</li>" for d, q, a in lines)
+    extra = ('<p>Invoicing an NDIS participant? See <a href="/ndis-invoice-template/">what an NDIS invoice needs</a>.</p>' if start == "ndis"
+             else '<p>Not registered for GST? See <a href="/invoice-template-no-gst/">what an invoice without GST needs</a>.</p>')
+    return f'''<main class="wrap prose pi-page">
+<h1>{html.escape(h1)}</h1>
+<p class="pi-lede">{html.escape(lede)}</p>
+<a class="btn primary pi-cta" href="/?start={start}">Make this invoice</a>
+<h2>How it works</h2>
+<ol><li>Put in your business details and the customer once.</li><li>Add each job as a line. <strong>Another visit like the last</strong> copies a line, so you only change the date.</li><li>Download the PDF or email it. Save the customer and the next invoice is one tap, with the new date and the next number.</li></ol>
+<div class="pi-example"><strong>Example:</strong> {html.escape(eg)}.<ul>{rows}<li>Total {html.escape(total)}, paid by bank transfer or PayID</li></ul></div>
+{extra}
+<p>Free, with no account and no limit on invoices. Nothing you type is uploaded. Prefer to message it? <a href="https://t.me/PlainInvoiceBot" rel="noopener">The Telegram bot</a> turns "3 hrs mowing for Sue at $60" into a PDF.</p>
+</main>'''
 
 def page(path, title, description, main, head_extra="", body_class="", jsonld="", robots="index,follow"):
     redirect = ('<script>if(/\\.pages\\.dev$/.test(location.hostname)){location.replace("' + BASE +
@@ -131,9 +172,13 @@ def main():
                  jsonld=ld(app_ld))]
 
     for path, title, desc, src in PAGES:
-        main_html = fill((HERE / "pages" / src).read_text(), brand=SITE["brand"], github=SITE["github"],
+        trade_links = "".join(f'<li><a href="/{t[0]}/">{html.escape(t[2])}</a><p>{html.escape(t[3][:110])}…</p></li>' for t in TRADES)
+        main_html = fill((HERE / "pages" / src).read_text().replace("{{trade_links}}", trade_links), brand=SITE["brand"], github=SITE["github"],
                          analytics_note=ANALYTICS_NOTE, sync_note=SYNC_NOTE, pro_month=SITE["pro_price_month"], pro_year=SITE["pro_price_year"])
         urls.append(page(path, title, desc, main_html))
+
+    for slug, title, h1, lede, start, eg, lines, total in TRADES:
+        urls.append(page(f"/{slug}/", title, lede[:155], trade_page(slug, title, h1, lede, start, eg, lines, total)))
 
     nf = ('<main class="wrap prose pi-page"><h1>Page not found</h1><p>That address does not exist here. '
           '<a href="/">Make an invoice</a> or see the <a href="/guides/">invoice templates</a>.</p></main>')

@@ -40,7 +40,7 @@ const bulk0 = require('../tools/invoice-generator/static/bulk.js');
 
   // Every page answers, has one h1, and fits a phone.
   await size(390, 844);
-  for (const p of ['', 'pricing/', 'privacy/', 'terms/', 'guides/', 'invoice-template-no-gst/', 'tax-invoice-template/', 'cleaning-invoice-template/', 'tutoring-invoice-template/', 'ndis-invoice-template/']) {
+  for (const p of ['', 'pricing/', 'privacy/', 'terms/', 'guides/', 'invoice-template-no-gst/', 'tax-invoice-template/', 'cleaning-invoice-template/', 'tutoring-invoice-template/', 'ndis-invoice-template/', 'lawn-mowing-invoice-template/', 'handyman-invoice-template/', 'support-worker-invoice-template/', 'photography-invoice-template/', 'dog-walking-invoice-template/', 'quote-template/', 'invoice-without-abn/']) {
     await open(ROOT + p);
     assert.equal(await ev("document.querySelectorAll('h1:not([aria-level])').length"), 1, p + ' has one h1');
     assert.ok(await ev('document.documentElement.scrollWidth<=390'), p + ' overflows at 390 px');
@@ -222,6 +222,11 @@ const bulk0 = require('../tools/invoice-generator/static/bulk.js');
   assert.ok(await ev("!document.querySelector('.inv-bank').hidden"));
   await send('Emulation.setTimezoneOverride', { timezoneId: 'Australia/Sydney' });
   ok('a UK visitor gets pounds, VAT at 20% and a VAT number, with no ABN, BSB or NDIS; switching back to Australia restores them');
+
+  // The quote page opens the tool as a quote with its own number sequence.
+  await open(ROOT + '?start=quote');
+  assert.deepEqual(await ev("(()=>{const d=window.__invoice.state();return [d.kind,d.number]})()"), ['quote', 'Q-001']);
+  ok('?start=quote opens a quote numbered Q-001');
 
   // Pro: shown beside the moments people want it, never sold. Only where the site has its endpoints.
   const api = await ev("fetch('/api/count',{method:'POST',body:'pro_page'}).then(r=>r.status).catch(()=>0)");
