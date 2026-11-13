@@ -236,6 +236,11 @@ def main():
     urls.append(page("/about/", f'Why these are free · {SITE["brand"]}',
                      "Every tool here replaces a product that charges at the moment you need the result.",
                      fill(tpl("about.html"), github=SITE["github"])))
+    urls.append(page("/hire/", f'Hire the maker · {SITE["brand"]}',
+                     "Want a calculator, a small website, a bot or an automation built for you? Fixed price, "
+                     "a working first version in a day or two.",
+                     fill(tpl("hire.html"), email="hello@plaininvoice.com.au",
+                          count=str(sum(t["status"] == "live" for t in TOOLS)))))
     live = "".join(card(t) for t in TOOLS if t["status"] == "live")
     queued = "".join(card(t) for t in TOOLS if t["status"] == "queued")
     queued_section = ('<section style="margin-top:40px"><h2>Coming next</h2>'
